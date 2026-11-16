@@ -1,4 +1,4 @@
-import { UserProfile, ResearchReport, InventoryItem } from '../types';
+import { UserProfile, ResearchReport, InventoryItem, QuotaInfo } from '../types';
 
 // Default to localhost for web/simulator; replace with local LAN IP when testing on physical phone via Expo Go
 const API_BASE_URL = 'http://localhost:8000/api/v1';
@@ -50,6 +50,31 @@ class MiraApiClient {
     const data = await res.json();
     this.token = data.access_token;
     return data.access_token;
+  }
+
+  async exportMyData(): Promise<any> {
+    const res = await fetch(`${API_BASE_URL}/auth/export-data`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to export data');
+    return res.json();
+  }
+
+  async deleteAccount(): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/auth/delete-account`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to delete account');
+    this.token = null;
+  }
+
+  async getQuota(): Promise<QuotaInfo> {
+    const res = await fetch(`${API_BASE_URL}/research/quota`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch quota');
+    return res.json();
   }
 
   async getProfile(): Promise<UserProfile> {

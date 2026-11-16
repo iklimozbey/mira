@@ -8,6 +8,13 @@ export interface UserProfile {
   budget_level: string;
 }
 
+export interface QuotaInfo {
+  tier: string;
+  daily_limit: number;
+  used_today: number;
+  remaining_today: number;
+}
+
 export interface InventoryItem {
   id: string;
   user_id: string;

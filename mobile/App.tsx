@@ -10,7 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { apiClient } from './src/api/client';
-import { ResearchReport, UserProfile, InventoryItem } from './src/types';
+import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'research' | 'shelf' | 'history' | 'profile'>('research');
@@ -21,7 +21,7 @@ export default function App() {
   const [password, setPassword] = useState('mira1234');
   const [authError, setAuthError] = useState('');
 
-  // Profile state
+  // Profile & Quota state
   const [profile, setProfile] = useState<UserProfile>({
     skin_type: 'combination',
     skin_undertone: 'warm',
@@ -29,7 +29,14 @@ export default function App() {
     allergies_sensitivities: [],
     budget_level: 'medium',
   });
+  const [quota, setQuota] = useState<QuotaInfo>({
+    tier: 'free',
+    daily_limit: 5,
+    used_today: 0,
+    remaining_today: 5,
+  });
   const [profileSavedMsg, setProfileSavedMsg] = useState('');
+  const [exportedDataJson, setExportedDataJson] = useState('');
 
   // Research state
   const [query, setQuery] = useState('');
@@ -44,6 +51,15 @@ export default function App() {
   const [newProdNotes, setNewProdNotes] = useState('');
   const [newProdRating, setNewProdRating] = useState('4');
 
+  const refreshQuota = async () => {
+    try {
+      const q = await apiClient.getQuota();
+      setQuota(q);
+    } catch (err) {
+      // ignore
+    }
+  };
+
   const handleAuth = async (isRegister: boolean) => {
     setAuthError('');
     try {
@@ -53,6 +69,7 @@ export default function App() {
       await apiClient.login(email, password);
       const userProf = await apiClient.getProfile();
       setProfile(userProf);
+      await refreshQuota();
       setIsAuthenticated(true);
     } catch (err: any) {
       setAuthError(err.message || 'Authentication error');
@@ -70,12 +87,33 @@ export default function App() {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      const data = await apiClient.exportMyData();
+      setExportedDataJson(JSON.stringify(data, null, 2));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await apiClient.deleteAccount();
+      setIsAuthenticated(false);
+      setCurrentReport(null);
+      setExportedDataJson('');
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!query.trim()) return;
     setLoading(true);
     try {
       const report = await apiClient.analyzeProduct(query);
       setCurrentReport(report);
+      await refreshQuota();
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -170,8 +208,13 @@ export default function App() {
       {/* Top Header */}
       <View style={styles.header}>
         <Text style={styles.headerLogo}>MIRA Research</Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{profile.skin_type || 'Set Profile'} • {profile.skin_undertone || 'Tone'}</Text>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          <View style={styles.quotaBadge}>
+            <Text style={styles.quotaText}>⚡ {quota.remaining_today}/{quota.daily_limit} Free</Text>
+          </View>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{profile.skin_type || 'Set Profile'} • {profile.skin_undertone || 'Tone'}</Text>
+          </View>
         </View>
       </View>
 
@@ -304,36 +347,65 @@ export default function App() {
         )}
 
         {activeTab === 'profile' && (
-          <View style={styles.reportCard}>
-            <Text style={styles.sectionTitle}>Your Personal Skin & Shopping Profile</Text>
-            <Text style={styles.helperText}>MIRA evaluates every product against these attributes.</Text>
+          <View>
+            <View style={styles.reportCard}>
+              <Text style={styles.sectionTitle}>Your Personal Skin & Shopping Profile</Text>
+              <Text style={styles.helperText}>MIRA evaluates every product against these attributes.</Text>
 
-            <Text style={styles.label}>Skin Type (oily, dry, combination, sensitive)</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.skin_type}
-              onChangeText={(v) => setProfile({ ...profile, skin_type: v })}
-            />
+              <Text style={styles.label}>Skin Type (oily, dry, combination, sensitive)</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.skin_type}
+                onChangeText={(v) => setProfile({ ...profile, skin_type: v })}
+              />
 
-            <Text style={styles.label}>Skin Undertone (warm, cool, neutral)</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.skin_undertone}
-              onChangeText={(v) => setProfile({ ...profile, skin_undertone: v })}
-            />
+              <Text style={styles.label}>Skin Undertone (warm, cool, neutral)</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.skin_undertone}
+                onChangeText={(v) => setProfile({ ...profile, skin_undertone: v })}
+              />
 
-            <Text style={styles.label}>Budget Preference (low, medium, luxury)</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.budget_level}
-              onChangeText={(v) => setProfile({ ...profile, budget_level: v })}
-            />
+              <Text style={styles.label}>Budget Preference (low, medium, luxury)</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.budget_level}
+                onChangeText={(v) => setProfile({ ...profile, budget_level: v })}
+              />
 
-            {profileSavedMsg ? <Text style={styles.successText}>{profileSavedMsg}</Text> : null}
+              {profileSavedMsg ? <Text style={styles.successText}>{profileSavedMsg}</Text> : null}
 
-            <TouchableOpacity style={styles.primaryBtn} onPress={handleSaveProfile}>
-              <Text style={styles.primaryBtnText}>Save Personal Profile</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.primaryBtn} onPress={handleSaveProfile}>
+                <Text style={styles.primaryBtnText}>Save Personal Profile</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* KVKK / GDPR Privacy Section */}
+            <View style={[styles.reportCard, { marginTop: 16 }]}>
+              <Text style={styles.sectionTitle}>🔒 Data Privacy & KVKK Controls</Text>
+              <Text style={styles.helperText}>
+                You have full ownership of your personal profile, shelf memory, and research history.
+              </Text>
+
+              <TouchableOpacity style={styles.secondaryBtn} onPress={handleExportData}>
+                <Text style={styles.secondaryBtnText}>📥 Export My Personal Data (JSON)</Text>
+              </TouchableOpacity>
+
+              {exportedDataJson ? (
+                <View style={[styles.personalBox, { marginTop: 12 }]}>
+                  <Text style={styles.boxBody}>{exportedDataJson}</Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity
+                style={[styles.secondaryBtn, { borderColor: '#D32F2F', marginTop: 12 }]}
+                onPress={handleDeleteAccount}
+              >
+                <Text style={[styles.secondaryBtnText, { color: '#D32F2F' }]}>
+                  🗑️ Permanently Delete Account & Data
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -350,7 +422,9 @@ export default function App() {
                 }}
               >
                 <Text style={styles.productTitle}>{item.product_name}</Text>
-                <Text style={styles.scoreText}>{item.suitability_score}% Personal Match</Text>
+                <Text style={styles.scoreText}>
+                  {item.suitability_score}% Match • Verdict: {item.reality_check_verdict}
+                </Text>
                 <Text numberOfLines={2} style={styles.helperText}>{item.summary}</Text>
               </TouchableOpacity>
             ))}
@@ -395,9 +469,11 @@ const styles = StyleSheet.create({
   brandTitle: { fontSize: 32, fontWeight: '800', color: '#2D232E', textAlign: 'center' },
   subtitle: { fontSize: 14, color: '#6E656F', textAlign: 'center', marginBottom: 24, marginTop: 4 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#FFF', borderBottomWidth: 1, borderColor: '#EEE' },
-  headerLogo: { fontSize: 20, fontWeight: '700', color: '#2D232E' },
+  headerLogo: { fontSize: 18, fontWeight: '700', color: '#2D232E' },
   badge: { backgroundColor: '#F1E9E4', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 12, color: '#5A4A42', fontWeight: '600' },
+  badgeText: { fontSize: 11, color: '#5A4A42', fontWeight: '600' },
+  quotaBadge: { backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  quotaText: { fontSize: 11, color: '#2E7D32', fontWeight: '700' },
   content: { padding: 16, paddingBottom: 40 },
   sectionTitle: { fontSize: 20, fontWeight: '700', color: '#2D232E', marginBottom: 4 },
   helperText: { fontSize: 13, color: '#777', marginBottom: 16 },
