@@ -1,4 +1,4 @@
-import { UserProfile, ResearchReport } from '../types';
+import { UserProfile, ResearchReport, InventoryItem } from '../types';
 
 // Default to localhost for web/simulator; replace with local LAN IP when testing on physical phone via Expo Go
 const API_BASE_URL = 'http://localhost:8000/api/v1';
@@ -89,6 +89,39 @@ class MiraApiClient {
     });
     if (!res.ok) throw new Error('Failed to fetch history');
     return res.json();
+  }
+
+  async getInventory(): Promise<InventoryItem[]> {
+    const res = await fetch(`${API_BASE_URL}/inventory/`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch inventory');
+    return res.json();
+  }
+
+  async addInventoryItem(item: {
+    product_name: string;
+    brand?: string;
+    category?: string;
+    status?: string;
+    rating?: number;
+    experience_notes?: string;
+  }): Promise<InventoryItem> {
+    const res = await fetch(`${API_BASE_URL}/inventory/`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(item),
+    });
+    if (!res.ok) throw new Error('Failed to add inventory item');
+    return res.json();
+  }
+
+  async deleteInventoryItem(itemId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/inventory/${itemId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to delete item');
   }
 }
 

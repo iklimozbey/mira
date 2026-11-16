@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, profile, research
+from app.api.v1.endpoints import auth, profile, research, inventory
 
 api_router = APIRouter()
 
@@ -18,3 +18,4 @@ def health_check():
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(profile.router, prefix="/profile", tags=["User Profile"])
 api_router.include_router(research.router, prefix="/research", tags=["AI Research"])
+api_router.include_router(inventory.router, prefix="/inventory", tags=["Personal Inventory / Shelf"])

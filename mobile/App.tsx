@@ -10,10 +10,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { apiClient } from './src/api/client';
-import { ResearchReport, UserProfile } from './src/types';
+import { ResearchReport, UserProfile, InventoryItem } from './src/types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'research' | 'profile' | 'history'>('research');
+  const [activeTab, setActiveTab] = useState<'research' | 'shelf' | 'history' | 'profile'>('research');
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,6 +36,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentReport, setCurrentReport] = useState<ResearchReport | null>(null);
   const [history, setHistory] = useState<ResearchReport[]>([]);
+
+  // Shelf / Inventory state
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdBrand, setNewProdBrand] = useState('');
+  const [newProdNotes, setNewProdNotes] = useState('');
+  const [newProdRating, setNewProdRating] = useState('4');
 
   const handleAuth = async (isRegister: boolean) => {
     setAuthError('');
@@ -82,6 +89,43 @@ export default function App() {
       setHistory(list);
     } catch (err) {
       // ignore if empty
+    }
+  };
+
+  const loadInventory = async () => {
+    try {
+      const items = await apiClient.getInventory();
+      setInventory(items);
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleAddShelfItem = async () => {
+    if (!newProdName.trim()) return;
+    try {
+      await apiClient.addInventoryItem({
+        product_name: newProdName,
+        brand: newProdBrand || undefined,
+        rating: parseInt(newProdRating, 10) || 4,
+        experience_notes: newProdNotes || undefined,
+        status: 'tested',
+      });
+      setNewProdName('');
+      setNewProdBrand('');
+      setNewProdNotes('');
+      loadInventory();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteShelfItem = async (id: string) => {
+    try {
+      await apiClient.deleteInventoryItem(id);
+      loadInventory();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -191,6 +235,65 @@ export default function App() {
           </View>
         )}
 
+        {activeTab === 'shelf' && (
+          <View>
+            <Text style={styles.sectionTitle}>My Shelf & Product Memory</Text>
+            <Text style={styles.helperText}>
+              Log products you have tried so MIRA remembers what worked or oxidized on your skin.
+            </Text>
+
+            <View style={styles.reportCard}>
+              <TextInput
+                style={styles.input}
+                placeholder="Product Name (e.g., MAC Studio Fix NC25)"
+                value={newProdName}
+                onChangeText={setNewProdName}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Brand (optional)"
+                value={newProdBrand}
+                onChangeText={setNewProdBrand}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Rating (1-5)"
+                value={newProdRating}
+                onChangeText={setNewProdRating}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Your experience (e.g., Oxidized after 2h, loved the coverage)"
+                value={newProdNotes}
+                onChangeText={setNewProdNotes}
+              />
+              <TouchableOpacity style={styles.primaryBtn} onPress={handleAddShelfItem}>
+                <Text style={styles.primaryBtnText}>+ Add to Personal Memory</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ marginTop: 18 }}>
+              {inventory.map((item) => (
+                <View key={item.id} style={styles.historyCard}>
+                  <View style={styles.scoreRow}>
+                    <Text style={styles.productTitle}>{item.product_name}</Text>
+                    <TouchableOpacity onPress={() => handleDeleteShelfItem(item.id)}>
+                      <Text style={{ color: '#D32F2F', fontWeight: '600', fontSize: 12 }}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.scoreText}>Rating: {item.rating || '-'}/5</Text>
+                  {item.experience_notes ? (
+                    <Text style={[styles.helperText, { marginTop: 4, marginBottom: 0 }]}>
+                      Note: "{item.experience_notes}"
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {activeTab === 'profile' && (
           <View style={styles.reportCard}>
             <Text style={styles.sectionTitle}>Your Personal Skin & Shopping Profile</Text>
@@ -254,6 +357,15 @@ export default function App() {
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => {
+            setActiveTab('shelf');
+            loadInventory();
+          }}
+        >
+          <Text style={[styles.tabText, activeTab === 'shelf' && styles.activeTabText]}>👜 My Shelf</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => {
             setActiveTab('history');
             loadHistory();
           }}
@@ -261,7 +373,7 @@ export default function App() {
           <Text style={[styles.tabText, activeTab === 'history' && styles.activeTabText]}>📚 History</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={() => setActiveTab('profile')}>
-          <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>👤 Skin Profile</Text>
+          <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>👤 Profile</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -307,6 +419,6 @@ const styles = StyleSheet.create({
   successText: { color: '#2E7D32', marginBottom: 10, fontWeight: '600' },
   tabBar: { flexDirection: 'row', borderTopWidth: 1, borderColor: '#EEE', backgroundColor: '#FFF', paddingVertical: 12 },
   tabItem: { flex: 1, alignItems: 'center' },
-  tabText: { fontSize: 13, color: '#888', fontWeight: '600' },
+  tabText: { fontSize: 12, color: '#888', fontWeight: '600' },
   activeTabText: { color: '#B56576', fontWeight: '700' },
 });

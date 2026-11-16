@@ -8,6 +8,18 @@ export interface UserProfile {
   budget_level: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  user_id: string;
+  product_name: string;
+  brand?: string;
+  category?: string;
+  status: string;
+  rating?: number;
+  experience_notes?: string;
+  created_at: string;
+}
+
 export interface SourceItem {
   title: string;
   url: string;
