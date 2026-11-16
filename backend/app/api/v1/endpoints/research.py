@@ -1,0 +1,137 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import List
+from app.api.deps import get_current_user
+from app.core.database import get_db
+from app.models.entities import User, UserProfile, InventoryItem, ResearchQuery, ResearchReport
+from app.schemas.dto import ResearchRequest, ResearchReportResponse
+from app.services.search_service import search_service
+from app.services.ai_agent import ai_agent_service
+
+router = APIRouter()
+
+
+@router.post("/analyze", response_model=ResearchReportResponse)
+async def analyze_product(
+    request: ResearchRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Start an automated research workflow:
+    1. Retrieve user profile and past inventory notes.
+    2. Search real-world online discussions and reviews.
+    3. Run AI agent synthesis to produce an unbiased suitability report.
+    4. Persist query and report to database.
+    """
+    # 1. Fetch user context
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    user_profile_dict = {
+        "skin_type": profile.skin_type if profile else None,
+        "skin_undertone": profile.skin_undertone if profile else None,
+        "skin_concerns": profile.skin_concerns if profile else [],
+        "allergies_sensitivities": profile.allergies_sensitivities if profile else [],
+        "budget_level": profile.budget_level if profile else "medium"
+    }
+
+    # Fetch inventory notes to check past negative/positive reactions
+    inventory_items = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
+    past_notes = [
+        f"{item.product_name}: {item.experience_notes} (Rating: {item.rating}/5)"
+        for item in inventory_items if item.experience_notes
+    ]
+
+    # 2. Record initial query in DB
+    query_record = ResearchQuery(
+        user_id=current_user.id,
+        query_text_or_url=request.query_or_url,
+        status="processing"
+    )
+    db.add(query_record)
+    db.commit()
+    db.refresh(query_record)
+
+    try:
+        # 3. Gather online evidence
+        search_results = await search_service.search_reviews(request.query_or_url)
+
+        # 4. Generate AI Agent personalized evaluation
+        analysis_result = await ai_agent_service.analyze_product(
+            query=request.query_or_url,
+            user_profile=user_profile_dict,
+            search_results=search_results,
+            user_inventory_notes=past_notes
+        )
+
+        product_name = analysis_result.get("product_name", request.query_or_url)
+        query_record.product_name = product_name
+        query_record.status = "completed"
+
+        # 5. Save report to DB
+        report_record = ResearchReport(
+            query_id=query_record.id,
+            summary=analysis_result.get("summary", ""),
+            pros=analysis_result.get("pros", []),
+            cons=analysis_result.get("cons", []),
+            suitability_score=analysis_result.get("suitability_score", 70),
+            suitability_reason=analysis_result.get("suitability_reason", ""),
+            sources=analysis_result.get("sources", []),
+            sponsored_flags=analysis_result.get("sponsored_flags", []),
+            tokens_used=120
+        )
+        db.add(report_record)
+        db.commit()
+        db.refresh(report_record)
+
+        return {
+            "id": report_record.id,
+            "query_id": query_record.id,
+            "product_name": product_name,
+            "summary": report_record.summary,
+            "pros": report_record.pros,
+            "cons": report_record.cons,
+            "suitability_score": report_record.suitability_score,
+            "suitability_reason": report_record.suitability_reason,
+            "sources": report_record.sources,
+            "sponsored_flags": report_record.sponsored_flags,
+            "created_at": report_record.created_at
+        }
+
+    except Exception as e:
+        query_record.status = "failed"
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to complete research: {str(e)}"
+        )
+
+
+@router.get("/history", response_model=List[ResearchReportResponse])
+def get_research_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieve past research queries and their generated reports."""
+    queries = (
+        db.query(ResearchQuery)
+        .filter(ResearchQuery.user_id == current_user.id, ResearchQuery.status == "completed")
+        .order_by(ResearchQuery.created_at.desc())
+        .all()
+    )
+    history = []
+    for q in queries:
+        if q.report:
+            history.append({
+                "id": q.report.id,
+                "query_id": q.id,
+                "product_name": q.product_name or q.query_text_or_url,
+                "summary": q.report.summary,
+                "pros": q.report.pros,
+                "cons": q.report.cons,
+                "suitability_score": q.report.suitability_score,
+                "suitability_reason": q.report.suitability_reason,
+                "sources": q.report.sources,
+                "sponsored_flags": q.report.sponsored_flags,
+                "created_at": q.report.created_at
+            })
+    return history

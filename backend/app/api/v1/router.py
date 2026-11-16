@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, profile
+from app.api.v1.endpoints import auth, profile, research
 
 api_router = APIRouter()
 
@@ -17,3 +17,4 @@ def health_check():
 # Include modular route controllers
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(profile.router, prefix="/profile", tags=["User Profile"])
+api_router.include_router(research.router, prefix="/research", tags=["AI Research"])
