@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 from app.api.deps import get_current_user
 from app.core.database import get_db
@@ -56,7 +56,7 @@ async def analyze_product(
     0. Verify daily AI usage quota.
     1. Retrieve user profile and past inventory notes.
     2. Search real-world online discussions and reviews.
-    3. Run AI agent synthesis to produce an unbiased suitability report.
+    3. Run AI agent synthesis to produce an unbiased suitability & reality check report.
     4. Persist query and report to database.
     """
     # 0. Enforce quota
@@ -80,8 +80,8 @@ async def analyze_product(
     # Fetch inventory notes to check past negative/positive reactions
     inventory_items = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
     past_notes = [
-        f"{item.product_name}: {item.experience_notes} (Rating: {item.rating}/5)"
-        for item in inventory_items if item.experience_notes
+        f"{item.product_name}: {item.experience_notes or 'Owned'} (Rating: {item.rating or '-'}/5)"
+        for item in inventory_items
     ]
 
     # 2. Record initial query in DB
@@ -118,6 +118,8 @@ async def analyze_product(
             cons=analysis_result.get("cons", []),
             suitability_score=analysis_result.get("suitability_score", 70),
             suitability_reason=analysis_result.get("suitability_reason", ""),
+            reality_check_verdict=analysis_result.get("reality_check_verdict", "CONSIDER"),
+            reality_check_reason=analysis_result.get("reality_check_reason", ""),
             sources=analysis_result.get("sources", []),
             sponsored_flags=analysis_result.get("sponsored_flags", []),
             tokens_used=120
@@ -135,6 +137,8 @@ async def analyze_product(
             "cons": report_record.cons,
             "suitability_score": report_record.suitability_score,
             "suitability_reason": report_record.suitability_reason,
+            "reality_check_verdict": report_record.reality_check_verdict,
+            "reality_check_reason": report_record.reality_check_reason,
             "sources": report_record.sources,
             "sponsored_flags": report_record.sponsored_flags,
             "created_at": report_record.created_at
@@ -173,6 +177,8 @@ def get_research_history(
                 "cons": q.report.cons,
                 "suitability_score": q.report.suitability_score,
                 "suitability_reason": q.report.suitability_reason,
+                "reality_check_verdict": q.report.reality_check_verdict,
+                "reality_check_reason": q.report.reality_check_reason,
                 "sources": q.report.sources,
                 "sponsored_flags": q.report.sponsored_flags,
                 "created_at": q.report.created_at

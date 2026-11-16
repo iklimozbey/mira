@@ -36,6 +36,8 @@ export interface ResearchReport {
   cons: string[];
   suitability_score: number;
   suitability_reason: string;
+  reality_check_verdict: string;
+  reality_check_reason?: string;
   sources: SourceItem[];
   sponsored_flags: string[];
   created_at: string;

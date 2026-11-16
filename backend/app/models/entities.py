@@ -88,6 +88,8 @@ class ResearchReport(Base):
     cons = Column(JSON, default=list)  # list of key complaints/cautions
     suitability_score = Column(Integer, nullable=True)  # 1-100 personal compatibility
     suitability_reason = Column(Text, nullable=True)  # rationale based on user profile
+    reality_check_verdict = Column(String(50), default="CONSIDER")  # BUY, SKIP, REDUNDANT, CONSIDER
+    reality_check_reason = Column(Text, nullable=True)  # de-influencing & shelf redundancy check
     sources = Column(JSON, default=list)  # [{title, url, source_type, sentiment}]
     sponsored_flags = Column(JSON, default=list)  # detected sponsored tags or notes
     tokens_used = Column(Integer, default=0)

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List, Any
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -101,6 +101,8 @@ class ResearchReportResponse(BaseModel):
     cons: List[str] = []
     suitability_score: Optional[int] = Field(None, ge=1, le=100)
     suitability_reason: Optional[str] = None
+    reality_check_verdict: str = "CONSIDER"  # BUY, SKIP, REDUNDANT, CONSIDER
+    reality_check_reason: Optional[str] = None
     sources: List[SourceItem] = []
     sponsored_flags: List[str] = []
     created_at: datetime

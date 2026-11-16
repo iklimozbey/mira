@@ -212,6 +212,15 @@ export default function App() {
                   <Text style={styles.boxBody}>{currentReport.suitability_reason}</Text>
                 </View>
 
+                {currentReport.reality_check_reason ? (
+                  <View style={styles.realityBox}>
+                    <Text style={styles.realityHeading}>
+                      ⚖️ Reality Check Verdict: {currentReport.reality_check_verdict}
+                    </Text>
+                    <Text style={styles.boxBody}>{currentReport.reality_check_reason}</Text>
+                  </View>
+                ) : null}
+
                 <Text style={styles.listHeader}>✅ Verified Pros</Text>
                 {currentReport.pros.map((p, idx) => (
                   <Text key={idx} style={styles.bulletItem}>• {p}</Text>
@@ -406,6 +415,8 @@ const styles = StyleSheet.create({
   scoreText: { color: '#1565C0', fontWeight: '700', fontSize: 13 },
   summaryText: { fontSize: 14, color: '#444', lineHeight: 20, marginBottom: 14 },
   personalBox: { backgroundColor: '#FDF6F0', padding: 12, borderRadius: 10, marginBottom: 14 },
+  realityBox: { backgroundColor: '#F3E5F5', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: '#CE93D8' },
+  realityHeading: { fontWeight: '700', color: '#6A1B9A', marginBottom: 4, fontSize: 13 },
   boxHeading: { fontWeight: '700', color: '#8D5B4C', marginBottom: 4, fontSize: 13 },
   boxBody: { color: '#4A3B32', fontSize: 13, lineHeight: 18 },
   listHeader: { fontWeight: '700', fontSize: 15, marginTop: 10, marginBottom: 6, color: '#2D232E' },

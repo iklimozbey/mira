@@ -9,8 +9,8 @@ Your purpose:
 1. Provide an unbiased, critical analysis of the requested product.
 2. Cross-reference real user reviews, recurring complaints, performance under different skin types, oxidation tendencies, and finish.
 3. Personalize the evaluation specifically against the user's skin profile, undertone, concerns, and past experiences.
-4. Detect and flag likely sponsored content or marketing hype.
-5. Emphasize why the user might NOT want to buy the product if it doesn't match their profile.
+4. Perform a "Reality Check" (De-influencing): compare the product against the user's current shelf (`past_tested_products_notes`) and budget. If they already own a high-rated similar item or if the product is overhyped/unsuitable, advise them to SKIP or mark it as REDUNDANT.
+5. Detect and flag likely sponsored content or marketing hype.
 
 You must respond ONLY with a valid JSON object matching this schema:
 {
@@ -20,6 +20,8 @@ You must respond ONLY with a valid JSON object matching this schema:
   "cons": ["Potential issue or complaint 1 (e.g. oxidizes, clings to dry patches)", "Complaint 2"],
   "suitability_score": 85, // Integer 1-100 indicating match for THIS specific user
   "suitability_reason": "Detailed explanation of why this product fits or fails the user's specific skin type, undertone, and concerns.",
+  "reality_check_verdict": "BUY | CONSIDER | SKIP | REDUNDANT",
+  "reality_check_reason": "De-influencing assessment: Is this product genuinely necessary given their current shelf, budget, and skin needs?",
   "sponsored_flags": ["Noted sponsored campaigns on TikTok/Instagram to take with caution"],
   "sources": [
     {
@@ -61,7 +63,7 @@ class AIAgentService:
 
         prompt = f"""Target Product / Query: "{query}"
 
-USER PROFILE:
+USER PROFILE & CURRENT SHELF:
 {user_context_str}
 
 COLLECTED ONLINE SEARCH EVIDENCE & USER REVIEWS:
@@ -78,7 +80,7 @@ Please generate the structured JSON evaluation following the instructions."""
             return await self._call_openai(prompt)
 
         # 3. Fallback: Deterministic mock agent response for local testing without external API costs
-        return self._generate_mock_analysis(query, user_profile, search_results)
+        return self._generate_mock_analysis(query, user_profile, search_results, user_inventory_notes)
 
     async def _call_gemini(self, prompt: str) -> Dict[str, Any]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
@@ -118,7 +120,8 @@ Please generate the structured JSON evaluation following the instructions."""
         self,
         query: str,
         user_profile: Optional[Dict[str, Any]],
-        search_results: Optional[List[Dict[str, Any]]]
+        search_results: Optional[List[Dict[str, Any]]],
+        user_inventory_notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Provides an immediate, high-fidelity mock response during development without API keys."""
         skin_type = user_profile.get("skin_type", "combination") if user_profile else "combination"
@@ -141,6 +144,20 @@ Please generate the structured JSON evaluation following the instructions."""
                 "sentiment": "mixed"
             })
 
+        # Reality check logic based on shelf
+        has_shelf_items = bool(user_inventory_notes and len(user_inventory_notes) > 0)
+        if has_shelf_items:
+            verdict = "CONSIDER"
+            rc_reason = (
+                f"You already have {len(user_inventory_notes)} item(s) logged in your personal shelf. "
+                "Compare the finish of this product carefully against your existing products before purchasing to avoid duplicate spending."
+            )
+        else:
+            verdict = "BUY"
+            rc_reason = (
+                "You don't have a conflicting product logged in your shelf yet, and its price-to-performance ratio is strong compared to luxury alternatives."
+            )
+
         return {
             "product_name": query.title(),
             "summary": f"{query.title()} offers medium-to-buildable coverage with a natural satin finish. Widely praised for spreadability, though several long-wear reviews highlight slight midday shine in T-zone areas.",
@@ -155,6 +172,8 @@ Please generate the structured JSON evaluation following the instructions."""
             ],
             "suitability_score": 78,
             "suitability_reason": f"Given your {skin_type} skin type and {undertone} undertone, this product aligns well in tone but requires a mattifying primer in the T-zone to prevent slight oxidation.",
+            "reality_check_verdict": verdict,
+            "reality_check_reason": rc_reason,
             "sponsored_flags": [
                 "Significant influx of sponsored TikTok micro-influencer reviews observed in the last 60 days; take extreme longevity claims with caution."
             ],
