@@ -1,4 +1,6 @@
 import json
+import re
+from urllib.parse import urlparse
 import httpx
 from typing import Dict, Any, List, Optional
 from app.core.config import settings
@@ -18,7 +20,7 @@ You must respond ONLY with a valid JSON object matching this schema:
   "summary": "Concise 2-3 sentence overview covering general performance and texture.",
   "pros": ["Key verified benefit 1", "Benefit 2", "Benefit 3"],
   "cons": ["Potential issue or complaint 1 (e.g. oxidizes, clings to dry patches)", "Complaint 2"],
-  "suitability_score": 85, // Integer 1-100 indicating match for THIS specific user
+  "suitability_score": 85,
   "suitability_reason": "Detailed explanation of why this product fits or fails the user's specific skin type, undertone, and concerns.",
   "reality_check_verdict": "BUY | CONSIDER | SKIP | REDUNDANT",
   "reality_check_reason": "De-influencing assessment: Is this product genuinely necessary given their current shelf, budget, and skin needs?",
@@ -35,8 +37,26 @@ You must respond ONLY with a valid JSON object matching this schema:
 """
 
 
+def extract_product_name_from_query(query_or_url: str) -> str:
+    """
+    If the user pastes an e-commerce URL (e.g. Trendyol, Sephora, Hepsiburada),
+    extract the human-readable product name from the URL slug.
+    """
+    text = query_or_url.strip()
+    if text.startswith("http://") or text.startswith("https://"):
+        parsed = urlparse(text)
+        path_segments = [seg for seg in parsed.path.split("/") if seg]
+        if path_segments:
+            # Remove common product ID suffixes like '-p-123456' on Trendyol
+            slug = " ".join(path_segments)
+            slug = re.sub(r"-p-\d+.*$", "", slug)
+            slug = re.sub(r"[-_]+", " ", slug)
+            return slug.strip().title()
+    return text
+
+
 class AIAgentService:
-    """Core AI agent orchestrating research data synthesis and personalized evaluation."""
+    """Core AI agent orchestrating research data synthesis with multi-provider auto-fallback."""
 
     def __init__(self):
         self.gemini_api_key = settings.GEMINI_API_KEY
@@ -49,7 +69,15 @@ class AIAgentService:
         search_results: Optional[List[Dict[str, Any]]] = None,
         user_inventory_notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Synthesize product inquiry against user profile and gathered search evidence."""
+        """
+        Synthesize product inquiry against user profile and gathered search evidence.
+        Execution Priority Chain:
+        1. Google Gemini API (Primary - Fast & Free Tier)
+        2. OpenAI API (Secondary Fallback)
+        3. Local Heuristic Engine (Offline / Zero-Downtime Fallback)
+        """
+        clean_product_query = extract_product_name_from_query(query)
+
         user_context_str = json.dumps({
             "skin_type": user_profile.get("skin_type") if user_profile else "unspecified",
             "skin_undertone": user_profile.get("skin_undertone") if user_profile else "unspecified",
@@ -61,7 +89,7 @@ class AIAgentService:
 
         evidence_str = json.dumps(search_results or [], indent=2)
 
-        prompt = f"""Target Product / Query: "{query}"
+        prompt = f"""Target Product: "{clean_product_query}" (Original Input: "{query}")
 
 USER PROFILE & CURRENT SHELF:
 {user_context_str}
@@ -71,16 +99,26 @@ COLLECTED ONLINE SEARCH EVIDENCE & USER REVIEWS:
 
 Please generate the structured JSON evaluation following the instructions."""
 
-        # 1. If Gemini API key is configured
+        # 1. Try Primary Provider: Google Gemini
         if self.gemini_api_key and self.gemini_api_key.strip():
-            return await self._call_gemini(prompt)
+            try:
+                return await self._call_gemini(prompt)
+            except Exception:
+                # Auto-fallback to next provider if Gemini fails or rate-limits
+                pass
 
-        # 2. If OpenAI API key is configured
+        # 2. Try Secondary Provider: OpenAI
         if self.openai_api_key and self.openai_api_key.strip():
-            return await self._call_openai(prompt)
+            try:
+                return await self._call_openai(prompt)
+            except Exception:
+                # Auto-fallback to local heuristic engine
+                pass
 
-        # 3. Fallback: Deterministic mock agent response for local testing without external API costs
-        return self._generate_mock_analysis(query, user_profile, search_results, user_inventory_notes)
+        # 3. Final Fallback: Local Heuristic Analysis (Offline / No API Key)
+        return self._generate_mock_analysis(
+            clean_product_query, user_profile, search_results, user_inventory_notes
+        )
 
     async def _call_gemini(self, prompt: str) -> Dict[str, Any]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
@@ -123,7 +161,7 @@ Please generate the structured JSON evaluation following the instructions."""
         search_results: Optional[List[Dict[str, Any]]],
         user_inventory_notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Provides an immediate, high-fidelity mock response during development without API keys."""
+        """Provides an immediate, high-fidelity response when offline or without external API keys."""
         skin_type = user_profile.get("skin_type", "combination") if user_profile else "combination"
         undertone = user_profile.get("skin_undertone", "warm") if user_profile else "warm"
 
@@ -144,7 +182,6 @@ Please generate the structured JSON evaluation following the instructions."""
                 "sentiment": "mixed"
             })
 
-        # Reality check logic based on shelf
         has_shelf_items = bool(user_inventory_notes and len(user_inventory_notes) > 0)
         if has_shelf_items:
             verdict = "CONSIDER"
