@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
-from app.models.entities import User, UserProfile
+from app.models.entities import User, UserProfile, InventoryItem, ResearchQuery
 from app.schemas.dto import UserCreate, UserResponse, Token
 
 router = APIRouter()
@@ -48,3 +49,43 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     
     access_token = create_access_token(subject=user.id)
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/export-data")
+def export_my_data(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """KVKK / GDPR Compliance: Export all personal data stored for the authenticated user."""
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
+    queries = db.query(ResearchQuery).filter(ResearchQuery.user_id == current_user.id).all()
+
+    return {
+        "user": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "tier": current_user.tier,
+            "created_at": current_user.created_at
+        },
+        "profile": {
+            "skin_type": profile.skin_type if profile else None,
+            "skin_undertone": profile.skin_undertone if profile else None,
+            "skin_concerns": profile.skin_concerns if profile else [],
+            "allergies_sensitivities": profile.allergies_sensitivities if profile else [],
+            "budget_level": profile.budget_level if profile else None,
+        },
+        "inventory_count": len(inventory),
+        "research_history_count": len(queries)
+    }
+
+
+@router.delete("/delete-account", status_code=status.HTTP_204_NO_CONTENT)
+def delete_my_account(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """KVKK / GDPR Compliance: Permanently delete user account and cascade all associated records."""
+    db.delete(current_user)
+    db.commit()
+    return None

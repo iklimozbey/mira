@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from typing import List
 from app.api.deps import get_current_user
 from app.core.database import get_db
@@ -10,6 +11,39 @@ from app.services.ai_agent import ai_agent_service
 
 router = APIRouter()
 
+FREE_TIER_DAILY_LIMIT = 5
+
+
+def check_user_quota(user: User, db: Session) -> dict:
+    """Calculate today's AI research usage and enforce daily limits for free tier users."""
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    used_today = (
+        db.query(ResearchQuery)
+        .filter(
+            ResearchQuery.user_id == user.id,
+            ResearchQuery.created_at >= today_start,
+            ResearchQuery.status == "completed"
+        )
+        .count()
+    )
+    limit = 999 if user.tier == "premium" else FREE_TIER_DAILY_LIMIT
+    remaining = max(0, limit - used_today)
+    return {
+        "tier": user.tier,
+        "daily_limit": limit,
+        "used_today": used_today,
+        "remaining_today": remaining
+    }
+
+
+@router.get("/quota")
+def get_my_quota(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Return user's current daily AI research allowance and usage."""
+    return check_user_quota(current_user, db)
+
 
 @router.post("/analyze", response_model=ResearchReportResponse)
 async def analyze_product(
@@ -19,11 +53,20 @@ async def analyze_product(
 ):
     """
     Start an automated research workflow:
+    0. Verify daily AI usage quota.
     1. Retrieve user profile and past inventory notes.
     2. Search real-world online discussions and reviews.
     3. Run AI agent synthesis to produce an unbiased suitability report.
     4. Persist query and report to database.
     """
+    # 0. Enforce quota
+    quota = check_user_quota(current_user, db)
+    if quota["remaining_today"] <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Daily free AI research limit reached (5/5). Upgrade to MIRA Premium for unlimited research."
+        )
+
     # 1. Fetch user context
     profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
     user_profile_dict = {

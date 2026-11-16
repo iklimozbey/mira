@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mira_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mira_user
+      POSTGRES_PASSWORD: mira_password
+      POSTGRES_DB: mira_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mira_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://mira_user:mira_password@db:5432/mira_db
+      SECRET_KEY: change_this_in_production_secret_key
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SEARCH_API_KEY: ${SEARCH_API_KEY:-}
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
