@@ -10,42 +10,47 @@ from app.services.rag_knowledge_base import cosmetic_rag_retriever
 
 
 MIRA_RAG_PROMPT_TEMPLATE = PromptTemplate.from_template(
-    """You are MIRA, an objective, rigorous, and personalized AI shopping and research assistant specializing in cosmetics, dermatology, and personal care.
-Your purpose:
-1. Provide an unbiased, critical analysis of the requested product using the retrieved RAG clinical corpus and online evidence.
-2. Cross-reference real user reviews, recurring complaints, performance under different skin types, oxidation tendencies, and finish.
-3. Evaluate clinical & dermatological triggers specifically for Rosacea (rozalı cilt), Acne-prone / Comedogenic sensitivity (akneli cilt), Fungal Acne, and Eczema.
-4. Personalize the evaluation specifically against the user's skin profile, undertone, concerns, and past experiences.
-5. Perform a "Reality Check" (De-influencing): compare the product against the user's current shelf (`past_tested_products_notes`) and budget.
-6. Detect and flag likely sponsored content (#ad, #işbirliği, paid partnership) on TikTok/Instagram.
+    """You are MIRA, an expert, precise, and personalized AI beauty research assistant.
+Product Target: "{product_name}" (Query: "{raw_query}")
+Classified Category: {category}
 
-Target Product: "{product_name}" (Original Input: "{raw_query}")
+CRITICAL RULES:
+1. ONLY evaluate attributes relevant to this category!
+   - If category is MASCARA / EYE MAKEUP: evaluate lengthening, volumizing, clumping, smudging, water resistance, eye irritation / contact lens safety. NEVER mention skin coverage, undertone, T-zone, or skin pore coverage for mascara!
+   - If category is LIPSTICK / GLOSS: evaluate pigment, hydration, transfer-resistance, feathering, chapping. NEVER mention T-zone sebum or facial skin coverage!
+   - If category is FOUNDATION / CONCEALER / TINT: evaluate coverage, finish, oxidation, shade match, undertone.
+   - If category is SUNSCREEN: evaluate UV protection, white cast, eye stinging, pilling under makeup.
+   - If category is SKINCARE SERUM / MOISTURIZER: evaluate barrier hydration, active tolerance, comedogenic risk.
+2. Clinical Triggers:
+   - For eye products: evaluate sensitive eyes, blepharitis, and contact lens compatibility.
+   - For face products: evaluate Rosacea flushing, fungal acne, comedones.
+3. Reality Check: Check if user already owns a 4-5 star product in this same category in their shelf.
 
-RETRIEVED RAG CLINICAL & INCI KNOWLEDGE BASE:
+RAG EVIDENCE:
 {rag_context}
 
-USER PROFILE & CURRENT SHELF:
+USER PROFILE & SHELF:
 {user_context}
 
-COLLECTED ONLINE SEARCH EVIDENCE & USER REVIEWS:
+SEARCH EVIDENCE:
 {search_evidence}
 
-Respond ONLY with a valid JSON object matching this schema:
+Respond ONLY with valid JSON:
 {{
   "product_name": "Standardized Product Name",
-  "summary": "Concise 2-3 sentence overview covering general performance and texture.",
-  "pros": ["Key verified benefit 1", "Benefit 2", "Benefit 3"],
-  "cons": ["Potential issue or complaint 1 (e.g. oxidizes, clings to dry patches)", "Complaint 2"],
-  "clinical_warnings": ["Specific warning for Rosacea, Acne/Comedogenic risk, Fungal Acne, or Allergen triggers"],
+  "summary": "Precise summary strictly reflecting the product type.",
+  "pros": ["Key pro 1", "Key pro 2", "Key pro 3"],
+  "cons": ["Key complaint 1", "Key complaint 2"],
+  "clinical_warnings": ["Specific trigger warnings"],
   "suitability_score": 85,
-  "suitability_reason": "Detailed explanation of why this product fits or fails the user's specific skin type, undertone, and concerns.",
+  "suitability_reason": "Rationale tailored strictly to the category and user preferences.",
   "reality_check_verdict": "BUY | CONSIDER | SKIP | REDUNDANT",
-  "reality_check_reason": "De-influencing assessment: Is this product genuinely necessary given their current shelf, budget, and skin needs?",
-  "sponsored_flags": ["Noted sponsored campaigns on TikTok/Instagram to take with caution"],
+  "reality_check_reason": "De-influencing assessment.",
+  "sponsored_flags": ["Noted sponsored campaigns on TikTok/Instagram"],
   "sources": [
     {{
-      "title": "Source name or review summary",
-      "url": "https://source-link.com",
+      "title": "Source name",
+      "url": "https://source.com",
       "source_type": "web_review",
       "sentiment": "positive | mixed | critical"
     }}
@@ -55,10 +60,6 @@ Respond ONLY with a valid JSON object matching this schema:
 
 
 def extract_product_name_from_query(query_or_url: str) -> str:
-    """
-    If the user pastes an e-commerce URL (e.g. Trendyol, Sephora, Hepsiburada),
-    extract the human-readable product name from the URL slug.
-    """
     text = query_or_url.strip()
     if text.startswith("http://") or text.startswith("https://"):
         parsed = urlparse(text)
@@ -72,39 +73,57 @@ def extract_product_name_from_query(query_or_url: str) -> str:
 
 
 class ProductClassifierAgent:
-    """Sub-Agent 1: Classifies cosmetic category, finish type, and active traits from product query."""
+    """Sub-Agent 1: Accurate multi-category classification for makeup, eye, skincare, and lip."""
 
     @staticmethod
     def classify(product_name: str) -> Dict[str, str]:
         lower = product_name.lower()
 
-        if any(k in lower for k in ["foundation", "fondoten", "fondöten", "skin tint", "bb", "cc", "double wear", "fit me", "infallible", "studio fix", "luminous silk"]):
-            category = "foundation"
-        elif any(k in lower for k in ["concealer", "kapatici", "kapatıcı", "radiant creamy", "shape tape", "eraser"]):
-            category = "concealer"
-        elif any(k in lower for k in ["spf", "sunscreen", "gunes", "güneş", "anthelios", "uv", "sun"]):
+        # 1. Mascara & Eye Makeup (High priority match)
+        if any(k in lower for k in ["mascara", "maskara", "lash", "eyeliner", "eyeshadow", "far paleti", "telescopic", "sky high", "lash sensational", "better than sex", "climax"]):
+            category = "mascara"
+            finish = "waterproof" if any(w in lower for w in ["waterproof", "suya dayanikli", "suya dayanıklı"]) else "tubing_or_washable"
+
+        # 2. Lip products
+        elif any(k in lower for k in ["lip", "ruj", "gloss", "tint", "balm", "lip oil", "parlatici", "parlatıcı", "dudak", "lipstick", "lip stain"]):
+            category = "lip"
+            finish = "matte" if "matte" in lower or "mat" in lower else "glossy"
+
+        # 3. Sunscreens
+        elif any(k in lower for k in ["spf", "sunscreen", "gunes", "güneş", "anthelios", "uv", "sun fluid", "sun cream"]):
             category = "sunscreen"
-        elif any(k in lower for k in ["serum", "niacinamide", "retinol", "vitamin c", "hyaluronic", "acid", "bha", "aha", "peeling", "azelaic"]):
+            finish = "mineral" if any(m in lower for m in ["mineral", "physical", "zinc"]) else "chemical"
+
+        # 4. Skincare Serums & Toners
+        elif any(k in lower for k in ["serum", "niacinamide", "retinol", "vitamin c", "hyaluronic", "acid", "bha", "aha", "peeling", "azelaic", "toner", "tonik"]):
             category = "serum"
+            finish = "active_treatment"
+
+        # 5. Moisturizers & Barrier Creams
         elif any(k in lower for k in ["moisturizer", "cream", "krem", "nemlendirici", "lotion", "cicaplast", "cerave", "baume"]):
             category = "moisturizer"
-        elif any(k in lower for k in ["lip", "ruj", "gloss", "tint", "balm"]):
-            category = "lip"
-        else:
-            category = "foundation"
+            finish = "barrier_repair"
 
-        if any(k in lower for k in ["matte", "mat", "poreless", "double wear", "soft matte", "studio fix", "superstay", "oil control"]):
-            finish = "matte"
-        elif any(k in lower for k in ["glow", "luminous", "radiant", "dewy", "hydrating", "fresh", "serum", "reflecting"]):
-            finish = "radiant"
+        # 6. Concealer
+        elif any(k in lower for k in ["concealer", "kapatici", "kapatıcı", "radiant creamy", "shape tape", "instant anti age", "eraser"]):
+            category = "concealer"
+            finish = "radiant" if any(r in lower for r in ["radiant", "creamy", "glow"]) else "matte"
+
+        # 7. Foundation & Skin Tints
+        elif any(k in lower for k in ["foundation", "fondoten", "fondöten", "skin tint", "bb", "cc", "double wear", "fit me", "infallible", "studio fix", "luminous silk", "super stay"]):
+            category = "foundation"
+            finish = "matte" if any(m in lower for m in ["matte", "mat", "poreless", "stay"]) else ("radiant" if any(r in lower for r in ["lumi", "radiant", "glow", "dewy"]) else "natural_satin")
+
+        # Default fallback: General Cosmetic
         else:
-            finish = "natural_satin"
+            category = "general_cosmetic"
+            finish = "standard"
 
         return {"category": category, "finish": finish}
 
 
 class FormulationReviewAgent:
-    """Sub-Agent 2: Synthesizes category-specific pros, cons, oxidation risks, and social media ad flags."""
+    """Sub-Agent 2: Strict category-specific evaluation without confusing eyes/lips with foundation."""
 
     @staticmethod
     def evaluate_formulation(
@@ -122,125 +141,171 @@ class FormulationReviewAgent:
                 content_lower = (s.get("content") or "").lower()
                 if any(tag in content_lower for tag in ["#ad", "#sponsored", "#işbirliği", "#reklam", "paid partnership", "#gifted"]):
                     detected_ad_flags.append(
-                        f"Explicit Sponsored Tag (#ad / #işbirliği) detected in {s.get('title', 'Social Post')}. Evaluate claims critically."
+                        f"Sponsored Tag (#ad / #işbirliği) detected in {s.get('title', 'Social Post')}. Treat extreme performance claims with caution."
                     )
 
+        # Mascara evaluation
+        if cat == "mascara":
+            is_wp = finish == "waterproof"
+            return {
+                "summary": f"{product_name} is an eye mascara designed to provide lash separation, volume, and curl hold.",
+                "pros": [
+                    "Strong lash lengthening effect without immediate clumping on the first coat",
+                    "Holds curl throughout the day without dropping the lashes",
+                    "Flake-resistant formula during 8+ hours of wear" if not is_wp else "Completely smudge-proof and tear-resistant waterproof hold"
+                ],
+                "cons": [
+                    "Can become clumpy or spidery if more than two coats are applied without combing",
+                    "Requires dedicated bi-phase oil makeup remover to avoid tugging delicate eyelashes" if is_wp else "May experience slight transfer onto upper eyelid under high humidity or oily lids"
+                ],
+                "sponsored_flags": detected_ad_flags or [
+                    "High prevalence of TikTok lash filter demonstrations and false lash tucking in viral reviews; expect natural buildable length rather than falsie effect."
+                ]
+            }
+
+        # Lip evaluation
+        if cat == "lip":
+            return {
+                "summary": f"{product_name} is a pigmented lip formulation offering smooth color payoff with daily lip comfort.",
+                "pros": [
+                    "Smooth glide across lip texture without settling into fine vertical lip lines",
+                    "Rich pigmentation in a single swipe",
+                    "Comfortable wear without excessive stickiness"
+                ],
+                "cons": [
+                    "Requires reapplication after meals and drinks",
+                    "Can emphasize dry flaky patches if lips are not exfoliated and pre-hydrated"
+                ],
+                "sponsored_flags": detected_ad_flags or [
+                    "Influencer swatches on Instagram often use high-gloss post-production lighting; true finish is softer in daylight."
+                ]
+            }
+
+        # Sunscreen evaluation
+        if cat == "sunscreen":
+            return {
+                "summary": f"{product_name} provides broad-spectrum UVA/UVB protection with an easy-to-spread daily texture.",
+                "pros": [
+                    "High photostable sun protection filters",
+                    "Quick absorption that layers well under foundation without excessive pilling",
+                    "Minimal white cast after 3-5 minutes of absorption"
+                ],
+                "cons": [
+                    "Can cause stinging around the eyes if sweat migrates into the tear line",
+                    "May leave a slightly dewy sheen on very oily skin types by midday"
+                ],
+                "sponsored_flags": detected_ad_flags or [
+                    "Heavily featured in sponsored skincare routines; always apply two full finger lengths regardless of influencer micro-dosing."
+                ]
+            }
+
+        # Skincare Serum evaluation
+        if cat == "serum":
+            return {
+                "summary": f"{product_name} is a concentrated active skincare treatment targeting texture, tone, and skin barrier health.",
+                "pros": [
+                    "Fast-absorbing lightweight texture that layers easily into skincare routines",
+                    "Targeted active concentration for visible texture and tone improvements over 4-6 weeks",
+                    "High yield and cost-effectiveness per milliliter"
+                ],
+                "cons": [
+                    "Potential for initial tingling, micro-purging, or irritation if combined with strong exfoliants",
+                    "Can pill if applied excessively (>3 drops) before moisturizer sets"
+                ],
+                "sponsored_flags": detected_ad_flags or [
+                    "Viral 'overnight glass skin' claims on social media are unrealistic; cellular turnover requires 28+ days of consistent application."
+                ]
+            }
+
+        # Foundation evaluation
         if cat == "foundation":
             if finish == "matte":
                 return {
-                    "summary": f"{product_name} is a high-coverage, oil-controlling matte foundation engineered for long wear and shine resistance.",
+                    "summary": f"{product_name} is a high-coverage, oil-controlling matte foundation engineered for extended wear and shine prevention.",
                     "pros": [
-                        "Strong sebum control in the T-zone for 8+ hours",
-                        "High pigmentation that masks redness and hyperpigmentation effortlessly",
+                        "Reliable sebum absorption in the T-zone for 8+ hours",
+                        "High pigmentation that masks redness, blemishes, and uneven tone effortlessly",
                         "Transfer-resistant once fully set"
                     ],
                     "cons": [
-                        "Can cling to dry patches or emphasize fine lines if skin is not well-prepped",
-                        "Users frequently report 0.5 to 1 shade of oxidation within 45 minutes of air exposure"
+                        "Can cling to dry patches or emphasize textural lines without thorough moisturizing prep",
+                        "Users note potential 0.5 to 1 shade of oxidation as volatile film-formers dry"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "High volume of TikTok 'full-coverage filter' influencer videos use studio ring lights that hide texture; real-daylight wear is heavier."
+                        "TikTok 'beauty filter' ring lighting frequently masks real-world cakey texture; apply sparingly with a damp sponge."
                     ]
                 }
             elif finish == "radiant":
                 return {
-                    "summary": f"{product_name} delivers a skin-like, luminous finish with buildable medium coverage and hydrating emollients.",
+                    "summary": f"{product_name} delivers a luminous, skin-like finish with buildable medium coverage and hydrating emollients.",
                     "pros": [
-                        "Gives a healthy, lit-from-within glow without clinging to dry flakes",
-                        "Seamless blendability with fingers, sponge, or brush",
+                        "Healthy radiant glow that avoids clinging to dry flakes",
+                        "Seamless blendability and breathable skin feel",
                         "Minimal oxidation compared to heavy matte formulas"
                     ],
                     "cons": [
-                        "Tends to break down around the nose and forehead after 4-5 hours on oily skin",
-                        "Requires translucent setting powder to prevent transfer"
+                        "Can break down around the nose and forehead after 4-5 hours on oilier skin types",
+                        "Requires translucent setting powder on the center of the face to prevent transfer"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "Frequently promoted in 'clean girl makeup' sponsored routines; longevity claims of 16+ hours are exaggerated for humid climates."
+                        "Promoted heavily in sponsored 'clean girl' aesthetics; 16-hour wear claims are exaggerated for oily or humid conditions."
                     ]
                 }
             else:
                 return {
-                    "summary": f"{product_name} offers balanced medium coverage with a natural satin finish suitable for everyday wear.",
+                    "summary": f"{product_name} offers balanced medium coverage with a natural satin finish suitable for versatile daily wear.",
                     "pros": [
-                        "Breathable texture that feels lightweight throughout the day",
-                        "Blurs minor pore appearance without feeling cakey",
-                        "Versatile across seasons"
+                        "Weightless breathable texture that stays comfortable all day",
+                        "Blurs minor pore texture without looking heavy",
+                        "Adapts well across changing weather conditions"
                     ],
                     "cons": [
-                        "Slight oxidation (half a shade darker) noted by users with high skin acidity",
-                        "May require touch-ups in the T-zone after 6 hours"
+                        "Slight oxidation (half a shade darker) reported by users with higher skin acidity",
+                        "May require a midday powder touch-up in the T-zone"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "Moderate influencer seeding detected across Instagram beauty reels; verify shade swatches in natural daylight."
+                        "Moderate social media seeding detected; always check shade swatches in natural indirect daylight."
                     ]
                 }
 
-        if cat == "sunscreen":
+        # Concealer evaluation
+        if cat == "concealer":
             return {
-                "summary": f"{product_name} provides broad-spectrum UV protection with a lightweight fluid texture designed for daily layering under makeup.",
+                "summary": f"{product_name} is a targeted corrector formulated to neutralize dark circles and spot-conceal blemishes.",
                 "pros": [
-                    "Fast absorption with minimal white cast after 5 minutes of settling",
-                    "Plays well under base makeup without heavy pilling",
-                    "High photostable UVA/UVB filter profile"
+                    "High opacity pigment that covers discoloration with a minimal amount of product",
+                    "Does not migrate immediately into fine under-eye expression lines",
+                    "Convenient applicator for on-the-go spot touch-ups"
                 ],
                 "cons": [
-                    "Can cause mild eye stinging if applied too close to the lash line when sweating",
-                    "May leave a slightly dewy film on very oily skin types"
+                    "Needs a light dusting of translucent powder to prevent creasing after 4-5 hours",
+                    "Certain shades run warmer or oxidize slightly darker under-eye"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "Heavily featured in 'invisible SPF' sponsored partnerships; reapply every 2 hours regardless of 'all-day protection' marketing."
+                    "Sponsored PR tutorials frequently demonstrate heavy under-eye triangles that look thick in natural light."
                 ]
             }
 
-        if cat == "serum":
-            return {
-                "summary": f"{product_name} is a targeted active skincare treatment formulated to address skin texture, tone, and barrier health.",
-                "pros": [
-                    "Concentrated active delivery with fast-absorbing aqueous base",
-                    "Cost-effective formulation per milliliter",
-                    "Noticeable improvement in tone uniformity after 4-6 weeks of consistent use"
-                ],
-                "cons": [
-                    "Risk of irritation or temporary purging if layered with other strong acids/retinoids",
-                    "Can foam or pill if applied in excessive amounts (>3 drops)"
-                ],
-                "sponsored_flags": detected_ad_flags or [
-                    "Viral 'overnight glass skin' claims on social media are unrealistic; active ingredients require 28-day cellular turnover cycles."
-                ]
-            }
-
+        # Default General Cosmetic
         return {
-            "summary": f"{product_name} is a popular {cat} formulation balancing pigment payoff with daily wear comfort.",
+            "summary": f"{product_name} is a versatile cosmetic product balancing performance with comfortable daily wear.",
             "pros": [
-                "Smooth application without immediate creasing",
-                "Good color payoff and buildable layerability",
-                "Accessible packaging for daily touch-ups"
+                "Reliable formulation from an established brand",
+                "Smooth application and good blendability",
+                "Accessible for everyday beauty routines"
             ],
             "cons": [
-                "Needs light setting to prevent settling into fine expression lines after 5 hours",
-                "Shade range Undertone labels can run slightly warmer than advertised"
+                "Individual longevity varies depending on skin prep and environmental humidity",
+                "Patch-testing is recommended before daily use"
             ],
             "sponsored_flags": detected_ad_flags or [
-                "Sponsored PR unboxings often showcase immediate application rather than 8-hour wear tests."
+                "Social media unboxings focus on initial impression rather than longevity test."
             ]
         }
 
 
 class ClinicalTriggerAgent:
-    """
-    Sub-Agent 3: Dermatological Trigger & Flare-Up Analyzer for Rosacea (Rozalı Cilt),
-    Acne-Prone / Comedogenic Skin (Akneli Cilt), Fungal Acne, and Allergens.
-    Uses both Open Beauty Facts INCI and Retrieved RAG Clinical Documents.
-    """
-
-    ROSACEA_TRIGGERS = [
-        "alcohol denat", "fragrance", "parfum", "menthol", "peppermint",
-        "eucalyptus", "witch hazel", "glycolic acid", "avobenzone", "essential oil", "limonene", "linalool"
-    ]
-    ACNE_COMEDOGENIC_TRIGGERS = [
-        "isopropyl myristate", "coconut oil", "cocos nucifera", "algae extract",
-        "lanolin", "isopropyl palmitate", "myristyl myristate", "cocoa butter"
-    ]
+    """Sub-Agent 3: Category-Aware Clinical & Dermatological Trigger Analyzer."""
 
     @classmethod
     def analyze_triggers(
@@ -251,17 +316,34 @@ class ClinicalTriggerAgent:
         search_results: Optional[List[Dict[str, Any]]] = None,
         rag_docs_text: str = ""
     ) -> Dict[str, Any]:
+        cat = traits["category"]
         concerns = [c.lower() for c in (user_profile.get("skin_concerns") or [])] if user_profile else []
         allergies = [a.lower() for a in (user_profile.get("allergies_sensitivities") or [])] if user_profile else []
         skin_type = (user_profile.get("skin_type") or "").lower() if user_profile else ""
 
-        has_rosacea = any(k in concerns for k in ["rosacea", "roza", "redness", "kizariklik", "kızarıklık"]) or skin_type == "sensitive"
-        has_acne = any(k in concerns for k in ["acne", "akne", "sivilce", "pores", "comedones", "fungal_acne"]) or skin_type == "oily"
-
         warnings: List[str] = []
         score_penalty = 0
 
-        # Combine query, RAG corpus evidence, and Open Beauty Facts INCI text
+        # Special Category: Mascara / Eye Products (NEVER trigger Rosacea/Acne face warnings)
+        if cat == "mascara":
+            is_wp = traits["finish"] == "waterproof"
+            if "sensitive" in skin_type or any(k in concerns for k in ["sensitive", "redness"]):
+                warnings.append("👁️ SENSITIVE EYE CAUTION: If you wear contact lenses or have sensitive eyes, check for ophthalmologist testing and avoid applying too close to the waterline.")
+            if is_wp:
+                warnings.append("👁️ LASH HEALTH: Waterproof formulas require gentle bi-phase oil removal. Do not rub aggressively to prevent eyelash breakage.")
+            return {"clinical_warnings": warnings, "score_penalty": score_penalty}
+
+        # Special Category: Lip Products (NEVER trigger T-zone or pore clogging warnings)
+        if cat == "lip":
+            if any(k in allergies for k in ["fragrance", "parfum", "menthol"]):
+                warnings.append("💋 LIP SENSITIVITY: Flavored or plumping lip products containing menthol/fragrance can cause mild tingling or dryness on sensitive lips.")
+                score_penalty += 10
+            return {"clinical_warnings": warnings, "score_penalty": score_penalty}
+
+        # Face Products: Foundation, Concealer, Skincare, Sunscreen
+        has_rosacea = any(k in concerns for k in ["rosacea", "roza", "redness", "kizariklik", "kızarıklık"]) or skin_type == "sensitive"
+        has_acne = any(k in concerns for k in ["acne", "akne", "sivilce", "pores", "comedones", "fungal_acne"]) or skin_type == "oily"
+
         combined_evidence = f"{product_name.lower()} {rag_docs_text.lower()}"
         if search_results:
             for s in search_results:
@@ -269,59 +351,27 @@ class ClinicalTriggerAgent:
                     combined_evidence += " " + (s.get("content") or "").lower()
 
         if has_rosacea:
-            found_rosacea_triggers = [t for t in cls.ROSACEA_TRIGGERS if t in combined_evidence]
-            if found_rosacea_triggers:
-                warnings.append(
-                    f"🌹 ROSACEA FLARE-UP ALERT (RAG Verified): Detected vascular triggers ({', '.join(found_rosacea_triggers)}) "
-                    "which can cause stinging, flushing, and barrier irritation on rosacea-prone skin."
-                )
+            if any(t in combined_evidence for t in ["alcohol denat", "fragrance", "parfum", "menthol", "glycolic acid"]):
+                warnings.append("🌹 ROSACEA FLARE-UP ALERT: Detected vascular triggers (alcohol/fragrance/acids) that can provoke capillary flushing and stinging.")
                 score_penalty += 18
-            elif traits["category"] == "sunscreen" and "mineral" not in combined_evidence and "zinc" not in combined_evidence:
-                warnings.append(
-                    "🌹 ROSACEA SPF CAUTION: Chemical UV filters can generate heat on reactive skin and trigger rosacea flushing. "
-                    "Verify if this formula uses Zinc Oxide / Titanium Dioxide or patch-test on your jawline first."
-                )
+            elif cat == "sunscreen" and "mineral" not in combined_evidence and "zinc" not in combined_evidence:
+                warnings.append("🌹 ROSACEA SPF NOTE: Chemical UV filters convert UV into heat, which can trigger facial redness. Prefer Zinc Oxide mineral formulas.")
                 score_penalty += 8
-            elif traits["finish"] == "matte" and traits["category"] == "foundation":
-                warnings.append(
-                    "🌹 ROSACEA BARRIER NOTE: High-coverage matte foundations often contain volatile solvents for quick drying. "
-                    "Apply a soothing Centella / Panthenol barrier cream underneath to prevent redness rebound."
-                )
+            elif traits["finish"] == "matte" and cat == "foundation":
+                warnings.append("🌹 ROSACEA BARRIER NOTE: Fast-drying matte foundations can feel tight on compromised barriers. Use a rich soothing cream underneath.")
                 score_penalty += 6
-            else:
-                warnings.append(
-                    "🌹 ROSACEA CHECK: Ensure fragrance-free status on the physical box and remove gently with micellar water or cleansing balm."
-                )
 
         if has_acne:
-            found_acne_triggers = [t for t in cls.ACNE_COMEDOGENIC_TRIGGERS if t in combined_evidence]
-            if found_acne_triggers:
-                warnings.append(
-                    f"🌋 COMEDOGENIC / ACNE ALERT: Contains pore-clogging esters/oils ({', '.join(found_acne_triggers)}) "
-                    "that can trigger closed comedones or acne breakouts."
-                )
+            if any(t in combined_evidence for t in ["isopropyl myristate", "coconut oil", "algae extract", "lanolin"]):
+                warnings.append("🌋 COMEDOGENIC ALERT: Contains known pore-clogging ingredients that can trigger closed comedones and breakout flares.")
                 score_penalty += 20
-            elif traits["finish"] == "radiant" and traits["category"] == "foundation":
-                warnings.append(
-                    "🌋 ACNE-PRONE CAUTION: Luminous/dewy foundations rely on rich emollient oils and esters for glow, "
-                    "which can congest acne-prone pores if worn for 8+ hours."
-                )
-                score_penalty += 10
-            elif traits["finish"] == "matte" and traits["category"] == "foundation":
-                warnings.append(
-                    "🌋 ACNE REMOVAL REMINDER: Long-wear film-forming silicones trap sebum and bacteria if not thoroughly removed. "
-                    "Use a non-comedogenic double-cleanse routine every evening."
-                )
-            else:
-                warnings.append(
-                    "🌋 ACNE CHECK: Look for 'Non-Comedogenic' and oil-free labeling; avoid layering over heavy occlusive creams."
-                )
+            elif traits["finish"] == "radiant" and cat == "foundation":
+                warnings.append("🌋 ACNE-PRONE CAUTION: Rich radiant foundation oils can congest active acne if worn for extended hours without proper double cleansing.")
+                score_penalty += 8
 
         for allergen in allergies:
             if allergen and allergen in combined_evidence:
-                warnings.append(
-                    f"⚠️ ALLERGEN MATCH: Contains '{allergen.upper()}', which is listed in your personal sensitivities profile!"
-                )
+                warnings.append(f"⚠️ ALLERGEN MATCH: Contains '{allergen.upper()}', matching your declared sensitivity profile!")
                 score_penalty += 25
 
         return {
@@ -331,7 +381,7 @@ class ClinicalTriggerAgent:
 
 
 class PersonalSkinMatchAgent:
-    """Sub-Agent 4: Computes personalized compatibility score and rationale based on user's skin profile."""
+    """Sub-Agent 4: Category-Specific Compatibility Evaluation."""
 
     @staticmethod
     def score_match(
@@ -339,54 +389,86 @@ class PersonalSkinMatchAgent:
         user_profile: Optional[Dict[str, Any]],
         score_penalty: int = 0
     ) -> Dict[str, Any]:
+        cat = traits["category"]
+        finish = traits["finish"]
         skin_type = (user_profile.get("skin_type") or "combination").lower() if user_profile else "combination"
         undertone = (user_profile.get("skin_undertone") or "neutral").lower() if user_profile else "neutral"
-        finish = traits["finish"]
-        cat = traits["category"]
 
-        score = 80
-        reasons = []
+        # 1. Mascara Match Logic (Focus on eye comfort, lash curl, oiliness around lids)
+        if cat == "mascara":
+            score = 88
+            reasons = ["Universal mascara formulation evaluated for lash definition and curl retention."]
+            if skin_type == "oily":
+                if finish == "waterproof":
+                    reasons.append("Since you have oilier skin, this waterproof/smudge-proof formula protects against sebum transfer from the eyelids.")
+                    score = 92
+                else:
+                    reasons.append("For oily lids, set your eye area with translucent powder to prevent midday mascara transfer.")
+                    score = 82
+            if skin_type == "sensitive":
+                reasons.append("Gentle on sensitive eye areas when removed without excessive tugging.")
+            return {
+                "suitability_score": score,
+                "suitability_reason": " ".join(reasons)
+            }
 
+        # 2. Lip Match Logic (Focus on hydration & undertone harmony)
+        if cat == "lip":
+            score = 86
+            reasons = [f"Flattering {traits['finish']} lip product suited for your beauty routine."]
+            if undertone == "warm":
+                reasons.append("Harmonizes naturally with warm/golden undertones (terracotta, peach, warm nude shades).")
+            elif undertone == "cool":
+                reasons.append("Complements cool undertones best with berry, rose, or blue-red tones.")
+            return {
+                "suitability_score": score,
+                "suitability_reason": " ".join(reasons)
+            }
+
+        # 3. Foundation & Concealer Match Logic (Full face coverage & undertone analysis)
         if cat in ["foundation", "concealer"]:
             if finish == "matte":
                 if skin_type == "oily":
                     score = 92
-                    reasons.append("Excellent match for your oily skin type: the matte polymers will actively control excess sebum.")
+                    reasons = ["Excellent match for your oily skin type: matte oil-absorbing polymers actively control excess sebum."]
                 elif skin_type == "dry":
                     score = 54
-                    reasons.append("Caution for your dry skin type: this matte formula can cling to dry patches and feel tight unless paired with a rich priming moisturizer.")
+                    reasons = ["Caution for your dry skin type: this matte formula can cling to dry patches unless paired with an intensely hydrating primer."]
                 elif skin_type == "sensitive":
                     score = 68
-                    reasons.append("Moderate match for sensitive skin: long-wear film formers require gentle double-cleansing to avoid irritation.")
+                    reasons = ["Moderate match for sensitive skin: long-wear film formers require gentle double-cleansing."]
                 else:
                     score = 82
-                    reasons.append("Good match for your combination skin: apply mainly to your T-zone and keep a lighter layer on drier cheek areas.")
+                    reasons = ["Good match for your combination skin: apply primarily to the T-zone and keep a lighter layer on cheeks."]
             elif finish == "radiant":
                 if skin_type == "dry":
                     score = 94
-                    reasons.append("Ideal match for your dry skin type: the luminous emollients prevent flaking and provide lasting hydration.")
+                    reasons = ["Ideal match for your dry skin type: luminous emollients prevent flaking and maintain hydration."]
                 elif skin_type == "oily":
                     score = 58
-                    reasons.append("Low-to-moderate match for your oily skin: radiant formulas can amplify midday shine and slide off the T-zone without powdering.")
+                    reasons = ["Low-to-moderate match for oily skin: radiant dewy formulas can slide off the T-zone by midday."]
                 else:
                     score = 84
-                    reasons.append(f"Strong match for your {skin_type} skin, offering a natural glow as long as you set the center of your face.")
+                    reasons = [f"Strong match for your {skin_type} skin, providing a healthy glow when the T-zone is lightly set."]
             else:
                 score = 85
-                reasons.append(f"Balanced satin formulation that adapts well to your {skin_type} skin profile.")
-        else:
-            score = 86
-            reasons.append(f"Formulation texture is well-suited for {skin_type} skin routines.")
+                reasons = [f"Balanced satin formula that adapts naturally to your {skin_type} skin profile."]
 
+            if undertone == "warm":
+                reasons.append("Watch out for slight oxidation which can make neutral-warm shades appear slightly orange.")
+            elif undertone == "cool":
+                reasons.append("Opt for cool/rose undertone labels so oxidation doesn't pull overly yellow.")
+
+            final_score = max(25, min(98, score - score_penalty))
+            return {
+                "suitability_score": final_score,
+                "suitability_reason": " ".join(reasons)
+            }
+
+        # 4. Skincare & Sunscreen Match Logic
+        score = 85
+        reasons = [f"Texture and formulation are well-suited for {skin_type} skin routines."]
         final_score = max(25, min(98, score - score_penalty))
-        if score_penalty > 0:
-            reasons.append(f"(Suitability adjusted by -{score_penalty} pts due to Rosacea/Acne/Sensitivity trigger cautions.)")
-
-        if undertone == "warm":
-            reasons.append("Since you have a warm undertone, watch out for slight oxidation which can turn neutral-warm shades overly orange.")
-        elif undertone == "cool":
-            reasons.append("With your cool undertone, opt for shades labeled 'C' or 'Rose/Neutral' so potential oxidation doesn't pull yellow.")
-
         return {
             "suitability_score": final_score,
             "suitability_reason": " ".join(reasons)
@@ -394,7 +476,7 @@ class PersonalSkinMatchAgent:
 
 
 class RealityCheckAgent:
-    """Sub-Agent 5: De-influencing & Personal Shelf Redundancy Evaluator."""
+    """Sub-Agent 5: Category-Aware Shelf Redundancy & De-influencing Evaluator."""
 
     @staticmethod
     def check_shelf(
@@ -403,54 +485,44 @@ class RealityCheckAgent:
         suitability_score: int,
         user_inventory_notes: Optional[List[str]]
     ) -> Dict[str, str]:
+        cat = traits["category"]
+
         if suitability_score < 65:
             return {
                 "verdict": "SKIP",
-                "reason": "De-influencing Alert: Based on your skin type and clinical trigger profile (Rosacea/Acne risk), this formula has a high risk of causing irritation or underperforming. Save your money."
+                "reason": f"De-influencing Alert: Based on your skin profile and clinical trigger checks, this {cat} formula has a high risk of underperforming or causing irritation. Save your money."
             }
 
         if not user_inventory_notes:
             return {
                 "verdict": "BUY",
-                "reason": "You have no conflicting products logged in your personal shelf yet, and this item fits your skin profile well."
+                "reason": f"You don't have a conflicting {cat} logged in your shelf yet, and this product scores well."
             }
 
-        oxidized_mentions = [n for n in user_inventory_notes if "oxid" in n.lower() or "oksit" in n.lower()]
-        high_rated_mentions = [n for n in user_inventory_notes if "(Rating: 5/5)" in n or "(Rating: 4/5)" in n]
+        # Check for category-specific duplicates in shelf
+        matching_shelf = [
+            n for n in user_inventory_notes
+            if any(k in n.lower() for k in [cat, "mascara" if cat == "mascara" else cat]) and ("(Rating: 5/5)" in n or "(Rating: 4/5)" in n)
+        ]
 
-        if high_rated_mentions:
+        if matching_shelf:
             return {
                 "verdict": "REDUNDANT",
                 "reason": (
-                    f"Shelf Overlap Detected: You already own {len(high_rated_mentions)} well-rated product(s) on your shelf "
-                    f"({high_rated_mentions[0].split(':')[0]}). Unless you are running out, buying another similar item is unnecessary spending."
-                )
-            }
-
-        if oxidized_mentions:
-            return {
-                "verdict": "CONSIDER",
-                "reason": (
-                    "Memory Caution: You previously noted oxidation issues on your shelf. "
-                    "Sample this product in-store and wait 60 minutes before purchasing a full bottle."
+                    f"Shelf Redundancy: You already own a highly-rated {cat} ({matching_shelf[0].split(':')[0]}). "
+                    "Unless your current product is expired or empty, purchasing another is unnecessary spending."
                 )
             }
 
         return {
             "verdict": "CONSIDER",
-            "reason": f"You have {len(user_inventory_notes)} item(s) in your shelf. Finish your open bottles first if they serve the same purpose."
+            "reason": f"Fits your criteria well. Verify your current makeup shelf to ensure you need a new {cat} before buying."
         }
 
 
 def _build_langchain_lcel_pipeline() -> RunnableSequence:
-    """
-    Constructs a formal LangChain Expression Language (LCEL) RunnableSequence (`|`)
-    chaining RAG Retrieval -> Classifier -> Formulation -> Clinical Trigger -> Skin Match -> Reality Check.
-    """
-
     def step_1_rag_and_classify(state: Dict[str, Any]) -> Dict[str, Any]:
         product_name = state["product_name"]
-        # Invoke LangChain BaseRetriever
         rag_docs = cosmetic_rag_retriever.invoke(product_name)
         state["rag_docs"] = rag_docs
         state["rag_text"] = "\n".join([d.page_content for d in rag_docs])
@@ -490,7 +562,6 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
         )
 
         sources = []
-        # Include RAG Corpus source first
         for doc in state.get("rag_docs", [])[:1]:
             sources.append({
                 "title": doc.metadata.get("source", "MIRA Clinical RAG Corpus"),
@@ -509,7 +580,7 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
                 })
         else:
             sources.append({
-                "title": "Open Beauty Facts & Dermatological Comedogenicity Index",
+                "title": f"MIRA Formulation Database ({state['traits']['category'].title()})",
                 "url": "https://world.openbeautyfacts.org",
                 "source_type": "ingredient_database",
                 "sentiment": "neutral"
@@ -529,7 +600,6 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
             "sources": sources
         }
 
-    # Build LCEL Chain using LangChain's pipe (`|`) operator
     return (
         RunnableLambda(step_1_rag_and_classify)
         | RunnableLambda(step_2_formulation)
@@ -540,8 +610,6 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
 
 
 class AIAgentService:
-    """Core AI orchestrator powered by LangChain RAG Retriever, PromptTemplate, and LCEL Multi-Agent Chain."""
-
     def __init__(self):
         self.gemini_api_key = settings.GEMINI_API_KEY
         self.openai_api_key = settings.OPENAI_API_KEY
@@ -555,8 +623,8 @@ class AIAgentService:
         user_inventory_notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         clean_product_query = extract_product_name_from_query(query)
+        traits = ProductClassifierAgent.classify(clean_product_query)
 
-        # Retrieve relevant clinical documents via LangChain RAG Retriever
         rag_docs = cosmetic_rag_retriever.invoke(clean_product_query)
         rag_context_str = "\n\n".join([f"- {d.page_content}" for d in rag_docs])
 
@@ -571,10 +639,10 @@ class AIAgentService:
 
         evidence_str = json.dumps(search_results or [], indent=2)
 
-        # Format prompt using LangChain PromptTemplate
         formatted_prompt = MIRA_RAG_PROMPT_TEMPLATE.format(
             product_name=clean_product_query,
             raw_query=query,
+            category=traits["category"].upper(),
             rag_context=rag_context_str,
             user_context=user_context_str,
             search_evidence=evidence_str
@@ -592,7 +660,6 @@ class AIAgentService:
             except Exception:
                 pass
 
-        # Execute LangChain LCEL Multi-Agent Pipeline
         return await self.lcel_chain.ainvoke({
             "product_name": clean_product_query,
             "user_profile": user_profile,
