@@ -34,19 +34,33 @@ export interface SourceItem {
   sentiment?: string;
 }
 
-export interface ResearchReport {
-  id: string;
-  query_id: string;
+export interface ProductSuggestionItem {
   product_name: string;
-  summary: string;
-  pros: string[];
-  cons: string[];
-  clinical_warnings: string[];
-  suitability_score: number;
-  suitability_reason: string;
-  reality_check_verdict: string;
+  brand: string;
+  category: string;
+  rating: number;
+  review_count: number;
+  image_url: string;
+  finish_or_tag: string;
+  brief_highlight: string;
+}
+
+export interface ResearchReport {
+  mode?: 'report' | 'suggestions';
+  suggested_products?: ProductSuggestionItem[];
+  disambiguation_message?: string;
+  id?: string;
+  query_id?: string;
+  product_name?: string;
+  summary?: string;
+  pros?: string[];
+  cons?: string[];
+  clinical_warnings?: string[];
+  suitability_score?: number;
+  suitability_reason?: string;
+  reality_check_verdict?: string;
   reality_check_reason?: string;
-  sources: SourceItem[];
-  sponsored_flags: string[];
-  created_at: string;
+  sources?: SourceItem[];
+  sponsored_flags?: string[];
+  created_at?: string;
 }

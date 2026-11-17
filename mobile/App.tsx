@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   StatusBar,
+  Image,
 } from 'react-native';
 import { apiClient } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
@@ -16,8 +17,8 @@ import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/typ
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'shelf' | 'history' | 'settings'>('search');
 
-  // View state: 'search' | 'report_detail'
-  const [currentScreen, setCurrentScreen] = useState<'search' | 'report_detail'>('search');
+  // View state: 'search' | 'report_detail' | 'suggestions_list'
+  const [currentScreen, setCurrentScreen] = useState<'search' | 'report_detail' | 'suggestions_list'>('search');
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -132,14 +133,19 @@ export default function App() {
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!query.trim()) return;
+  const handleAnalyze = async (specificQuery?: string) => {
+    const targetQuery = specificQuery || query;
+    if (!targetQuery.trim()) return;
     setLoading(true);
     try {
-      const report = await apiClient.analyzeProduct(query);
+      const report = await apiClient.analyzeProduct(targetQuery);
       setCurrentReport(report);
       await refreshQuota();
-      setCurrentScreen('report_detail'); // Open separate full-screen result
+      if (report.mode === 'suggestions') {
+        setCurrentScreen('suggestions_list');
+      } else {
+        setCurrentScreen('report_detail');
+      }
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -309,7 +315,61 @@ export default function App() {
     );
   }
 
-  // 3. Separate Full-Screen Report Detail Screen
+  // 3. Suggestions List Screen (when user types general queries like 'maybelline ruj')
+  if (currentScreen === 'suggestions_list' && currentReport?.suggested_products) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" />
+
+        <View style={styles.topHeader}>
+          <TouchableOpacity style={styles.backButton} onPress={() => setCurrentScreen('search')}>
+            <Text style={styles.backButtonText}>← Search</Text>
+          </TouchableOpacity>
+          <Text style={styles.topHeaderTitle}>Product Choices</Text>
+          <View style={{ width: 60 }} />
+        </View>
+
+        <ScrollView contentContainerStyle={styles.detailScrollContent}>
+          <Text style={styles.disambiguationHeader}>{currentReport.disambiguation_message}</Text>
+          <Text style={styles.disambiguationSub}>Sıralama: En yüksek kullanıcı puanı ve değerlendirme sayısı</Text>
+
+          {currentReport.suggested_products.map((item, idx) => (
+            <View key={idx} style={styles.suggestionCard}>
+              <Image source={{ uri: item.image_url }} style={styles.suggestionImage} resizeMode="cover" />
+              <View style={styles.suggestionInfo}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={styles.rankBadge}>
+                    <Text style={styles.rankBadgeText}>#{idx + 1}</Text>
+                  </View>
+                  <View style={styles.ratingBox}>
+                    <Text style={styles.ratingStar}>★</Text>
+                    <Text style={styles.ratingScore}>{item.rating}</Text>
+                    <Text style={styles.ratingCount}>({item.review_count.toLocaleString()})</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.suggestionName}>{item.product_name}</Text>
+                <Text style={styles.suggestionTag}>{item.finish_or_tag}</Text>
+                <Text style={styles.suggestionHighlight}>{item.brief_highlight}</Text>
+
+                <TouchableOpacity
+                  style={styles.inspectBtn}
+                  onPress={() => {
+                    setQuery(item.product_name);
+                    handleAnalyze(item.product_name);
+                  }}
+                >
+                  <Text style={styles.inspectBtnText}>Bu Ürünü Detaylı İncele →</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // 4. Separate Full-Screen Report Detail Screen
   if (currentScreen === 'report_detail' && currentReport) {
     return (
       <SafeAreaView style={styles.container}>
@@ -858,6 +918,41 @@ const styles = StyleSheet.create({
   mainActionBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
   textOnlyBtn: { marginTop: 14, alignItems: 'center' },
   textOnlyBtnText: { color: '#7A4D62', fontSize: 13, fontWeight: '600' },
+
+  // Suggestions List Styles
+  disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#3A2732', marginBottom: 4, lineHeight: 24 },
+  disambiguationSub: { fontSize: 12, color: '#887580', marginBottom: 16 },
+  suggestionCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#EFE5EA',
+    shadowColor: '#6D4658',
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 3,
+  },
+  suggestionImage: { width: '100%', height: 160, backgroundColor: '#FAF6F8' },
+  suggestionInfo: { padding: 16 },
+  rankBadge: { backgroundColor: '#F3E8EE', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  rankBadgeText: { fontSize: 11, fontWeight: '800', color: '#7A4D62' },
+  ratingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  ratingStar: { color: '#F59E0B', fontSize: 14 },
+  ratingScore: { fontSize: 13, fontWeight: '800', color: '#2E1E26' },
+  ratingCount: { fontSize: 11, color: '#888' },
+  suggestionName: { fontSize: 16, fontWeight: '700', color: '#2E1E26', marginTop: 8 },
+  suggestionTag: { fontSize: 12, color: '#7A4D62', fontWeight: '600', marginTop: 2 },
+  suggestionHighlight: { fontSize: 12.5, color: '#685A62', marginTop: 6, lineHeight: 18 },
+  inspectBtn: {
+    backgroundColor: '#7A4D62',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  inspectBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
 
   // Shelf & History
   tabScrollContent: { padding: 18, paddingBottom: 50 },

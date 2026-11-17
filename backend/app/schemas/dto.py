@@ -88,25 +88,44 @@ class ResearchRequest(BaseModel):
 class SourceItem(BaseModel):
     title: str
     url: str
-    source_type: str = "web_review"  # web_review, tiktok_oembed, social_media, ingredient_database
+    source_type: str = "web_review"
     sentiment: Optional[str] = "neutral"
 
 
+class ProductSuggestionItem(BaseModel):
+    product_name: str
+    brand: str
+    category: str
+    rating: float  # e.g., 4.8
+    review_count: int  # e.g., 1420
+    image_url: str
+    finish_or_tag: str
+    brief_highlight: str
+
+
 class ResearchReportResponse(BaseModel):
-    id: str
-    query_id: str
+    # Mode flag: 'report' when specific product analyzed, 'suggestions' when general query detected
+    mode: str = "report"  # 'report' | 'suggestions'
+    
+    # Fields populated if mode == 'suggestions'
+    suggested_products: List[ProductSuggestionItem] = []
+    disambiguation_message: Optional[str] = None
+
+    # Fields populated if mode == 'report'
+    id: Optional[str] = None
+    query_id: Optional[str] = None
     product_name: Optional[str] = None
-    summary: str
+    summary: Optional[str] = None
     pros: List[str] = []
     cons: List[str] = []
     clinical_warnings: List[str] = []
     suitability_score: Optional[int] = Field(None, ge=1, le=100)
     suitability_reason: Optional[str] = None
-    reality_check_verdict: str = "CONSIDER"  # BUY, SKIP, REDUNDANT, CONSIDER
+    reality_check_verdict: Optional[str] = "CONSIDER"  # BUY, SKIP, REDUNDANT, CONSIDER
     reality_check_reason: Optional[str] = None
     sources: List[SourceItem] = []
     sponsored_flags: List[str] = []
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

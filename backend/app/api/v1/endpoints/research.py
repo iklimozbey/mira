@@ -8,6 +8,7 @@ from app.models.entities import User, UserProfile, InventoryItem, ResearchQuery,
 from app.schemas.dto import ResearchRequest, ResearchReportResponse
 from app.services.search_service import search_service
 from app.services.ai_agent import ai_agent_service
+from app.services.catalog_service import detect_general_category_query
 
 router = APIRouter()
 
@@ -15,7 +16,6 @@ FREE_TIER_DAILY_LIMIT = 5
 
 
 def check_user_quota(user: User, db: Session) -> dict:
-    """Calculate today's AI research usage and enforce daily limits for free tier users."""
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     used_today = (
         db.query(ResearchQuery)
@@ -41,7 +41,6 @@ def get_my_quota(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Return user's current daily AI research allowance and usage."""
     return check_user_quota(current_user, db)
 
 
@@ -52,13 +51,24 @@ async def analyze_product(
     db: Session = Depends(get_db)
 ):
     """
-    Start an automated research workflow:
-    0. Verify daily AI usage quota.
-    1. Retrieve user profile and past inventory notes.
-    2. Search real-world online discussions, TikTok oEmbed, and Open Beauty Facts INCI list.
-    3. Run 5-Agent AI synthesis including Rosacea & Acne clinical triggers.
-    4. Persist query and report to database.
+    1. If user typed a broad brand+category query (e.g. 'maybelline ruj'), return ranked suggestions with images.
+    2. Otherwise, run deep personalized AI Research with LangChain RAG & Clinical Agents.
     """
+    # 1. Broad Query Disambiguation Check
+    general_match = detect_general_category_query(request.query_or_url)
+    if general_match:
+        return {
+            "mode": "suggestions",
+            "disambiguation_message": general_match["disambiguation_message"],
+            "suggested_products": general_match["suggested_products"],
+            "pros": [],
+            "cons": [],
+            "clinical_warnings": [],
+            "sources": [],
+            "sponsored_flags": []
+        }
+
+    # 2. Specific Product -> Enforce Quota & Run AI Synthesis
     quota = check_user_quota(current_user, db)
     if quota["remaining_today"] <= 0:
         raise HTTPException(
@@ -123,6 +133,7 @@ async def analyze_product(
         db.refresh(report_record)
 
         return {
+            "mode": "report",
             "id": report_record.id,
             "query_id": query_record.id,
             "product_name": product_name,
@@ -153,7 +164,6 @@ def get_research_history(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Retrieve past research queries and their generated reports."""
     queries = (
         db.query(ResearchQuery)
         .filter(ResearchQuery.user_id == current_user.id, ResearchQuery.status == "completed")
@@ -164,6 +174,7 @@ def get_research_history(
     for q in queries:
         if q.report:
             history.append({
+                "mode": "report",
                 "id": q.report.id,
                 "query_id": q.id,
                 "product_name": q.product_name or q.query_text_or_url,
