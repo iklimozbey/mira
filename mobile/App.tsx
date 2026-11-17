@@ -14,22 +14,27 @@ import {
 import { apiClient } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 
-const getCategoryIcon = (category?: string) => {
-  switch (category?.toLowerCase()) {
-    case 'lip':
-      return '💄';
-    case 'mascara':
-      return '👁️';
-    case 'foundation':
-      return '✨';
-    case 'sunscreen':
-      return '☀️';
-    case 'moisturizer':
-      return '🧴';
-    case 'serum':
-      return '💧';
+const getCategoryIcon = (categoryOrName?: string) => {
+  const lower = (categoryOrName || '').toLowerCase();
+  if (lower.includes('lip') || lower.includes('ruj') || lower.includes('gloss')) return '💄';
+  if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel')) return '👁️';
+  if (lower.includes('foundation') || lower.includes('fondöten') || lower.includes('fit me')) return '✨';
+  if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf')) return '☀️';
+  if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('baume')) return '🧴';
+  if (lower.includes('serum') || lower.includes('hyaluron')) return '💧';
+  return '✨';
+};
+
+const getVerdictColor = (verdict?: string) => {
+  switch (verdict?.toUpperCase()) {
+    case 'BUY':
+      return { bg: '#DCFCE7', text: '#15803D', border: '#BBF7D0' };
+    case 'SKIP':
+      return { bg: '#FEE2E2', text: '#B91C1C', border: '#FECACA' };
+    case 'REDUNDANT':
+      return { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' };
     default:
-      return '💄';
+      return { bg: '#F3E8EE', text: '#7A4D62', border: '#EBD7E2' };
   }
 };
 
@@ -425,88 +430,221 @@ export default function App() {
               </TouchableOpacity>
             </View>
           ))}
+
+          {/* Persistent Search Bar Directly Below Suggestions */}
+          <View style={styles.bottomSearchContainer}>
+            <View style={styles.bottomSearchInputWrap}>
+              <TextInput
+                style={styles.bottomSearchInput}
+                placeholder="Başka bir ürün adı veya link yazın..."
+                placeholderTextColor="#A89EAA"
+                value={query}
+                onChangeText={setQuery}
+                onSubmitEditing={() => handleAnalyze()}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
+                  <Text style={styles.clearInputBtnText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity
+              style={[styles.bottomSearchBtn, loading && { opacity: 0.7 }]}
+              onPress={() => handleAnalyze()}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text style={styles.bottomSearchBtnText}>Ara</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // 4. Separate Full-Screen Report Detail Screen
+  // 4. Centered Single-Box Product Report Screen with Bottom Search Bar
   if (currentScreen === 'report_detail' && currentReport) {
+    const verdictStyle = getVerdictColor(currentReport.reality_check_verdict);
+
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
 
-        {/* Top Header with Back Navigation */}
+        {/* Top Header */}
         <View style={styles.topHeader}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setCurrentScreen('search')}>
-            <Text style={styles.backButtonText}>← Search</Text>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              setCurrentReport(null);
+              setCurrentScreen('search');
+            }}
+          >
+            <Text style={styles.backButtonText}>← Yeni Arama</Text>
           </TouchableOpacity>
-          <Text style={styles.topHeaderTitle}>Product Report</Text>
-          <View style={{ width: 60 }} />
+          <Text style={styles.topHeaderTitle}>Ürün Analiz Raporu</Text>
+          <View style={styles.skinProfileTag}>
+            <Text style={styles.skinProfileTagText}>
+              {profile.skin_type ? profile.skin_type.toUpperCase() : 'CİLT'}
+            </Text>
+          </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.detailScrollContent}>
-          {/* Big Hero Score Card */}
-          <View style={styles.heroMatchCard}>
-            <View style={styles.heroScoreBadge}>
-              <Text style={styles.heroScoreNumber}>{currentReport.suitability_score}%</Text>
-              <Text style={styles.heroScoreLabel}>Match</Text>
-            </View>
-            <Text style={styles.heroProductName}>{currentReport.product_name}</Text>
-            <Text style={styles.heroSummaryText}>{currentReport.summary}</Text>
-          </View>
+        <ScrollView contentContainerStyle={styles.unifiedScrollContent}>
+          {/* Centered Single Product Box */}
+          <View style={styles.unifiedProductBox}>
+            {/* Real-time Loading Overlay inside the box */}
+            {loading && (
+              <View style={styles.boxLoadingOverlay}>
+                <ActivityIndicator color="#7A4D62" size="large" />
+                <Text style={styles.boxLoadingText}>MIRA cildiniz için analiz ediyor...</Text>
+              </View>
+            )}
 
-          {/* Skin Compatibility Rationale Card */}
-          <View style={styles.detailCard}>
-            <Text style={styles.detailCardHeader}>Personal Skin Analysis</Text>
-            <Text style={styles.detailCardBody}>{currentReport.suitability_reason}</Text>
-          </View>
-
-          {/* Clinical Trigger Warning Card (Rosacea / Acne) */}
-          {currentReport.clinical_warnings && currentReport.clinical_warnings.length > 0 && (
-            <View style={styles.clinicalCard}>
-              <Text style={styles.clinicalCardHeader}>Dermatological & Clinical Caution</Text>
-              {currentReport.clinical_warnings.map((w, idx) => (
-                <Text key={idx} style={styles.clinicalCardBody}>• {w}</Text>
-              ))}
-            </View>
-          )}
-
-          {/* Reality Check Verdict Card */}
-          {currentReport.reality_check_reason ? (
-            <View style={styles.realityCard}>
-              <View style={styles.realityHeaderRow}>
-                <Text style={styles.realityHeaderTitle}>Reality Check</Text>
-                <View style={styles.verdictBadge}>
-                  <Text style={styles.verdictBadgeText}>{currentReport.reality_check_verdict}</Text>
+            {/* Header: Category Icon + Product Name + Match Score Badge */}
+            <View style={styles.boxHeaderRow}>
+              <View style={styles.boxIconAndTitle}>
+                <View style={styles.boxCategoryBadge}>
+                  <Text style={styles.boxCategoryEmoji}>
+                    {getCategoryIcon(currentReport.product_name)}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.boxProductName}>{currentReport.product_name}</Text>
+                  {currentReport.reality_check_verdict ? (
+                    <View
+                      style={[
+                        styles.boxVerdictBadge,
+                        { backgroundColor: verdictStyle.bg, borderColor: verdictStyle.border },
+                      ]}
+                    >
+                      <Text style={[styles.boxVerdictText, { color: verdictStyle.text }]}>
+                        {currentReport.reality_check_verdict}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               </View>
-              <Text style={styles.realityBody}>{currentReport.reality_check_reason}</Text>
+
+              {currentReport.suitability_score !== undefined && currentReport.suitability_score !== null && (
+                <View style={styles.boxScoreBadge}>
+                  <Text style={styles.boxScoreNumber}>{currentReport.suitability_score}%</Text>
+                  <Text style={styles.boxScoreLabel}>UYUM</Text>
+                </View>
+              )}
             </View>
-          ) : null}
 
-          {/* Pros & Cons Card */}
-          <View style={styles.detailCard}>
-            <Text style={styles.detailCardHeader}>Key Benefits</Text>
-            {currentReport.pros?.map((p, idx) => (
-              <Text key={idx} style={styles.proItem}>✓  {p}</Text>
-            ))}
+            {/* Summary */}
+            {currentReport.summary ? (
+              <Text style={styles.boxSummaryText}>{currentReport.summary}</Text>
+            ) : null}
 
-            <Text style={[styles.detailCardHeader, { marginTop: 16 }]}>Recurring Complaints</Text>
-            {currentReport.cons?.map((c, idx) => (
-              <Text key={idx} style={styles.conItem}>✕  {c}</Text>
-            ))}
+            <View style={styles.boxDivider} />
+
+            {/* Skin Fit Analysis */}
+            {currentReport.suitability_reason ? (
+              <View style={styles.boxSectionRow}>
+                <Text style={styles.boxSectionLabel}>CİLT UYUM ANALİZİ</Text>
+                <Text style={styles.boxSectionBody}>{currentReport.suitability_reason}</Text>
+              </View>
+            ) : null}
+
+            {/* Shelf & Reality Check */}
+            {currentReport.reality_check_reason ? (
+              <View style={styles.boxSectionRow}>
+                <Text style={styles.boxSectionLabel}>DOLAP & İHTİYAÇ KONTROLÜ</Text>
+                <Text style={styles.boxSectionBody}>{currentReport.reality_check_reason}</Text>
+              </View>
+            ) : null}
+
+            {/* Clinical Caution (Rosacea / Acne) */}
+            {currentReport.clinical_warnings && currentReport.clinical_warnings.length > 0 ? (
+              <View style={styles.boxWarningRow}>
+                <Text style={styles.boxWarningIcon}>⚠️</Text>
+                <View style={{ flex: 1 }}>
+                  {currentReport.clinical_warnings.map((w, idx) => (
+                    <Text key={idx} style={styles.boxWarningText}>{w}</Text>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
+            {/* Key Benefits (Green ✓) and Complaints (Red ✕) */}
+            <View style={styles.boxProsConsContainer}>
+              {currentReport.pros && currentReport.pros.length > 0 ? (
+                <View style={{ gap: 6 }}>
+                  {currentReport.pros.slice(0, 3).map((p, idx) => (
+                    <View key={idx} style={styles.featureRowPro}>
+                      <Text style={styles.featureIconPro}>✓</Text>
+                      <Text style={styles.featureTextPro}>{p}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
+              {currentReport.cons && currentReport.cons.length > 0 ? (
+                <View style={{ gap: 6, marginTop: 4 }}>
+                  {currentReport.cons.slice(0, 2).map((c, idx) => (
+                    <View key={idx} style={styles.featureRowCon}>
+                      <Text style={styles.featureIconCon}>✕</Text>
+                      <Text style={styles.featureTextCon}>{c}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+
+            {/* Quick Add to Shelf Action */}
+            <TouchableOpacity
+              style={styles.boxAddToShelfBtn}
+              onPress={() => {
+                if (currentReport.product_name) {
+                  apiClient
+                    .addInventoryItem({
+                      product_name: currentReport.product_name,
+                      category: 'skincare',
+                      status: 'wishlist',
+                    })
+                    .then(() => alert('Ürün dolabınıza eklendi!'))
+                    .catch((e) => alert(e.message));
+                }
+              }}
+            >
+              <Text style={styles.boxAddToShelfBtnText}>+ Dolabıma / İstek Listeme Ekle</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Sponsored Content Warnings */}
-          {currentReport.sponsored_flags && currentReport.sponsored_flags.length > 0 && (
-            <View style={styles.sponsoredCard}>
-              <Text style={styles.sponsoredHeader}>Sponsored Marketing Notice</Text>
-              {currentReport.sponsored_flags.map((flag, i) => (
-                <Text key={i} style={styles.sponsoredBody}>{flag}</Text>
-              ))}
+          {/* Persistent Search Bar Directly Below the Box */}
+          <View style={styles.bottomSearchContainer}>
+            <View style={styles.bottomSearchInputWrap}>
+              <TextInput
+                style={styles.bottomSearchInput}
+                placeholder="Başka bir ürün adı veya link yazın..."
+                placeholderTextColor="#A89EAA"
+                value={query}
+                onChangeText={setQuery}
+                onSubmitEditing={() => handleAnalyze()}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
+                  <Text style={styles.clearInputBtnText}>✕</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          )}
+            <TouchableOpacity
+              style={[styles.bottomSearchBtn, loading && { opacity: 0.7 }]}
+              onPress={() => handleAnalyze()}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text style={styles.bottomSearchBtnText}>Ara</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </SafeAreaView>
     );
@@ -835,34 +973,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Separate Full-Screen Report Detail
-  detailScrollContent: { padding: 18, paddingBottom: 50 },
-  heroMatchCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 22,
-    padding: 22,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#EFE5EA',
-    shadowColor: '#7A4D62',
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
-    marginBottom: 16,
-  },
-  heroScoreBadge: {
-    backgroundColor: '#EBF4FF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  heroScoreNumber: { fontSize: 28, fontWeight: '800', color: '#1565C0' },
-  heroScoreLabel: { fontSize: 11, fontWeight: '700', color: '#1E88E5', textTransform: 'uppercase' },
-  heroProductName: { fontSize: 19, fontWeight: '800', color: '#2E1E26', textAlign: 'center', marginBottom: 8 },
-  heroSummaryText: { fontSize: 14, color: '#574850', textAlign: 'center', lineHeight: 21 },
-
+  // Unified Centered Single-Box Product Report Styles
   detailCard: {
     backgroundColor: '#FFF',
     borderRadius: 18,
@@ -872,46 +983,232 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   detailCardHeader: { fontSize: 15, fontWeight: '700', color: '#3A2732', marginBottom: 10 },
-  detailCardBody: { fontSize: 13.5, color: '#5C4A54', lineHeight: 21 },
-
-  clinicalCard: {
-    backgroundColor: '#FDECEF',
-    borderRadius: 18,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#F9D1D8',
+  unifiedScrollContent: { padding: 16, alignItems: 'center', paddingBottom: 60, width: '100%' },
+  unifiedProductBox: {
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    maxWidth: 520,
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1.5,
+    borderColor: '#EFE5EA',
+    shadowColor: '#5C384B',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 14,
+    elevation: 4,
     marginBottom: 14,
+    position: 'relative',
   },
-  clinicalCardHeader: { fontSize: 14, fontWeight: '700', color: '#A9243E', marginBottom: 6 },
-  clinicalCardBody: { fontSize: 13, color: '#681727', lineHeight: 20, marginBottom: 4 },
-
-  realityCard: {
-    backgroundColor: '#F8EEF9',
-    borderRadius: 18,
-    padding: 18,
+  boxLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  boxLoadingText: {
+    marginTop: 10,
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#7A4D62',
+  },
+  boxHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  boxIconAndTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  boxCategoryBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#FAF0F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
     borderWidth: 1,
-    borderColor: '#E8D1EA',
-    marginBottom: 14,
+    borderColor: '#F2DDE7',
   },
-  realityHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  realityHeaderTitle: { fontSize: 14, fontWeight: '700', color: '#682570' },
-  verdictBadge: { backgroundColor: '#7B2A85', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  verdictBadgeText: { color: '#FFF', fontSize: 11, fontWeight: '800' },
-  realityBody: { fontSize: 13, color: '#4B1852', lineHeight: 20 },
+  boxCategoryEmoji: {
+    fontSize: 24,
+  },
+  boxProductName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1F141B',
+    lineHeight: 22,
+  },
+  boxVerdictBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  boxVerdictText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  boxScoreBadge: {
+    backgroundColor: '#FAF0F4',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#F2DDE7',
+  },
+  boxScoreNumber: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#7A4D62',
+  },
+  boxScoreLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#887580',
+    letterSpacing: 1,
+  },
+  boxSummaryText: {
+    fontSize: 13.5,
+    color: '#4A3B44',
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  boxDivider: {
+    height: 1,
+    backgroundColor: '#F0E5EB',
+    marginVertical: 10,
+  },
+  boxSectionRow: {
+    marginBottom: 10,
+    backgroundColor: '#FAF7F9',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F2EAEE',
+  },
+  boxSectionLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#7A4D62',
+    marginBottom: 3,
+    letterSpacing: 0.5,
+  },
+  boxSectionBody: {
+    fontSize: 13,
+    color: '#2E1E26',
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  boxWarningRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFBEB',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    marginBottom: 10,
+  },
+  boxWarningIcon: {
+    fontSize: 16,
+    marginRight: 8,
+    marginTop: 1,
+  },
+  boxWarningText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#92400E',
+    lineHeight: 17,
+  },
+  boxProsConsContainer: {
+    marginTop: 2,
+    marginBottom: 12,
+  },
+  boxAddToShelfBtn: {
+    backgroundColor: '#FAF0F4',
+    borderWidth: 1.5,
+    borderColor: '#F2DDE7',
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  boxAddToShelfBtnText: {
+    color: '#7A4D62',
+    fontSize: 13,
+    fontWeight: '700',
+  },
 
-  proItem: { fontSize: 13.5, color: '#2E7D32', marginBottom: 6, lineHeight: 20 },
-  conItem: { fontSize: 13.5, color: '#C62828', marginBottom: 6, lineHeight: 20 },
-
-  sponsoredCard: {
-    backgroundColor: '#FFFBEA',
+  // Persistent Bottom Search Bar
+  bottomSearchContainer: {
+    width: '100%',
+    maxWidth: 520,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  bottomSearchInputWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#F8E8A9',
-    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#E8DCE1',
+    paddingHorizontal: 14,
+    height: 48,
+    shadowColor: '#5C384B',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
   },
-  sponsoredHeader: { fontSize: 13, fontWeight: '700', color: '#9A7B0A', marginBottom: 4 },
-  sponsoredBody: { fontSize: 12.5, color: '#685304', lineHeight: 18 },
+  bottomSearchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#2E1E26',
+  },
+  clearInputBtn: {
+    padding: 4,
+  },
+  clearInputBtnText: {
+    color: '#999',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  bottomSearchBtn: {
+    backgroundColor: '#7A4D62',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#7A4D62',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  bottomSearchBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
 
   // Onboarding Form Card (Compact Popup Style)
   onboardingCard: {
