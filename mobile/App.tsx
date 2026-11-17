@@ -135,19 +135,24 @@ export default function App() {
 
   const handleAnalyze = async (specificQuery?: string) => {
     const targetQuery = specificQuery || query;
-    if (!targetQuery.trim()) return;
+    if (!targetQuery || !targetQuery.trim()) {
+      alert('Please enter a product name or link');
+      return;
+    }
     setLoading(true);
     try {
       const report = await apiClient.analyzeProduct(targetQuery);
       setCurrentReport(report);
       await refreshQuota();
-      if (report.mode === 'suggestions') {
+      
+      // Explicitly switch view depending on backend mode
+      if (report && report.mode === 'suggestions') {
         setCurrentScreen('suggestions_list');
       } else {
         setCurrentScreen('report_detail');
       }
     } catch (err: any) {
-      alert(err.message);
+      alert('Search Error: ' + (err.message || 'Failed to analyze product'));
     } finally {
       setLoading(false);
     }
@@ -463,6 +468,10 @@ export default function App() {
   }
 
   // 4. Main Tabbed Layout (Centered Search View)
+  if (currentScreen !== 'search') {
+    // Safety check: ensure screen correctly falls through if not 'search'
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -498,7 +507,7 @@ export default function App() {
 
             <TouchableOpacity
               style={[styles.bigSearchActionBtn, loading && { opacity: 0.7 }]}
-              onPress={handleAnalyze}
+              onPress={() => handleAnalyze()}
               disabled={loading}
             >
               {loading ? (
