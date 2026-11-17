@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { apiClient } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
+import { lightTheme, darkTheme, ThemeColors } from './src/theme/colors';
+import { translations, Language } from './src/i18n/translations';
 
 const getCategoryIcon = (categoryOrName?: string) => {
   const lower = (categoryOrName || '').toLowerCase();
@@ -40,6 +42,13 @@ const getVerdictColor = (verdict?: string) => {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'shelf' | 'history' | 'settings'>('search');
+
+  // Appearance & Language state
+  const [language, setLanguage] = useState<Language>('tr');
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  const t = translations[language];
+  const theme = isDarkMode ? darkTheme : lightTheme;
 
   // View state: 'search' | 'report_detail' | 'suggestions_list'
   const [currentScreen, setCurrentScreen] = useState<'search' | 'report_detail' | 'suggestions_list'>('search');
@@ -226,37 +235,123 @@ export default function App() {
     }
   };
 
+  const renderTopHeader = (title: string, showBack: boolean = false, onBack?: () => void) => (
+    <View style={[styles.topHeader, { backgroundColor: theme.headerBg }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {showBack ? (
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>{t.newSearch}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 10 }} />
+        )}
+      </View>
+
+      <Text style={[styles.topHeaderTitle, { color: theme.headerText }]}>{title}</Text>
+
+      {/* Header Actions: Language, Theme, Profile */}
+      <View style={styles.headerActionsRow}>
+        {/* Language Toggle Pill */}
+        <TouchableOpacity
+          style={[
+            styles.headerIconPill,
+            { backgroundColor: isDarkMode ? '#34262E' : 'rgba(255, 255, 255, 0.2)' },
+          ]}
+          onPress={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+        >
+          <Text style={styles.headerIconPillText}>{language.toUpperCase()}</Text>
+        </TouchableOpacity>
+
+        {/* Dark / Light Mode Toggle Pill */}
+        <TouchableOpacity
+          style={[
+            styles.headerIconPill,
+            { backgroundColor: isDarkMode ? '#34262E' : 'rgba(255, 255, 255, 0.2)' },
+          ]}
+          onPress={() => setIsDarkMode(!isDarkMode)}
+        >
+          <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
+        </TouchableOpacity>
+
+        {/* Skin Type Tag */}
+        <View
+          style={[
+            styles.skinProfileTag,
+            { backgroundColor: isDarkMode ? '#3E2A35' : 'rgba(255, 255, 255, 0.25)' },
+          ]}
+        >
+          <Text style={styles.skinProfileTagText}>
+            {profile.skin_type ? profile.skin_type.toUpperCase() : t.profileTag}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
   // 1. Auth View (Modern Minimalist Card)
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        {/* Top Mini Bar for Theme & Language in Auth */}
+        <View style={styles.authTopBar}>
+          <TouchableOpacity
+            style={[
+              styles.headerIconPill,
+              { backgroundColor: isDarkMode ? '#2B2228' : '#EFE5EA' },
+            ]}
+            onPress={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+          >
+            <Text style={[styles.headerIconPillText, { color: theme.accent }]}>
+              {language.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.headerIconPill,
+              { backgroundColor: isDarkMode ? '#2B2228' : '#EFE5EA' },
+            ]}
+            onPress={() => setIsDarkMode(!isDarkMode)}
+          >
+            <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.centerContainer}>
-          <View style={styles.modernAuthCard}>
-            <Text style={styles.heroLogo}>MIRA</Text>
-            <Text style={styles.heroSubtitle}>Intelligent Beauty & Shopping Research</Text>
+          <View style={[styles.modernAuthCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <Text style={[styles.heroLogo, { color: theme.accent }]}>MIRA</Text>
+            <Text style={[styles.heroSubtitle, { color: theme.textSecondary }]}>{t.authSubtitle}</Text>
 
             {authError ? <Text style={styles.errorText}>{authError}</Text> : null}
 
             <TextInput
-              style={styles.heroInput}
-              placeholder="Email address"
-              placeholderTextColor="#B0A6AD"
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
+              placeholder={t.emailPlaceholder}
+              placeholderTextColor={isDarkMode ? '#7A6B74' : '#B0A6AD'}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
             />
             <TextInput
-              style={styles.heroInput}
-              placeholder="Password"
-              placeholderTextColor="#B0A6AD"
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
+              placeholder={t.passwordPlaceholder}
+              placeholderTextColor={isDarkMode ? '#7A6B74' : '#B0A6AD'}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
             />
 
-            <TouchableOpacity style={styles.mainActionBtn} onPress={() => handleAuth(false)}>
-              <Text style={styles.mainActionBtnText}>Sign In</Text>
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
+              onPress={() => handleAuth(false)}
+            >
+              <Text style={styles.mainActionBtnText}>{t.signIn}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -267,11 +362,11 @@ export default function App() {
                 handleAuth(false, 'demo@mira.app', 'mira1234');
               }}
             >
-              <Text style={styles.mainActionBtnText}>Quick Demo Access (One-Tap)</Text>
+              <Text style={styles.mainActionBtnText}>{t.quickDemo}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.textOnlyBtn} onPress={() => handleAuth(true)}>
-              <Text style={styles.textOnlyBtnText}>Create Account</Text>
+              <Text style={[styles.textOnlyBtnText, { color: theme.accent }]}>{t.createAccount}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -282,23 +377,33 @@ export default function App() {
   // 2. Onboarding Skin Profile Modal / Form
   if (!isOnboardingCompleted) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <ScrollView contentContainerStyle={styles.centerContainer}>
-          <View style={styles.onboardingCard}>
-            <Text style={styles.formTitle}>Tell MIRA About Your Skin</Text>
-            <Text style={styles.formSubtitle}>Quick answers to calibrate personalized suitability scores.</Text>
+          <View style={[styles.onboardingCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <Text style={[styles.formTitle, { color: theme.textPrimary }]}>{t.onboardingTitle}</Text>
+            <Text style={[styles.formSubtitle, { color: theme.textSecondary }]}>{t.onboardingSubtitle}</Text>
 
             {/* Skin Type */}
-            <Text style={styles.formSectionLabel}>Skin Type</Text>
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.skinType}</Text>
             <View style={styles.gridRow}>
               {['combination', 'oily', 'dry', 'sensitive'].map((st) => (
                 <TouchableOpacity
                   key={st}
-                  style={[styles.chipButton, profile.skin_type === st && styles.chipButtonActive]}
+                  style={[
+                    styles.chipButton,
+                    { backgroundColor: theme.inputBg, borderColor: theme.border },
+                    profile.skin_type === st && { backgroundColor: theme.accent, borderColor: theme.accent },
+                  ]}
                   onPress={() => setProfile({ ...profile, skin_type: st })}
                 >
-                  <Text style={[styles.chipButtonText, profile.skin_type === st && styles.chipButtonTextActive]}>
+                  <Text
+                    style={[
+                      styles.chipButtonText,
+                      { color: theme.textPrimary },
+                      profile.skin_type === st && { color: '#FFF', fontWeight: '800' },
+                    ]}
+                  >
                     {st.charAt(0).toUpperCase() + st.slice(1)}
                   </Text>
                 </TouchableOpacity>
@@ -306,15 +411,25 @@ export default function App() {
             </View>
 
             {/* Undertone */}
-            <Text style={styles.formSectionLabel}>Undertone</Text>
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.undertone}</Text>
             <View style={styles.gridRow}>
               {['warm', 'cool', 'neutral'].map((ut) => (
                 <TouchableOpacity
                   key={ut}
-                  style={[styles.chipButton, profile.skin_undertone === ut && styles.chipButtonActive]}
+                  style={[
+                    styles.chipButton,
+                    { backgroundColor: theme.inputBg, borderColor: theme.border },
+                    profile.skin_undertone === ut && { backgroundColor: theme.accent, borderColor: theme.accent },
+                  ]}
                   onPress={() => setProfile({ ...profile, skin_undertone: ut })}
                 >
-                  <Text style={[styles.chipButtonText, profile.skin_undertone === ut && styles.chipButtonTextActive]}>
+                  <Text
+                    style={[
+                      styles.chipButtonText,
+                      { color: theme.textPrimary },
+                      profile.skin_undertone === ut && { color: '#FFF', fontWeight: '800' },
+                    ]}
+                  >
                     {ut.charAt(0).toUpperCase() + ut.slice(1)}
                   </Text>
                 </TouchableOpacity>
@@ -322,7 +437,7 @@ export default function App() {
             </View>
 
             {/* Concerns */}
-            <Text style={styles.formSectionLabel}>Concerns & Triggers (Tap to select)</Text>
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.concerns}</Text>
             <View style={styles.gridRow}>
               {[
                 { key: 'rosacea', label: 'Rosacea / Redness' },
@@ -335,21 +450,36 @@ export default function App() {
                 return (
                   <TouchableOpacity
                     key={c.key}
-                    style={[styles.chipButton, active && styles.chipButtonActive]}
+                    style={[
+                      styles.chipButton,
+                      { backgroundColor: theme.inputBg, borderColor: theme.border },
+                      active && { backgroundColor: theme.accent, borderColor: theme.accent },
+                    ]}
                     onPress={() => {
                       const cur = profile.skin_concerns || [];
                       const updated = active ? cur.filter((i) => i !== c.key) : [...cur, c.key];
                       setProfile({ ...profile, skin_concerns: updated });
                     }}
                   >
-                    <Text style={[styles.chipButtonText, active && styles.chipButtonTextActive]}>{c.label}</Text>
+                    <Text
+                      style={[
+                        styles.chipButtonText,
+                        { color: theme.textPrimary },
+                        active && { color: '#FFF', fontWeight: '800' },
+                      ]}
+                    >
+                      {c.label}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <TouchableOpacity style={[styles.mainActionBtn, { marginTop: 20 }]} onPress={finishOnboarding}>
-              <Text style={styles.mainActionBtnText}>Start Researching</Text>
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: theme.accent, marginTop: 20 }]}
+              onPress={finishOnboarding}
+            >
+              <Text style={styles.mainActionBtnText}>{t.startResearching}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -360,84 +490,116 @@ export default function App() {
   // 3. Suggestions List Screen (when user types general queries like 'maybelline ruj')
   if (currentScreen === 'suggestions_list' && currentReport?.suggested_products) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <StatusBar barStyle="light-content" />
-
-        <View style={styles.topHeader}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setCurrentScreen('search')}>
-            <Text style={styles.backButtonText}>← Search</Text>
-          </TouchableOpacity>
-          <Text style={styles.topHeaderTitle}>Ürün Seçenekleri</Text>
-          <View style={{ width: 60 }} />
-        </View>
+        {renderTopHeader(t.productChoices, true, () => setCurrentScreen('search'))}
 
         <ScrollView contentContainerStyle={styles.suggestionsScrollContent}>
           <View style={styles.disambiguationCard}>
-            <Text style={styles.disambiguationHeader}>{currentReport.disambiguation_message}</Text>
-            <Text style={styles.disambiguationSub}>Puan ve değerlendirme sayısına göre sıralandı</Text>
+            <Text style={[styles.disambiguationHeader, { color: theme.textPrimary }]}>
+              {currentReport.disambiguation_message}
+            </Text>
+            <Text style={[styles.disambiguationSub, { color: theme.accent }]}>{t.rankedSub}</Text>
           </View>
 
           {currentReport.suggested_products.map((item, idx) => (
-            <View key={idx} style={styles.compactProductBox}>
+            <View
+              key={idx}
+              style={[
+                styles.compactProductBox,
+                { backgroundColor: theme.cardBg, borderColor: theme.border },
+              ]}
+            >
               {/* Header: Icon + Product Name + Star Rating */}
               <View style={styles.compactBoxHeader}>
-                <View style={styles.productIconCircle}>
+                <View
+                  style={[
+                    styles.productIconCircle,
+                    { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+                  ]}
+                >
                   <Text style={styles.productIconEmoji}>{getCategoryIcon(item.category)}</Text>
                 </View>
                 <View style={styles.compactTitleArea}>
                   <View style={styles.compactRowBetween}>
-                    <Text style={styles.compactRankText}>#{idx + 1}</Text>
+                    <Text
+                      style={[
+                        styles.compactRankText,
+                        { backgroundColor: theme.cardBgSecondary, color: theme.accent },
+                      ]}
+                    >
+                      #{idx + 1}
+                    </Text>
                     <View style={styles.starRatingBadge}>
                       <Text style={styles.starRatingText}>⭐ {item.rating}</Text>
-                      <Text style={styles.starReviewCount}>({item.review_count.toLocaleString()})</Text>
+                      <Text style={[styles.starReviewCount, { color: theme.textMuted }]}>
+                        ({item.review_count.toLocaleString()})
+                      </Text>
                     </View>
                   </View>
-                  <Text style={styles.compactProductName}>{item.product_name}</Text>
+                  <Text style={[styles.compactProductName, { color: theme.textPrimary }]}>
+                    {item.product_name}
+                  </Text>
                   {item.badge ? (
-                    <View style={styles.compactBadgePill}>
-                      <Text style={styles.compactBadgeText}>{item.badge}</Text>
+                    <View style={[styles.compactBadgePill, { backgroundColor: theme.cardBgSecondary }]}>
+                      <Text style={[styles.compactBadgeText, { color: theme.accent }]}>{item.badge}</Text>
                     </View>
                   ) : null}
                 </View>
               </View>
 
-              {/* Bold Green Pro (+) and Bold Red Con (-) Only - Zero Small Grey Text */}
+              {/* Bold Green Pro (+) and Bold Red Con (-) Only */}
               <View style={styles.compactFeaturesContainer}>
                 {item.key_pro ? (
-                  <View style={styles.featureRowPro}>
+                  <View
+                    style={[
+                      styles.featureRowPro,
+                      { backgroundColor: theme.proBg, borderColor: theme.proBorder },
+                    ]}
+                  >
                     <Text style={styles.featureIconPro}>✓</Text>
-                    <Text style={styles.featureTextPro}>{item.key_pro}</Text>
+                    <Text style={[styles.featureTextPro, { color: theme.proText }]}>{item.key_pro}</Text>
                   </View>
                 ) : null}
 
                 {item.key_con ? (
-                  <View style={styles.featureRowCon}>
+                  <View
+                    style={[
+                      styles.featureRowCon,
+                      { backgroundColor: theme.conBg, borderColor: theme.conBorder },
+                    ]}
+                  >
                     <Text style={styles.featureIconCon}>✕</Text>
-                    <Text style={styles.featureTextCon}>{item.key_con}</Text>
+                    <Text style={[styles.featureTextCon, { color: theme.conText }]}>{item.key_con}</Text>
                   </View>
                 ) : null}
               </View>
 
               {/* Action Button */}
               <TouchableOpacity
-                style={styles.inspectBtnCompact}
+                style={[styles.inspectBtnCompact, { backgroundColor: theme.accent }]}
                 onPress={() => {
                   setQuery(item.product_name);
                   handleAnalyze(item.product_name);
                 }}
               >
-                <Text style={styles.inspectBtnTextCompact}>Bu Ürünü İncele →</Text>
+                <Text style={styles.inspectBtnTextCompact}>{t.inspectBtn}</Text>
               </TouchableOpacity>
             </View>
           ))}
 
           {/* Persistent Search Bar Directly Below Suggestions */}
           <View style={styles.bottomSearchContainer}>
-            <View style={styles.bottomSearchInputWrap}>
+            <View
+              style={[
+                styles.bottomSearchInputWrap,
+                { backgroundColor: theme.cardBg, borderColor: theme.inputBorder },
+              ]}
+            >
               <TextInput
-                style={styles.bottomSearchInput}
-                placeholder="Başka bir ürün adı veya link yazın..."
-                placeholderTextColor="#A89EAA"
+                style={[styles.bottomSearchInput, { color: theme.inputText }]}
+                placeholder={t.bottomSearchPlaceholder}
+                placeholderTextColor={isDarkMode ? '#7A6B74' : '#A89EAA'}
                 value={query}
                 onChangeText={setQuery}
                 onSubmitEditing={() => handleAnalyze()}
@@ -449,14 +611,18 @@ export default function App() {
               )}
             </View>
             <TouchableOpacity
-              style={[styles.bottomSearchBtn, loading && { opacity: 0.7 }]}
+              style={[
+                styles.bottomSearchBtn,
+                { backgroundColor: theme.accent },
+                loading && { opacity: 0.7 },
+              ]}
               onPress={() => handleAnalyze()}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.bottomSearchBtnText}>Ara</Text>
+                <Text style={styles.bottomSearchBtnText}>{t.searchBtn}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -470,49 +636,55 @@ export default function App() {
     const verdictStyle = getVerdictColor(currentReport.reality_check_verdict);
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <StatusBar barStyle="light-content" />
-
-        {/* Top Header */}
-        <View style={styles.topHeader}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => {
-              setCurrentReport(null);
-              setCurrentScreen('search');
-            }}
-          >
-            <Text style={styles.backButtonText}>← Yeni Arama</Text>
-          </TouchableOpacity>
-          <Text style={styles.topHeaderTitle}>Ürün Analiz Raporu</Text>
-          <View style={styles.skinProfileTag}>
-            <Text style={styles.skinProfileTagText}>
-              {profile.skin_type ? profile.skin_type.toUpperCase() : 'CİLT'}
-            </Text>
-          </View>
-        </View>
+        {renderTopHeader(t.reportTitle, true, () => {
+          setCurrentReport(null);
+          setCurrentScreen('search');
+        })}
 
         <ScrollView contentContainerStyle={styles.unifiedScrollContent}>
           {/* Centered Single Product Box */}
-          <View style={styles.unifiedProductBox}>
+          <View
+            style={[
+              styles.unifiedProductBox,
+              { backgroundColor: theme.cardBg, borderColor: theme.border },
+            ]}
+          >
             {/* Real-time Loading Overlay inside the box */}
             {loading && (
-              <View style={styles.boxLoadingOverlay}>
-                <ActivityIndicator color="#7A4D62" size="large" />
-                <Text style={styles.boxLoadingText}>MIRA cildiniz için analiz ediyor...</Text>
+              <View
+                style={[
+                  styles.boxLoadingOverlay,
+                  {
+                    backgroundColor: isDarkMode
+                      ? 'rgba(30, 25, 28, 0.92)'
+                      : 'rgba(255, 255, 255, 0.92)',
+                  },
+                ]}
+              >
+                <ActivityIndicator color={theme.accent} size="large" />
+                <Text style={[styles.boxLoadingText, { color: theme.accent }]}>{t.analyzing}</Text>
               </View>
             )}
 
             {/* Header: Category Icon + Product Name + Match Score Badge */}
             <View style={styles.boxHeaderRow}>
               <View style={styles.boxIconAndTitle}>
-                <View style={styles.boxCategoryBadge}>
+                <View
+                  style={[
+                    styles.boxCategoryBadge,
+                    { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+                  ]}
+                >
                   <Text style={styles.boxCategoryEmoji}>
                     {getCategoryIcon(currentReport.product_name)}
                   </Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.boxProductName}>{currentReport.product_name}</Text>
+                  <Text style={[styles.boxProductName, { color: theme.textPrimary }]}>
+                    {currentReport.product_name}
+                  </Text>
                   {currentReport.reality_check_verdict ? (
                     <View
                       style={[
@@ -528,44 +700,85 @@ export default function App() {
                 </View>
               </View>
 
-              {currentReport.suitability_score !== undefined && currentReport.suitability_score !== null && (
-                <View style={styles.boxScoreBadge}>
-                  <Text style={styles.boxScoreNumber}>{currentReport.suitability_score}%</Text>
-                  <Text style={styles.boxScoreLabel}>UYUM</Text>
-                </View>
-              )}
+              {currentReport.suitability_score !== undefined &&
+                currentReport.suitability_score !== null && (
+                  <View
+                    style={[
+                      styles.boxScoreBadge,
+                      { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+                    ]}
+                  >
+                    <Text style={[styles.boxScoreNumber, { color: theme.accent }]}>
+                      {currentReport.suitability_score}%
+                    </Text>
+                    <Text style={[styles.boxScoreLabel, { color: theme.textMuted }]}>{t.match}</Text>
+                  </View>
+                )}
             </View>
 
             {/* Summary */}
             {currentReport.summary ? (
-              <Text style={styles.boxSummaryText}>{currentReport.summary}</Text>
+              <Text style={[styles.boxSummaryText, { color: theme.textSecondary }]}>
+                {currentReport.summary}
+              </Text>
             ) : null}
 
-            <View style={styles.boxDivider} />
+            <View style={[styles.boxDivider, { backgroundColor: theme.divider }]} />
 
             {/* Skin Fit Analysis */}
             {currentReport.suitability_reason ? (
-              <View style={styles.boxSectionRow}>
-                <Text style={styles.boxSectionLabel}>CİLT UYUM ANALİZİ</Text>
-                <Text style={styles.boxSectionBody}>{currentReport.suitability_reason}</Text>
+              <View
+                style={[
+                  styles.boxSectionRow,
+                  {
+                    backgroundColor: isDarkMode ? theme.cardBgSecondary : '#FAF7F9',
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.boxSectionLabel, { color: theme.accent }]}>
+                  {t.skinAnalysisTitle}
+                </Text>
+                <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
+                  {currentReport.suitability_reason}
+                </Text>
               </View>
             ) : null}
 
             {/* Shelf & Reality Check */}
             {currentReport.reality_check_reason ? (
-              <View style={styles.boxSectionRow}>
-                <Text style={styles.boxSectionLabel}>DOLAP & İHTİYAÇ KONTROLÜ</Text>
-                <Text style={styles.boxSectionBody}>{currentReport.reality_check_reason}</Text>
+              <View
+                style={[
+                  styles.boxSectionRow,
+                  {
+                    backgroundColor: isDarkMode ? theme.cardBgSecondary : '#FAF7F9',
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.boxSectionLabel, { color: theme.accent }]}>
+                  {t.shelfCheckTitle}
+                </Text>
+                <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
+                  {currentReport.reality_check_reason}
+                </Text>
               </View>
             ) : null}
 
             {/* Clinical Caution (Rosacea / Acne) */}
             {currentReport.clinical_warnings && currentReport.clinical_warnings.length > 0 ? (
-              <View style={styles.boxWarningRow}>
+              <View
+                style={[
+                  styles.boxWarningRow,
+                  { backgroundColor: theme.warningBg, borderColor: theme.warningBorder },
+                ]}
+              >
                 <Text style={styles.boxWarningIcon}>⚠️</Text>
                 <View style={{ flex: 1 }}>
                   {currentReport.clinical_warnings.map((w, idx) => (
-                    <Text key={idx} style={styles.boxWarningText}>{w}</Text>
+                    <Text key={idx} style={[styles.boxWarningText, { color: theme.warningText }]}>
+                      {w}
+                    </Text>
                   ))}
                 </View>
               </View>
@@ -576,9 +789,15 @@ export default function App() {
               {currentReport.pros && currentReport.pros.length > 0 ? (
                 <View style={{ gap: 6 }}>
                   {currentReport.pros.slice(0, 3).map((p, idx) => (
-                    <View key={idx} style={styles.featureRowPro}>
+                    <View
+                      key={idx}
+                      style={[
+                        styles.featureRowPro,
+                        { backgroundColor: theme.proBg, borderColor: theme.proBorder },
+                      ]}
+                    >
                       <Text style={styles.featureIconPro}>✓</Text>
-                      <Text style={styles.featureTextPro}>{p}</Text>
+                      <Text style={[styles.featureTextPro, { color: theme.proText }]}>{p}</Text>
                     </View>
                   ))}
                 </View>
@@ -587,9 +806,15 @@ export default function App() {
               {currentReport.cons && currentReport.cons.length > 0 ? (
                 <View style={{ gap: 6, marginTop: 4 }}>
                   {currentReport.cons.slice(0, 2).map((c, idx) => (
-                    <View key={idx} style={styles.featureRowCon}>
+                    <View
+                      key={idx}
+                      style={[
+                        styles.featureRowCon,
+                        { backgroundColor: theme.conBg, borderColor: theme.conBorder },
+                      ]}
+                    >
                       <Text style={styles.featureIconCon}>✕</Text>
-                      <Text style={styles.featureTextCon}>{c}</Text>
+                      <Text style={[styles.featureTextCon, { color: theme.conText }]}>{c}</Text>
                     </View>
                   ))}
                 </View>
@@ -598,7 +823,10 @@ export default function App() {
 
             {/* Quick Add to Shelf Action */}
             <TouchableOpacity
-              style={styles.boxAddToShelfBtn}
+              style={[
+                styles.boxAddToShelfBtn,
+                { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+              ]}
               onPress={() => {
                 if (currentReport.product_name) {
                   apiClient
@@ -607,22 +835,29 @@ export default function App() {
                       category: 'skincare',
                       status: 'wishlist',
                     })
-                    .then(() => alert('Ürün dolabınıza eklendi!'))
+                    .then(() => alert(t.addedToShelf))
                     .catch((e) => alert(e.message));
                 }
               }}
             >
-              <Text style={styles.boxAddToShelfBtnText}>+ Dolabıma / İstek Listeme Ekle</Text>
+              <Text style={[styles.boxAddToShelfBtnText, { color: theme.accent }]}>
+                {t.addToShelf}
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Persistent Search Bar Directly Below the Box */}
           <View style={styles.bottomSearchContainer}>
-            <View style={styles.bottomSearchInputWrap}>
+            <View
+              style={[
+                styles.bottomSearchInputWrap,
+                { backgroundColor: theme.cardBg, borderColor: theme.inputBorder },
+              ]}
+            >
               <TextInput
-                style={styles.bottomSearchInput}
-                placeholder="Başka bir ürün adı veya link yazın..."
-                placeholderTextColor="#A89EAA"
+                style={[styles.bottomSearchInput, { color: theme.inputText }]}
+                placeholder={t.bottomSearchPlaceholder}
+                placeholderTextColor={isDarkMode ? '#7A6B74' : '#A89EAA'}
                 value={query}
                 onChangeText={setQuery}
                 onSubmitEditing={() => handleAnalyze()}
@@ -634,14 +869,18 @@ export default function App() {
               )}
             </View>
             <TouchableOpacity
-              style={[styles.bottomSearchBtn, loading && { opacity: 0.7 }]}
+              style={[
+                styles.bottomSearchBtn,
+                { backgroundColor: theme.accent },
+                loading && { opacity: 0.7 },
+              ]}
               onPress={() => handleAnalyze()}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.bottomSearchBtnText}>Ara</Text>
+                <Text style={styles.bottomSearchBtnText}>{t.searchBtn}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -649,39 +888,42 @@ export default function App() {
       </SafeAreaView>
     );
   }
-
-  // 4. Main Tabbed Layout (Centered Search View)
-  if (currentScreen !== 'search') {
-    // Safety check: ensure screen correctly falls through if not 'search'
-  }
-
+  // 5. Main Tabbed Layout
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle="light-content" />
 
-      {/* Rose-Mauve Header */}
-      <View style={styles.topHeader}>
-        <View style={{ width: 40 }} />
-        <Text style={styles.topHeaderTitle}>MIRA RESEARCH</Text>
-        <View style={styles.skinProfileTag}>
-          <Text style={styles.skinProfileTagText}>
-            {profile.skin_type ? profile.skin_type.toUpperCase() : 'PROFILE'}
-          </Text>
-        </View>
-      </View>
+      {/* Unified Rose/Dark Header */}
+      {renderTopHeader(
+        activeTab === 'search'
+          ? t.appTitle
+          : activeTab === 'shelf'
+          ? t.tabShelf
+          : activeTab === 'history'
+          ? t.tabHistory
+          : t.tabSettings,
+        false
+      )}
 
       {/* Main Tab Content */}
       {activeTab === 'search' && (
         <View style={styles.centerSearchLayout}>
           <View style={styles.searchHeroBox}>
-            <Text style={styles.searchPromptBig}>What product would you like to investigate?</Text>
+            <Text style={[styles.searchPromptBig, { color: theme.textPrimary }]}>
+              {t.searchPrompt}
+            </Text>
 
             {/* Big Centered Rounded Search Box */}
-            <View style={styles.bigSearchInputContainer}>
+            <View
+              style={[
+                styles.bigSearchInputContainer,
+                { backgroundColor: theme.cardBg, borderColor: theme.inputBorder },
+              ]}
+            >
               <TextInput
-                style={styles.bigSearchInput}
-                placeholder="Product name or paste link..."
-                placeholderTextColor="#A89EAA"
+                style={[styles.bigSearchInput, { color: theme.inputText }]}
+                placeholder={t.searchPlaceholder}
+                placeholderTextColor={isDarkMode ? '#7A6B74' : '#A89EAA'}
                 value={query}
                 onChangeText={setQuery}
                 onSubmitEditing={() => handleAnalyze()}
@@ -689,19 +931,23 @@ export default function App() {
             </View>
 
             <TouchableOpacity
-              style={[styles.bigSearchActionBtn, loading && { opacity: 0.7 }]}
+              style={[
+                styles.bigSearchActionBtn,
+                { backgroundColor: theme.accent },
+                loading && { opacity: 0.7 },
+              ]}
               onPress={() => handleAnalyze()}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.bigSearchActionBtnText}>Analyze Product</Text>
+                <Text style={styles.bigSearchActionBtnText}>{t.analyzeBtn}</Text>
               )}
             </TouchableOpacity>
 
-            <Text style={styles.searchMicroHint}>
-              MIRA checks reviews, Rosacea/Acne triggers, and shelf duplication.
+            <Text style={[styles.searchMicroHint, { color: theme.textMuted }]}>
+              {t.searchMicroHint}
             </Text>
           </View>
         </View>
@@ -709,109 +955,261 @@ export default function App() {
 
       {activeTab === 'shelf' && (
         <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          <View style={styles.detailCard}>
-            <Text style={styles.detailCardHeader}>Add Product to My Shelf</Text>
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>{t.addProduct}</Text>
             <TextInput
-              style={styles.heroInput}
-              placeholder="Product Name (e.g. NARS Light Reflecting)"
-              placeholderTextColor="#A098A3"
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
+              placeholder={`${t.productName} (e.g. NARS Light Reflecting)`}
+              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
               value={newProdName}
               onChangeText={setNewProdName}
             />
             <TextInput
-              style={styles.heroInput}
-              placeholder="Brand"
-              placeholderTextColor="#A098A3"
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
+              placeholder={t.brand}
+              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
               value={newProdBrand}
               onChangeText={setNewProdBrand}
             />
             <TextInput
-              style={styles.heroInput}
-              placeholder="Your notes (e.g. Loved finish, oxidized after 2h)"
-              placeholderTextColor="#A098A3"
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
+              placeholder={t.notes}
+              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
               value={newProdNotes}
               onChangeText={setNewProdNotes}
             />
-            <TouchableOpacity style={styles.mainActionBtn} onPress={handleAddShelfItem}>
-              <Text style={styles.mainActionBtnText}>Save to Shelf</Text>
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
+              onPress={handleAddShelfItem}
+            >
+              <Text style={styles.mainActionBtnText}>{t.saveToShelf}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={{ marginTop: 14 }}>
-            {inventory.map((item) => (
-              <View key={item.id} style={styles.shelfCard}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.shelfCardTitle}>{item.product_name}</Text>
-                  <TouchableOpacity onPress={() => handleDeleteShelfItem(item.id)}>
-                    <Text style={styles.deleteLinkText}>Remove</Text>
-                  </TouchableOpacity>
+            {inventory.length === 0 ? (
+              <Text style={{ textAlign: 'center', color: theme.textMuted, marginTop: 20 }}>
+                {t.emptyShelf}
+              </Text>
+            ) : (
+              inventory.map((item) => (
+                <View
+                  key={item.id}
+                  style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={[styles.shelfCardTitle, { color: theme.textPrimary }]}>
+                      {item.product_name}
+                    </Text>
+                    <TouchableOpacity onPress={() => handleDeleteShelfItem(item.id)}>
+                      <Text style={styles.deleteLinkText}>{t.delete}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {item.experience_notes ? (
+                    <Text style={[styles.shelfCardNotes, { color: theme.textSecondary }]}>
+                      "{item.experience_notes}"
+                    </Text>
+                  ) : null}
                 </View>
-                {item.experience_notes ? (
-                  <Text style={styles.shelfCardNotes}>"{item.experience_notes}"</Text>
-                ) : null}
-              </View>
-            ))}
+              ))
+            )}
           </View>
         </ScrollView>
       )}
 
       {activeTab === 'history' && (
         <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          {history.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.shelfCard}
-              onPress={() => {
-                setCurrentReport(item);
-                setCurrentScreen('report_detail');
-              }}
-            >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.shelfCardTitle}>{item.product_name}</Text>
-                <View style={styles.historyMatchBadge}>
-                  <Text style={styles.historyMatchBadgeText}>{item.suitability_score}%</Text>
+          {history.length === 0 ? (
+            <Text style={{ textAlign: 'center', color: theme.textMuted, marginTop: 40 }}>
+              {t.emptyHistory}
+            </Text>
+          ) : (
+            history.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
+                onPress={() => {
+                  setCurrentReport(item);
+                  setCurrentScreen('report_detail');
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={[styles.shelfCardTitle, { color: theme.textPrimary }]}>
+                    {item.product_name}
+                  </Text>
+                  <View
+                    style={[
+                      styles.historyMatchBadge,
+                      { backgroundColor: theme.cardBgSecondary },
+                    ]}
+                  >
+                    <Text style={[styles.historyMatchBadgeText, { color: theme.accent }]}>
+                      {item.suitability_score}%
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <Text numberOfLines={2} style={styles.shelfCardNotes}>{item.summary}</Text>
-            </TouchableOpacity>
-          ))}
+                <Text numberOfLines={2} style={[styles.shelfCardNotes, { color: theme.textSecondary }]}>
+                  {item.summary}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
         </ScrollView>
       )}
 
       {activeTab === 'settings' && (
         <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          <View style={styles.detailCard}>
-            <Text style={styles.detailCardHeader}>Skin Attributes & Preferences</Text>
+          {/* 1. Appearance & Language Card */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
+              {t.appearanceAndLang}
+            </Text>
 
-            <Text style={styles.formSectionLabel}>Skin Type</Text>
+            {/* Theme Toggle Buttons */}
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.themeMode}</Text>
+            <View style={styles.gridRow}>
+              <TouchableOpacity
+                style={[
+                  styles.chipButton,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border },
+                  !isDarkMode && { backgroundColor: theme.accent, borderColor: theme.accent },
+                ]}
+                onPress={() => setIsDarkMode(false)}
+              >
+                <Text
+                  style={[
+                    styles.chipButtonText,
+                    { color: theme.textPrimary },
+                    !isDarkMode && { color: '#FFF', fontWeight: '800' },
+                  ]}
+                >
+                  {t.themeLight}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.chipButton,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border },
+                  isDarkMode && { backgroundColor: theme.accent, borderColor: theme.accent },
+                ]}
+                onPress={() => setIsDarkMode(true)}
+              >
+                <Text
+                  style={[
+                    styles.chipButtonText,
+                    { color: theme.textPrimary },
+                    isDarkMode && { color: '#FFF', fontWeight: '800' },
+                  ]}
+                >
+                  {t.themeDark}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Language Toggle Buttons */}
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary, marginTop: 12 }]}>
+              {t.language}
+            </Text>
+            <View style={styles.gridRow}>
+              <TouchableOpacity
+                style={[
+                  styles.chipButton,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border },
+                  language === 'tr' && { backgroundColor: theme.accent, borderColor: theme.accent },
+                ]}
+                onPress={() => setLanguage('tr')}
+              >
+                <Text
+                  style={[
+                    styles.chipButtonText,
+                    { color: theme.textPrimary },
+                    language === 'tr' && { color: '#FFF', fontWeight: '800' },
+                  ]}
+                >
+                  {t.langTr}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.chipButton,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border },
+                  language === 'en' && { backgroundColor: theme.accent, borderColor: theme.accent },
+                ]}
+                onPress={() => setLanguage('en')}
+              >
+                <Text
+                  style={[
+                    styles.chipButtonText,
+                    { color: theme.textPrimary },
+                    language === 'en' && { color: '#FFF', fontWeight: '800' },
+                  ]}
+                >
+                  {t.langEn}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* 2. Skin Attributes & Preferences */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginTop: 14 }]}>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
+              {t.skinPrefsTitle}
+            </Text>
+
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.skinType}</Text>
             <TextInput
-              style={styles.heroInput}
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
               value={profile.skin_type}
               onChangeText={(v) => setProfile({ ...profile, skin_type: v })}
             />
 
-            <Text style={styles.formSectionLabel}>Skin Undertone</Text>
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.undertone}</Text>
             <TextInput
-              style={styles.heroInput}
+              style={[
+                styles.heroInput,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+              ]}
               value={profile.skin_undertone}
               onChangeText={(v) => setProfile({ ...profile, skin_undertone: v })}
             />
 
-            <Text style={styles.formSectionLabel}>Concerns & Triggers</Text>
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.concerns}</Text>
             <View style={styles.gridRow}>
               {['rosacea', 'acne', 'fungal_acne', 'redness', 'pores', 'eczema'].map((c) => {
                 const active = (profile.skin_concerns || []).includes(c);
                 return (
                   <TouchableOpacity
                     key={c}
-                    style={[styles.chipButton, active && styles.chipButtonActive]}
+                    style={[
+                      styles.chipButton,
+                      { backgroundColor: theme.inputBg, borderColor: theme.border },
+                      active && { backgroundColor: theme.accent, borderColor: theme.accent },
+                    ]}
                     onPress={() => {
                       const cur = profile.skin_concerns || [];
                       const updated = active ? cur.filter((i) => i !== c) : [...cur, c];
                       setProfile({ ...profile, skin_concerns: updated });
                     }}
                   >
-                    <Text style={[styles.chipButtonText, active && styles.chipButtonTextActive]}>
+                    <Text
+                      style={[
+                        styles.chipButtonText,
+                        { color: theme.textPrimary },
+                        active && { color: '#FFF', fontWeight: '800' },
+                      ]}
+                    >
                       {c === 'rosacea' ? 'Rosacea' : c === 'acne' ? 'Acne-Prone' : c}
                     </Text>
                   </TouchableOpacity>
@@ -821,21 +1219,32 @@ export default function App() {
 
             {profileSavedMsg ? <Text style={styles.successText}>{profileSavedMsg}</Text> : null}
 
-            <TouchableOpacity style={styles.mainActionBtn} onPress={handleSaveProfile}>
-              <Text style={styles.mainActionBtnText}>Save Preferences</Text>
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
+              onPress={handleSaveProfile}
+            >
+              <Text style={styles.mainActionBtnText}>{t.savePrefs}</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.detailCard, { marginTop: 14 }]}>
-            <Text style={styles.detailCardHeader}>Account & KVKK Privacy</Text>
+          {/* 3. Account & Privacy */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginTop: 14 }]}>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
+              {t.accountPrivacy}
+            </Text>
 
-            <TouchableOpacity style={styles.outlineActionBtn} onPress={handleExportData}>
-              <Text style={styles.outlineActionBtnText}>Export Personal Data (JSON)</Text>
+            <TouchableOpacity
+              style={[styles.outlineActionBtn, { borderColor: theme.accent }]}
+              onPress={handleExportData}
+            >
+              <Text style={[styles.outlineActionBtnText, { color: theme.accent }]}>
+                {t.exportData}
+              </Text>
             </TouchableOpacity>
 
             {exportedDataJson ? (
-              <View style={styles.jsonPreviewBox}>
-                <Text style={styles.jsonPreviewText}>{exportedDataJson}</Text>
+              <View style={[styles.jsonPreviewBox, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
+                <Text style={[styles.jsonPreviewText, { color: theme.textPrimary }]}>{exportedDataJson}</Text>
               </View>
             ) : null}
 
@@ -843,16 +1252,36 @@ export default function App() {
               style={[styles.outlineActionBtn, { borderColor: '#E57373', marginTop: 10 }]}
               onPress={handleDeleteAccount}
             >
-              <Text style={[styles.outlineActionBtnText, { color: '#D32F2F' }]}>Permanently Delete Account</Text>
+              <Text style={[styles.outlineActionBtnText, { color: '#D32F2F' }]}>
+                {t.deleteAccount}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
 
       {/* Clean Bottom Navigation Bar */}
-      <View style={styles.bottomNavBar}>
-        <TouchableOpacity style={styles.navItem} onPress={() => { setActiveTab('search'); setCurrentScreen('search'); }}>
-          <Text style={[styles.navText, activeTab === 'search' && styles.navTextActive]}>Search</Text>
+      <View
+        style={[
+          styles.bottomNavBar,
+          { backgroundColor: theme.navBarBg, borderColor: theme.navBarBorder },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => {
+            setActiveTab('search');
+            setCurrentScreen('search');
+          }}
+        >
+          <Text
+            style={[
+              styles.navText,
+              { color: activeTab === 'search' ? theme.navTextActive : theme.navText },
+            ]}
+          >
+            {t.tabSearch}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
@@ -861,7 +1290,14 @@ export default function App() {
             loadInventory();
           }}
         >
-          <Text style={[styles.navText, activeTab === 'shelf' && styles.navTextActive]}>My Shelf</Text>
+          <Text
+            style={[
+              styles.navText,
+              { color: activeTab === 'shelf' ? theme.navTextActive : theme.navText },
+            ]}
+          >
+            {t.tabShelf}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
@@ -870,10 +1306,24 @@ export default function App() {
             loadHistory();
           }}
         >
-          <Text style={[styles.navText, activeTab === 'history' && styles.navTextActive]}>History</Text>
+          <Text
+            style={[
+              styles.navText,
+              { color: activeTab === 'history' ? theme.navTextActive : theme.navText },
+            ]}
+          >
+            {t.tabHistory}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('settings')}>
-          <Text style={[styles.navText, activeTab === 'settings' && styles.navTextActive]}>Profile & Settings</Text>
+          <Text
+            style={[
+              styles.navText,
+              { color: activeTab === 'settings' ? theme.navTextActive : theme.navText },
+            ]}
+          >
+            {t.tabSettings}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -883,8 +1333,18 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAF6F4' },
   centerContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  authTopBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    gap: 8,
+    width: '100%',
+    maxWidth: 460,
+    alignSelf: 'center',
+  },
 
-  // Top Mauve Header
+  // Top Mauve/Dark Header
   topHeader: {
     backgroundColor: '#6D4658',
     paddingVertical: 14,
@@ -897,8 +1357,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: '#FFF',
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     textAlign: 'center',
+  },
+  headerActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  headerIconPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerIconPillText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '800',
   },
   skinProfileTag: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
