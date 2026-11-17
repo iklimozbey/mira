@@ -1,7 +1,11 @@
+import { Platform } from 'react-native';
 import { UserProfile, ResearchReport, InventoryItem, QuotaInfo } from '../types';
 
-// Default to localhost for web/simulator; replace with local LAN IP when testing on physical phone via Expo Go
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// Automatically use localhost on Web, and Computer's LAN IP (10.150.41.155) when opened via Expo Go on Phone
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? 'http://localhost:8000/api/v1'
+    : 'http://10.150.41.155:8000/api/v1';
 
 class MiraApiClient {
   private token: string | null = null;
