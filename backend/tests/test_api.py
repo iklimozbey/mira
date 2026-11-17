@@ -4,9 +4,28 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from app.main import app
-from app.core.database import Base, engine
+from app.core.database import Base, get_db
+
+# Isolated SQLite database for unit tests to prevent wiping the development/production db
+TEST_DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_mira.db"))
+TEST_DATABASE_URL = f"sqlite:///{TEST_DB_FILE}"
+test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
+
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = override_get_db
 
 
 class MiraBackendTestSuite(unittest.TestCase):
@@ -14,12 +33,21 @@ class MiraBackendTestSuite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        Base.metadata.drop_all(bind=engine)
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.drop_all(bind=test_engine)
+        Base.metadata.create_all(bind=test_engine)
         cls.client = TestClient(app)
         cls.email = "unittest@mira.app"
         cls.password = "securepass123"
         cls.token = None
+
+    @classmethod
+    def tearDownClass(cls):
+        Base.metadata.drop_all(bind=test_engine)
+        if os.path.exists(TEST_DB_FILE):
+            try:
+                os.remove(TEST_DB_FILE)
+            except Exception:
+                pass
 
     def test_01_health_check(self):
         res = self.client.get("/api/v1/health")

@@ -87,13 +87,15 @@ export default function App() {
     } catch (err) {}
   };
 
-  const handleAuth = async (isRegister: boolean) => {
+  const handleAuth = async (isRegister: boolean, overrideEmail?: string, overridePass?: string) => {
+    const targetEmail = (overrideEmail || email || '').trim().toLowerCase();
+    const targetPass = overridePass !== undefined ? overridePass : password;
     setAuthError('');
     try {
       if (isRegister) {
-        await apiClient.register(email, password);
+        await apiClient.register(targetEmail, targetPass);
       }
-      await apiClient.login(email, password);
+      await apiClient.login(targetEmail, targetPass);
       const userProf = await apiClient.getProfile();
       setProfile(userProf);
       await refreshQuota();
@@ -257,7 +259,7 @@ export default function App() {
               onPress={() => {
                 setEmail('demo@mira.app');
                 setPassword('mira1234');
-                handleAuth(false);
+                handleAuth(false, 'demo@mira.app', 'mira1234');
               }}
             >
               <Text style={styles.mainActionBtnText}>Quick Demo Access (One-Tap)</Text>
