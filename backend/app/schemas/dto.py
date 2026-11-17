@@ -35,8 +35,8 @@ class TokenPayload(BaseModel):
 class UserProfileBase(BaseModel):
     skin_type: Optional[str] = None  # oily, dry, combination, sensitive, normal
     skin_undertone: Optional[str] = None  # warm, cool, neutral
-    skin_concerns: List[str] = []  # acne, redness, dark spots, fine lines, etc.
-    allergies_sensitivities: List[str] = []  # fragrance, essential oils, alcohol, etc.
+    skin_concerns: List[str] = []  # rosacea, acne, fungal_acne, redness, eczema, pores
+    allergies_sensitivities: List[str] = []  # fragrance, alcohol, essential_oils, silicone
     budget_level: Optional[str] = "medium"  # low, medium, luxury
 
 
@@ -82,13 +82,13 @@ class InventoryItemResponse(InventoryItemBase):
 
 # --- Research & AI Agent Schemas ---
 class ResearchRequest(BaseModel):
-    query_or_url: str = Field(..., min_length=3, description="Product name or e-commerce URL")
+    query_or_url: str = Field(..., min_length=3, description="Product name or e-commerce/TikTok URL")
 
 
 class SourceItem(BaseModel):
     title: str
     url: str
-    source_type: str = "web_review"  # web_review, youtube, forum, blog
+    source_type: str = "web_review"  # web_review, tiktok_oembed, social_media, ingredient_database
     sentiment: Optional[str] = "neutral"
 
 
@@ -99,6 +99,7 @@ class ResearchReportResponse(BaseModel):
     summary: str
     pros: List[str] = []
     cons: List[str] = []
+    clinical_warnings: List[str] = []
     suitability_score: Optional[int] = Field(None, ge=1, le=100)
     suitability_reason: Optional[str] = None
     reality_check_verdict: str = "CONSIDER"  # BUY, SKIP, REDUNDANT, CONSIDER

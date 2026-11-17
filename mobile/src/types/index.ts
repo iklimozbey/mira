@@ -41,6 +41,7 @@ export interface ResearchReport {
   summary: string;
   pros: string[];
   cons: string[];
+  clinical_warnings: string[];
   suitability_score: number;
   suitability_reason: string;
   reality_check_verdict: string;

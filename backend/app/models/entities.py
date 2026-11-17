@@ -30,8 +30,8 @@ class UserProfile(Base):
     # Skincare & Cosmetic attributes
     skin_type = Column(String(50), nullable=True)  # e.g., oily, dry, combination, sensitive
     skin_undertone = Column(String(50), nullable=True)  # e.g., warm, cool, neutral
-    skin_concerns = Column(JSON, default=list)  # e.g., ["acne", "redness", "hyperpigmentation"]
-    allergies_sensitivities = Column(JSON, default=list)  # e.g., ["fragrance", "niacinamide"]
+    skin_concerns = Column(JSON, default=list)  # e.g., ["rosacea", "acne", "fungal_acne", "eczema", "redness"]
+    allergies_sensitivities = Column(JSON, default=list)  # e.g., ["fragrance", "alcohol", "essential_oils"]
     budget_level = Column(String(50), default="medium")  # low, medium, luxury
     
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -86,6 +86,7 @@ class ResearchReport(Base):
     summary = Column(Text, nullable=False)
     pros = Column(JSON, default=list)  # list of key advantages
     cons = Column(JSON, default=list)  # list of key complaints/cautions
+    clinical_warnings = Column(JSON, default=list)  # Rosacea, acne, comedogenic & allergen trigger warnings
     suitability_score = Column(Integer, nullable=True)  # 1-100 personal compatibility
     suitability_reason = Column(Text, nullable=True)  # rationale based on user profile
     reality_check_verdict = Column(String(50), default="CONSIDER")  # BUY, SKIP, REDUNDANT, CONSIDER

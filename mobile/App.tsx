@@ -255,6 +255,15 @@ export default function App() {
                   <Text style={styles.boxBody}>{currentReport.suitability_reason}</Text>
                 </View>
 
+                {currentReport.clinical_warnings && currentReport.clinical_warnings.length > 0 && (
+                  <View style={styles.clinicalBox}>
+                    <Text style={styles.clinicalTitle}>🩺 Clinical Trigger & Rosacea / Acne Alerts</Text>
+                    {currentReport.clinical_warnings.map((w, idx) => (
+                      <Text key={idx} style={styles.clinicalText}>• {w}</Text>
+                    ))}
+                  </View>
+                )}
+
                 {currentReport.reality_check_reason ? (
                   <View style={styles.realityBox}>
                     <Text style={styles.realityHeading}>
@@ -365,6 +374,31 @@ export default function App() {
                 value={profile.skin_undertone}
                 onChangeText={(v) => setProfile({ ...profile, skin_undertone: v })}
               />
+
+              <Text style={styles.label}>Skin Concerns (tap to toggle Rosacea, Acne, etc.)</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                {['rosacea', 'acne', 'fungal_acne', 'redness', 'eczema', 'pores'].map((concern) => {
+                  const active = (profile.skin_concerns || []).includes(concern);
+                  return (
+                    <TouchableOpacity
+                      key={concern}
+                      style={[
+                        styles.badge,
+                        active && { backgroundColor: '#B56576' },
+                      ]}
+                      onPress={() => {
+                        const list = profile.skin_concerns || [];
+                        const updated = active ? list.filter((c) => c !== concern) : [...list, concern];
+                        setProfile({ ...profile, skin_concerns: updated });
+                      }}
+                    >
+                      <Text style={[styles.badgeText, active && { color: '#FFF' }]}>
+                        {concern === 'rosacea' ? '🌹 Rosacea' : concern === 'acne' ? '🌋 Acne-Prone' : concern}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
               <Text style={styles.label}>Budget Preference (low, medium, luxury)</Text>
               <TextInput
@@ -491,6 +525,9 @@ const styles = StyleSheet.create({
   scoreText: { color: '#1565C0', fontWeight: '700', fontSize: 13 },
   summaryText: { fontSize: 14, color: '#444', lineHeight: 20, marginBottom: 14 },
   personalBox: { backgroundColor: '#FDF6F0', padding: 12, borderRadius: 10, marginBottom: 14 },
+  clinicalBox: { backgroundColor: '#FFEBEE', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: '#EF9A9A' },
+  clinicalTitle: { fontWeight: '700', color: '#C62828', marginBottom: 6, fontSize: 13 },
+  clinicalText: { color: '#4E342E', fontSize: 13, lineHeight: 18, marginBottom: 4 },
   realityBox: { backgroundColor: '#F3E5F5', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: '#CE93D8' },
   realityHeading: { fontWeight: '700', color: '#6A1B9A', marginBottom: 4, fontSize: 13 },
   boxHeading: { fontWeight: '700', color: '#8D5B4C', marginBottom: 4, fontSize: 13 },

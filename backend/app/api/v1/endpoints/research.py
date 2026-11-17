@@ -55,11 +55,10 @@ async def analyze_product(
     Start an automated research workflow:
     0. Verify daily AI usage quota.
     1. Retrieve user profile and past inventory notes.
-    2. Search real-world online discussions and reviews.
-    3. Run AI agent synthesis to produce an unbiased suitability & reality check report.
+    2. Search real-world online discussions, TikTok oEmbed, and Open Beauty Facts INCI list.
+    3. Run 5-Agent AI synthesis including Rosacea & Acne clinical triggers.
     4. Persist query and report to database.
     """
-    # 0. Enforce quota
     quota = check_user_quota(current_user, db)
     if quota["remaining_today"] <= 0:
         raise HTTPException(
@@ -67,7 +66,6 @@ async def analyze_product(
             detail="Daily free AI research limit reached (5/5). Upgrade to MIRA Premium for unlimited research."
         )
 
-    # 1. Fetch user context
     profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
     user_profile_dict = {
         "skin_type": profile.skin_type if profile else None,
@@ -77,14 +75,12 @@ async def analyze_product(
         "budget_level": profile.budget_level if profile else "medium"
     }
 
-    # Fetch inventory notes to check past negative/positive reactions
     inventory_items = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
     past_notes = [
         f"{item.product_name}: {item.experience_notes or 'Owned'} (Rating: {item.rating or '-'}/5)"
         for item in inventory_items
     ]
 
-    # 2. Record initial query in DB
     query_record = ResearchQuery(
         user_id=current_user.id,
         query_text_or_url=request.query_or_url,
@@ -95,10 +91,8 @@ async def analyze_product(
     db.refresh(query_record)
 
     try:
-        # 3. Gather online evidence
         search_results = await search_service.search_reviews(request.query_or_url)
 
-        # 4. Generate AI Agent personalized evaluation
         analysis_result = await ai_agent_service.analyze_product(
             query=request.query_or_url,
             user_profile=user_profile_dict,
@@ -110,19 +104,19 @@ async def analyze_product(
         query_record.product_name = product_name
         query_record.status = "completed"
 
-        # 5. Save report to DB
         report_record = ResearchReport(
             query_id=query_record.id,
             summary=analysis_result.get("summary", ""),
             pros=analysis_result.get("pros", []),
             cons=analysis_result.get("cons", []),
+            clinical_warnings=analysis_result.get("clinical_warnings", []),
             suitability_score=analysis_result.get("suitability_score", 70),
             suitability_reason=analysis_result.get("suitability_reason", ""),
             reality_check_verdict=analysis_result.get("reality_check_verdict", "CONSIDER"),
             reality_check_reason=analysis_result.get("reality_check_reason", ""),
             sources=analysis_result.get("sources", []),
             sponsored_flags=analysis_result.get("sponsored_flags", []),
-            tokens_used=120
+            tokens_used=150
         )
         db.add(report_record)
         db.commit()
@@ -135,6 +129,7 @@ async def analyze_product(
             "summary": report_record.summary,
             "pros": report_record.pros,
             "cons": report_record.cons,
+            "clinical_warnings": report_record.clinical_warnings,
             "suitability_score": report_record.suitability_score,
             "suitability_reason": report_record.suitability_reason,
             "reality_check_verdict": report_record.reality_check_verdict,
@@ -175,6 +170,7 @@ def get_research_history(
                 "summary": q.report.summary,
                 "pros": q.report.pros,
                 "cons": q.report.cons,
+                "clinical_warnings": q.report.clinical_warnings or [],
                 "suitability_score": q.report.suitability_score,
                 "suitability_reason": q.report.suitability_reason,
                 "reality_check_verdict": q.report.reality_check_verdict,
