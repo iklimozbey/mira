@@ -228,6 +228,17 @@ export default function App() {
               <Text style={styles.mainActionBtnText}>Sign In</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: '#B56576', marginTop: 10 }]}
+              onPress={() => {
+                setEmail('demo@mira.app');
+                setPassword('mira1234');
+                handleAuth(false);
+              }}
+            >
+              <Text style={styles.mainActionBtnText}>Quick Demo Access (One-Tap)</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.textOnlyBtn} onPress={() => handleAuth(true)}>
               <Text style={styles.textOnlyBtnText}>Create Account</Text>
             </TouchableOpacity>
