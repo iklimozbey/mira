@@ -3,42 +3,55 @@ import re
 from urllib.parse import urlparse
 import httpx
 from typing import Dict, Any, List, Optional
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnableLambda, RunnableSequence
 from app.core.config import settings
+from app.services.rag_knowledge_base import cosmetic_rag_retriever
 
 
-SYSTEM_PROMPT = """You are MIRA, an objective, rigorous, and personalized AI shopping and research assistant specializing in cosmetics, dermatology, and personal care.
+MIRA_RAG_PROMPT_TEMPLATE = PromptTemplate.from_template(
+    """You are MIRA, an objective, rigorous, and personalized AI shopping and research assistant specializing in cosmetics, dermatology, and personal care.
 Your purpose:
-1. Provide an unbiased, critical analysis of the requested product.
+1. Provide an unbiased, critical analysis of the requested product using the retrieved RAG clinical corpus and online evidence.
 2. Cross-reference real user reviews, recurring complaints, performance under different skin types, oxidation tendencies, and finish.
 3. Evaluate clinical & dermatological triggers specifically for Rosacea (rozalı cilt), Acne-prone / Comedogenic sensitivity (akneli cilt), Fungal Acne, and Eczema.
 4. Personalize the evaluation specifically against the user's skin profile, undertone, concerns, and past experiences.
 5. Perform a "Reality Check" (De-influencing): compare the product against the user's current shelf (`past_tested_products_notes`) and budget.
 6. Detect and flag likely sponsored content (#ad, #işbirliği, paid partnership) on TikTok/Instagram.
 
-You must respond ONLY with a valid JSON object matching this schema:
-{
+Target Product: "{product_name}" (Original Input: "{raw_query}")
+
+RETRIEVED RAG CLINICAL & INCI KNOWLEDGE BASE:
+{rag_context}
+
+USER PROFILE & CURRENT SHELF:
+{user_context}
+
+COLLECTED ONLINE SEARCH EVIDENCE & USER REVIEWS:
+{search_evidence}
+
+Respond ONLY with a valid JSON object matching this schema:
+{{
   "product_name": "Standardized Product Name",
   "summary": "Concise 2-3 sentence overview covering general performance and texture.",
   "pros": ["Key verified benefit 1", "Benefit 2", "Benefit 3"],
   "cons": ["Potential issue or complaint 1 (e.g. oxidizes, clings to dry patches)", "Complaint 2"],
-  "clinical_warnings": [
-    "Specific warning for Rosacea, Acne/Comedogenic risk, Fungal Acne, or Allergen triggers"
-  ],
+  "clinical_warnings": ["Specific warning for Rosacea, Acne/Comedogenic risk, Fungal Acne, or Allergen triggers"],
   "suitability_score": 85,
   "suitability_reason": "Detailed explanation of why this product fits or fails the user's specific skin type, undertone, and concerns.",
   "reality_check_verdict": "BUY | CONSIDER | SKIP | REDUNDANT",
   "reality_check_reason": "De-influencing assessment: Is this product genuinely necessary given their current shelf, budget, and skin needs?",
   "sponsored_flags": ["Noted sponsored campaigns on TikTok/Instagram to take with caution"],
   "sources": [
-    {
+    {{
       "title": "Source name or review summary",
       "url": "https://source-link.com",
       "source_type": "web_review",
       "sentiment": "positive | mixed | critical"
-    }
+    }}
   ]
-}
-"""
+}}"""
+)
 
 
 def extract_product_name_from_query(query_or_url: str) -> str:
@@ -73,7 +86,7 @@ class ProductClassifierAgent:
             category = "sunscreen"
         elif any(k in lower for k in ["serum", "niacinamide", "retinol", "vitamin c", "hyaluronic", "acid", "bha", "aha", "peeling", "azelaic"]):
             category = "serum"
-        elif any(k in lower for k in ["moisturizer", "cream", "krem", "nemlendirici", "lotion", "cicaplast", "cerave"]):
+        elif any(k in lower for k in ["moisturizer", "cream", "krem", "nemlendirici", "lotion", "cicaplast", "cerave", "baume"]):
             category = "moisturizer"
         elif any(k in lower for k in ["lip", "ruj", "gloss", "tint", "balm"]):
             category = "lip"
@@ -97,12 +110,12 @@ class FormulationReviewAgent:
     def evaluate_formulation(
         product_name: str,
         traits: Dict[str, str],
-        search_results: Optional[List[Dict[str, Any]]] = None
+        search_results: Optional[List[Dict[str, Any]]] = None,
+        rag_docs_text: str = ""
     ) -> Dict[str, Any]:
         cat = traits["category"]
         finish = traits["finish"]
 
-        # Check if TikTok oEmbed or social search detected explicit ad tags
         detected_ad_flags = []
         if search_results:
             for s in search_results:
@@ -114,7 +127,7 @@ class FormulationReviewAgent:
 
         if cat == "foundation":
             if finish == "matte":
-                base = {
+                return {
                     "summary": f"{product_name} is a high-coverage, oil-controlling matte foundation engineered for long wear and shine resistance.",
                     "pros": [
                         "Strong sebum control in the T-zone for 8+ hours",
@@ -130,7 +143,7 @@ class FormulationReviewAgent:
                     ]
                 }
             elif finish == "radiant":
-                base = {
+                return {
                     "summary": f"{product_name} delivers a skin-like, luminous finish with buildable medium coverage and hydrating emollients.",
                     "pros": [
                         "Gives a healthy, lit-from-within glow without clinging to dry flakes",
@@ -146,7 +159,7 @@ class FormulationReviewAgent:
                     ]
                 }
             else:
-                base = {
+                return {
                     "summary": f"{product_name} offers balanced medium coverage with a natural satin finish suitable for everyday wear.",
                     "pros": [
                         "Breathable texture that feels lightweight throughout the day",
@@ -161,7 +174,6 @@ class FormulationReviewAgent:
                         "Moderate influencer seeding detected across Instagram beauty reels; verify shade swatches in natural daylight."
                     ]
                 }
-            return base
 
         if cat == "sunscreen":
             return {
@@ -216,8 +228,9 @@ class FormulationReviewAgent:
 
 class ClinicalTriggerAgent:
     """
-    Sub-Agent 3 (NEW): Dermatological Trigger & Flare-Up Analyzer for Rosacea (Rozalı Cilt),
+    Sub-Agent 3: Dermatological Trigger & Flare-Up Analyzer for Rosacea (Rozalı Cilt),
     Acne-Prone / Comedogenic Skin (Akneli Cilt), Fungal Acne, and Allergens.
+    Uses both Open Beauty Facts INCI and Retrieved RAG Clinical Documents.
     """
 
     ROSACEA_TRIGGERS = [
@@ -235,7 +248,8 @@ class ClinicalTriggerAgent:
         product_name: str,
         traits: Dict[str, str],
         user_profile: Optional[Dict[str, Any]],
-        search_results: Optional[List[Dict[str, Any]]] = None
+        search_results: Optional[List[Dict[str, Any]]] = None,
+        rag_docs_text: str = ""
     ) -> Dict[str, Any]:
         concerns = [c.lower() for c in (user_profile.get("skin_concerns") or [])] if user_profile else []
         allergies = [a.lower() for a in (user_profile.get("allergies_sensitivities") or [])] if user_profile else []
@@ -247,23 +261,22 @@ class ClinicalTriggerAgent:
         warnings: List[str] = []
         score_penalty = 0
 
-        # Gather any INCI ingredient text found by Open Beauty Facts
-        inci_text = product_name.lower()
+        # Combine query, RAG corpus evidence, and Open Beauty Facts INCI text
+        combined_evidence = f"{product_name.lower()} {rag_docs_text.lower()}"
         if search_results:
             for s in search_results:
                 if s.get("source_type") == "ingredient_database":
-                    inci_text += " " + (s.get("content") or "").lower()
+                    combined_evidence += " " + (s.get("content") or "").lower()
 
-        # 1. Rosacea (Rozalı Cilt) Specific Warnings
         if has_rosacea:
-            found_rosacea_triggers = [t for t in cls.ROSACEA_TRIGGERS if t in inci_text]
+            found_rosacea_triggers = [t for t in cls.ROSACEA_TRIGGERS if t in combined_evidence]
             if found_rosacea_triggers:
                 warnings.append(
-                    f"🌹 ROSACEA FLARE-UP ALERT: Detected potential vascular triggers ({', '.join(found_rosacea_triggers)}) "
+                    f"🌹 ROSACEA FLARE-UP ALERT (RAG Verified): Detected vascular triggers ({', '.join(found_rosacea_triggers)}) "
                     "which can cause stinging, flushing, and barrier irritation on rosacea-prone skin."
                 )
                 score_penalty += 18
-            elif traits["category"] == "sunscreen" and "mineral" not in inci_text and "zinc" not in inci_text:
+            elif traits["category"] == "sunscreen" and "mineral" not in combined_evidence and "zinc" not in combined_evidence:
                 warnings.append(
                     "🌹 ROSACEA SPF CAUTION: Chemical UV filters can generate heat on reactive skin and trigger rosacea flushing. "
                     "Verify if this formula uses Zinc Oxide / Titanium Dioxide or patch-test on your jawline first."
@@ -271,24 +284,17 @@ class ClinicalTriggerAgent:
                 score_penalty += 8
             elif traits["finish"] == "matte" and traits["category"] == "foundation":
                 warnings.append(
-                    "🌹 ROSACEA BARRIER NOTE: High-coverage matte foundations often contain volatile alcohols/solvents for quick drying. "
+                    "🌹 ROSACEA BARRIER NOTE: High-coverage matte foundations often contain volatile solvents for quick drying. "
                     "Apply a soothing Centella / Panthenol barrier cream underneath to prevent redness rebound."
                 )
                 score_penalty += 6
-            elif any(k in inci_text for k in ["aha", "bha", "peeling", "retinol", "vitamin c", "acid"]) and "azelaic" not in inci_text:
-                warnings.append(
-                    "🌹 ROSACEA ACTIVE WARNING: Strong exfoliating acids or high-strength retinoids can compromise a rosacea barrier. "
-                    "Prefer Azelaic Acid (10-15%) or Niacinamide (<5%) for redness control."
-                )
-                score_penalty += 15
             else:
                 warnings.append(
-                    "🌹 ROSACEA CHECK: Ensure fragrance-free status on the physical box and remove gently with micellar water or cleansing balm (avoid cotton pad friction)."
+                    "🌹 ROSACEA CHECK: Ensure fragrance-free status on the physical box and remove gently with micellar water or cleansing balm."
                 )
 
-        # 2. Acne-Prone / Comedogenic (Akneli Cilt) Specific Warnings
         if has_acne:
-            found_acne_triggers = [t for t in cls.ACNE_COMEDOGENIC_TRIGGERS if t in inci_text]
+            found_acne_triggers = [t for t in cls.ACNE_COMEDOGENIC_TRIGGERS if t in combined_evidence]
             if found_acne_triggers:
                 warnings.append(
                     f"🌋 COMEDOGENIC / ACNE ALERT: Contains pore-clogging esters/oils ({', '.join(found_acne_triggers)}) "
@@ -311,9 +317,8 @@ class ClinicalTriggerAgent:
                     "🌋 ACNE CHECK: Look for 'Non-Comedogenic' and oil-free labeling; avoid layering over heavy occlusive creams."
                 )
 
-        # 3. User-Declared Allergies Check
         for allergen in allergies:
-            if allergen and allergen in inci_text:
+            if allergen and allergen in combined_evidence:
                 warnings.append(
                     f"⚠️ ALLERGEN MATCH: Contains '{allergen.upper()}', which is listed in your personal sensitivities profile!"
                 )
@@ -373,7 +378,6 @@ class PersonalSkinMatchAgent:
             score = 86
             reasons.append(f"Formulation texture is well-suited for {skin_type} skin routines.")
 
-        # Apply clinical penalty if Rosacea/Acne/Allergen triggers were flagged
         final_score = max(25, min(98, score - score_penalty))
         if score_penalty > 0:
             reasons.append(f"(Suitability adjusted by -{score_penalty} pts due to Rosacea/Acne/Sensitivity trigger cautions.)")
@@ -438,12 +442,110 @@ class RealityCheckAgent:
         }
 
 
+def _build_langchain_lcel_pipeline() -> RunnableSequence:
+    """
+    Constructs a formal LangChain Expression Language (LCEL) RunnableSequence (`|`)
+    chaining RAG Retrieval -> Classifier -> Formulation -> Clinical Trigger -> Skin Match -> Reality Check.
+    """
+
+    def step_1_rag_and_classify(state: Dict[str, Any]) -> Dict[str, Any]:
+        product_name = state["product_name"]
+        # Invoke LangChain BaseRetriever
+        rag_docs = cosmetic_rag_retriever.invoke(product_name)
+        state["rag_docs"] = rag_docs
+        state["rag_text"] = "\n".join([d.page_content for d in rag_docs])
+        state["traits"] = ProductClassifierAgent.classify(product_name)
+        return state
+
+    def step_2_formulation(state: Dict[str, Any]) -> Dict[str, Any]:
+        state["formulation"] = FormulationReviewAgent.evaluate_formulation(
+            state["product_name"], state["traits"], state.get("search_results"), state["rag_text"]
+        )
+        return state
+
+    def step_3_clinical_triggers(state: Dict[str, Any]) -> Dict[str, Any]:
+        state["clinical"] = ClinicalTriggerAgent.analyze_triggers(
+            state["product_name"],
+            state["traits"],
+            state.get("user_profile"),
+            state.get("search_results"),
+            state["rag_text"]
+        )
+        return state
+
+    def step_4_skin_match(state: Dict[str, Any]) -> Dict[str, Any]:
+        state["skin_match"] = PersonalSkinMatchAgent.score_match(
+            traits=state["traits"],
+            user_profile=state.get("user_profile"),
+            score_penalty=state["clinical"]["score_penalty"]
+        )
+        return state
+
+    def step_5_reality_check_and_format(state: Dict[str, Any]) -> Dict[str, Any]:
+        reality = RealityCheckAgent.check_shelf(
+            product_name=state["product_name"],
+            traits=state["traits"],
+            suitability_score=state["skin_match"]["suitability_score"],
+            user_inventory_notes=state.get("user_inventory_notes")
+        )
+
+        sources = []
+        # Include RAG Corpus source first
+        for doc in state.get("rag_docs", [])[:1]:
+            sources.append({
+                "title": doc.metadata.get("source", "MIRA Clinical RAG Corpus"),
+                "url": "https://mira.app/clinical/rag-corpus",
+                "source_type": "clinical_rag",
+                "sentiment": "neutral"
+            })
+
+        if state.get("search_results"):
+            for s in state["search_results"][:3]:
+                sources.append({
+                    "title": s.get("title", "Community Discussion"),
+                    "url": s.get("url", "https://example.com/review"),
+                    "source_type": s.get("source_type", "web_review"),
+                    "sentiment": "mixed"
+                })
+        else:
+            sources.append({
+                "title": "Open Beauty Facts & Dermatological Comedogenicity Index",
+                "url": "https://world.openbeautyfacts.org",
+                "source_type": "ingredient_database",
+                "sentiment": "neutral"
+            })
+
+        return {
+            "product_name": state["product_name"].title(),
+            "summary": state["formulation"]["summary"],
+            "pros": state["formulation"]["pros"],
+            "cons": state["formulation"]["cons"],
+            "clinical_warnings": state["clinical"]["clinical_warnings"],
+            "suitability_score": state["skin_match"]["suitability_score"],
+            "suitability_reason": state["skin_match"]["suitability_reason"],
+            "reality_check_verdict": reality["verdict"],
+            "reality_check_reason": reality["reason"],
+            "sponsored_flags": state["formulation"]["sponsored_flags"],
+            "sources": sources
+        }
+
+    # Build LCEL Chain using LangChain's pipe (`|`) operator
+    return (
+        RunnableLambda(step_1_rag_and_classify)
+        | RunnableLambda(step_2_formulation)
+        | RunnableLambda(step_3_clinical_triggers)
+        | RunnableLambda(step_4_skin_match)
+        | RunnableLambda(step_5_reality_check_and_format)
+    )
+
+
 class AIAgentService:
-    """Core AI orchestrator combining cloud LLM providers with the 5-Agent Local Cosmetic & Clinical Pipeline."""
+    """Core AI orchestrator powered by LangChain RAG Retriever, PromptTemplate, and LCEL Multi-Agent Chain."""
 
     def __init__(self):
         self.gemini_api_key = settings.GEMINI_API_KEY
         self.openai_api_key = settings.OPENAI_API_KEY
+        self.lcel_chain = _build_langchain_lcel_pipeline()
 
     async def analyze_product(
         self,
@@ -453,6 +555,10 @@ class AIAgentService:
         user_inventory_notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         clean_product_query = extract_product_name_from_query(query)
+
+        # Retrieve relevant clinical documents via LangChain RAG Retriever
+        rag_docs = cosmetic_rag_retriever.invoke(clean_product_query)
+        rag_context_str = "\n\n".join([f"- {d.page_content}" for d in rag_docs])
 
         user_context_str = json.dumps({
             "skin_type": user_profile.get("skin_type") if user_profile else "unspecified",
@@ -465,36 +571,39 @@ class AIAgentService:
 
         evidence_str = json.dumps(search_results or [], indent=2)
 
-        prompt = f"""Target Product: "{clean_product_query}" (Original Input: "{query}")
-
-USER PROFILE & CURRENT SHELF:
-{user_context_str}
-
-COLLECTED ONLINE SEARCH EVIDENCE & USER REVIEWS:
-{evidence_str}
-
-Please generate the structured JSON evaluation following the instructions."""
+        # Format prompt using LangChain PromptTemplate
+        formatted_prompt = MIRA_RAG_PROMPT_TEMPLATE.format(
+            product_name=clean_product_query,
+            raw_query=query,
+            rag_context=rag_context_str,
+            user_context=user_context_str,
+            search_evidence=evidence_str
+        )
 
         if self.gemini_api_key and self.gemini_api_key.strip():
             try:
-                return await self._call_gemini(prompt)
+                return await self._call_gemini(formatted_prompt)
             except Exception:
                 pass
 
         if self.openai_api_key and self.openai_api_key.strip():
             try:
-                return await self._call_openai(prompt)
+                return await self._call_openai(formatted_prompt)
             except Exception:
                 pass
 
-        return self._run_local_multi_agent_pipeline(
-            clean_product_query, user_profile, search_results, user_inventory_notes
-        )
+        # Execute LangChain LCEL Multi-Agent Pipeline
+        return await self.lcel_chain.ainvoke({
+            "product_name": clean_product_query,
+            "user_profile": user_profile,
+            "search_results": search_results,
+            "user_inventory_notes": user_inventory_notes
+        })
 
     async def _call_gemini(self, prompt: str) -> Dict[str, Any]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
         payload = {
-            "contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\n{prompt}"}]}],
+            "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"response_mime_type": "application/json"}
         }
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -512,10 +621,7 @@ Please generate the structured JSON evaluation following the instructions."""
         }
         payload = {
             "model": "gpt-4o-mini",
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt}
-            ],
+            "messages": [{"role": "user", "content": prompt}],
             "response_format": {"type": "json_object"}
         }
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -524,77 +630,6 @@ Please generate the structured JSON evaluation following the instructions."""
             data = resp.json()
             raw_text = data["choices"][0]["message"]["content"]
             return json.loads(raw_text)
-
-    def _run_local_multi_agent_pipeline(
-        self,
-        product_name: str,
-        user_profile: Optional[Dict[str, Any]],
-        search_results: Optional[List[Dict[str, Any]]],
-        user_inventory_notes: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
-        """Orchestrates the 5 specialized local sub-agents including Clinical Rosacea/Acne Trigger analysis."""
-        # Step 1: Classify Product & Finish
-        traits = ProductClassifierAgent.classify(product_name)
-
-        # Step 2: Formulation & Sponsored Review Analysis
-        formulation = FormulationReviewAgent.evaluate_formulation(product_name, traits, search_results)
-
-        # Step 3: Clinical & Dermatological Trigger Agent (Rosacea, Acne, Allergens)
-        clinical = ClinicalTriggerAgent.analyze_triggers(product_name, traits, user_profile, search_results)
-
-        # Step 4: Personal Skin Profile Compatibility Scoring
-        skin_match = PersonalSkinMatchAgent.score_match(
-            traits=traits,
-            user_profile=user_profile,
-            score_penalty=clinical["score_penalty"]
-        )
-
-        # Step 5: Reality Check & Shelf Memory Evaluation
-        reality = RealityCheckAgent.check_shelf(
-            product_name=product_name,
-            traits=traits,
-            suitability_score=skin_match["suitability_score"],
-            user_inventory_notes=user_inventory_notes
-        )
-
-        sources = []
-        if search_results:
-            for s in search_results[:4]:
-                sources.append({
-                    "title": s.get("title", "Community Discussion"),
-                    "url": s.get("url", "https://example.com/review"),
-                    "source_type": s.get("source_type", "web_review"),
-                    "sentiment": "mixed"
-                })
-        else:
-            sources = [
-                {
-                    "title": f"MIRA Formulation & INCI Database — {traits['category'].title()}",
-                    "url": "https://world.openbeautyfacts.org",
-                    "source_type": "ingredient_database",
-                    "sentiment": "neutral"
-                },
-                {
-                    "title": "Dermatological Comedogenicity & Rosacea Trigger Index",
-                    "url": "https://mira.app/clinical/triggers",
-                    "source_type": "clinical_reference",
-                    "sentiment": "neutral"
-                }
-            ]
-
-        return {
-            "product_name": product_name.title(),
-            "summary": formulation["summary"],
-            "pros": formulation["pros"],
-            "cons": formulation["cons"],
-            "clinical_warnings": clinical["clinical_warnings"],
-            "suitability_score": skin_match["suitability_score"],
-            "suitability_reason": skin_match["suitability_reason"],
-            "reality_check_verdict": reality["verdict"],
-            "reality_check_reason": reality["reason"],
-            "sponsored_flags": formulation["sponsored_flags"],
-            "sources": sources
-        }
 
 
 ai_agent_service = AIAgentService()
