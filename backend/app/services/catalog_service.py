@@ -1,182 +1,167 @@
 from typing import List, Dict, Any, Optional
 
-# Curated catalog of top rated products by brand and category with high-res product visual URLs
+# Curated catalog of top rated products with reliable emoji/visual indicators and clear Pros/Cons
 POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
     # Maybelline Lips
     {
         "brand": "maybelline",
         "category": "lip",
-        "product_name": "Maybelline SuperStay Vinyl Ink Liquid Lipstick",
+        "product_name": "Maybelline SuperStay Vinyl Ink",
         "rating": 4.8,
         "review_count": 8420,
-        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Longwear Shiny Finish",
-        "brief_highlight": "Up to 16HR transfer-resistant wear with instant vinyl shine. Non-sticky formula."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "16 Saat Kalıcı Parlak",
+        "key_pro": "Bulaşmayan, 16 saat kalıcı parlak vinyl bitiş",
+        "key_con": "Çıkarmak için çift aşamalı yağ bazlı temizleyici şart"
     },
     {
         "brand": "maybelline",
         "category": "lip",
-        "product_name": "Maybelline Lifter Gloss with Hyaluronic Acid",
+        "product_name": "Maybelline Lifter Gloss",
         "rating": 4.7,
         "review_count": 6150,
-        "image_url": "https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Hydrating Plump Finish",
-        "brief_highlight": "Infused with Hyaluronic Acid for fuller, intensely hydrated lips without stinging."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Hyaluronik Asitli Parlatıcı",
+        "key_pro": "Dudakları yakmadan anında dolgunlaştırır ve nemlendirir",
+        "key_con": "Yapışkan hissi az ama yemek sonrası tazeleme ister"
     },
     {
         "brand": "maybelline",
         "category": "lip",
-        "product_name": "Maybelline SuperStay Matte Ink Liquid Lipstick",
+        "product_name": "Maybelline SuperStay Matte Ink",
         "rating": 4.6,
         "review_count": 12890,
-        "image_url": "https://images.unsplash.com/photo-1599732434440-62136015b6b8?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Ultra-Matte Longwear",
-        "brief_highlight": "Flawless saturated matte finish that lasts through food and drinks for up to 16 hours."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Ultra Mat Likit",
+        "key_pro": "Yemeğe, içeceğe ve maskeye tam dayanıklı sıfır transfer",
+        "key_con": "Dudağı kurutabilir, öncesinde nemlendirici balm şart"
     },
     {
         "brand": "maybelline",
         "category": "lip",
-        "product_name": "Maybelline Color Sensational Creamy Matte Lipstick",
+        "product_name": "Maybelline Color Sensational Matte",
         "rating": 4.4,
         "review_count": 4310,
-        "image_url": "https://images.unsplash.com/photo-1591360236480-4ed861025fa1?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Comfortable Matte Bullet",
-        "brief_highlight": "Enriched with nourishing sesame oil and pure pigments for comfortable daily wear."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Konforlu Klasik Ruj",
+        "key_pro": "Dudak çizgilerine dolmayan yumuşak saten-mat doku",
+        "key_con": "Likit rujlar kadar uzun süre kalıcı değil"
     },
 
     # Maybelline Mascaras
     {
         "brand": "maybelline",
         "category": "mascara",
-        "product_name": "Maybelline Lash Sensational Sky High Mascara",
+        "product_name": "Maybelline Sky High Mascara",
         "rating": 4.8,
         "review_count": 15400,
-        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Flex Tower Brush",
-        "brief_highlight": "Bamboo extract formula delivering limitless length and lightweight volume."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "badge": "Sonsuz Uzunluk",
+        "key_pro": "Esnek fırçasıyla en kısa kirpikleri bile tel tel uzatır",
+        "key_con": "İki kattan fazla sürülürse hafif topaklanma yapabilir"
     },
     {
         "brand": "maybelline",
         "category": "mascara",
-        "product_name": "Maybelline Lash Sensational Full Fan Effect Mascara",
+        "product_name": "Maybelline Lash Sensational Fan",
         "rating": 4.6,
         "review_count": 9800,
-        "image_url": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Curved Fan Brush",
-        "brief_highlight": "10 layers of bristles capturing every lash for a wide-open multiplied fan effect."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "badge": "Yelpaze Hacim",
+        "key_pro": "Kıvrık fırçasıyla kirpikleri dipten kaldırır ve hacim verir",
+        "key_con": "Göz kapağı çok yağlıysa gün sonuna doğru hafif akma yapabilir"
     },
 
     # Maybelline Foundations
     {
         "brand": "maybelline",
         "category": "foundation",
-        "product_name": "Maybelline Fit Me Matte + Poreless Foundation",
+        "product_name": "Maybelline Fit Me Matte + Poreless",
         "rating": 4.6,
         "review_count": 14200,
-        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Matte Oil-Control",
-        "brief_highlight": "Micro-powders absorb shine and blur visible pores for normal to oily skin."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "badge": "Gözenek Gizleyici Mat",
+        "key_pro": "T bölgesindeki parlamayı alır ve gözenekleri pürüzsüzleştirir",
+        "key_con": "Kuru bölgelere tutunur, yarım ton oksitlenme yapabilir"
     },
     {
         "brand": "maybelline",
         "category": "foundation",
-        "product_name": "Maybelline SuperStay 30H Lumi-Matte Foundation",
+        "product_name": "Maybelline SuperStay Lumi-Matte",
         "rating": 4.5,
         "review_count": 5100,
-        "image_url": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Air-Light Lumi-Matte",
-        "brief_highlight": "Sweat-resistant, breathable high coverage with a subtle skin-like satin luminescence."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "badge": "Hafif Işıltılı Mat",
+        "key_pro": "Maske hissi vermeyen nefes alan hafif yüksek kapatıcılık",
+        "key_con": "Kuru ciltlerde gün içinde pudralı görünebilir"
     },
 
     # L'Oreal Products
     {
         "brand": "loreal",
         "category": "foundation",
-        "product_name": "L'Oreal Infallible 24H Fresh Wear Foundation",
+        "product_name": "L'Oreal Infallible 24H Fresh Wear",
         "rating": 4.7,
         "review_count": 11200,
-        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Breathable Satin",
-        "brief_highlight": "Ultra-thin breathable liquid formula with sweat and transfer resistance."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "badge": "Nefes Alan Saten",
+        "key_pro": "Terlemeye dayanıklı, cildi boğmayan doğal saten bitiş",
+        "key_con": "Oksitlenmemesi için bir ton açık renk seçilmeli"
     },
     {
         "brand": "loreal",
         "category": "mascara",
-        "product_name": "L'Oreal Telescopic Original Lengthening Mascara",
+        "product_name": "L'Oreal Telescopic Mascara",
         "rating": 4.8,
         "review_count": 13900,
-        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Precision Comb",
-        "brief_highlight": "Iconic precision flat comb brush that separates and lengthens lashes by up to 60%."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "badge": "Taraklı Ekstra Uzunluk",
+        "key_pro": "Düz tarak uçlu fırçasıyla kirpikleri yapıştırmadan uzatır",
+        "key_con": "Hacimden ziyade sadece uzunluk odaklı bir üründür"
     },
 
     # MAC Products
     {
         "brand": "mac",
         "category": "lip",
-        "product_name": "MAC Retro Matte Lipstick (Ruby Woo / Velvet Teddy)",
+        "product_name": "MAC Retro Matte (Velvet Teddy)",
         "rating": 4.8,
         "review_count": 16500,
-        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Iconic Ultra-Matte",
-        "brief_highlight": "Zero-shine intense matte bullet with world-renowned pigment saturation."
-    },
-    {
-        "brand": "mac",
-        "category": "foundation",
-        "product_name": "MAC Studio Fix Fluid SPF 15 24HR Matte Foundation",
-        "rating": 4.6,
-        "review_count": 14100,
-        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Oil-Control Matte",
-        "brief_highlight": "Medium-to-full buildable coverage with all-day oil and shine control."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Kült Mat Ruj",
+        "key_pro": "Tek sürüşte yoğun renk veren dünyaca ünlü ikonik matlık",
+        "key_con": "Dudakta kuruluk hissi bırakabilir, pürüzsüz dudak ister"
     },
 
-    # La Roche-Posay (Skincare & Sunscreen)
+    # La Roche-Posay
     {
         "brand": "la roche",
         "category": "sunscreen",
-        "product_name": "La Roche-Posay Anthelios UVMune 400 Invisible Fluid SPF50+",
+        "product_name": "La Roche-Posay Anthelios UVMune 400",
         "rating": 4.9,
         "review_count": 18200,
-        "image_url": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Ultra-Long UVA Protection",
-        "brief_highlight": "Mexoryl 400 filter protecting against deep cellular UV damage. Non-greasy, non-stinging."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "badge": "Görünmez Akışkan SPF 50+",
+        "key_pro": "Beyazlık bırakmaz, göz yakmaz, makyaj altında soyulmaz",
+        "key_con": "Çok yağlı ciltlerde gün ortasında hafif parlama yapabilir"
     },
     {
         "brand": "la roche",
         "category": "moisturizer",
-        "product_name": "La Roche-Posay Cicaplast Baume B5+ Soothing Cream",
+        "product_name": "La Roche-Posay Cicaplast Baume B5+",
         "rating": 4.9,
         "review_count": 21000,
-        "image_url": "https://images.unsplash.com/photo-1608248597359-009117865239?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "Multi-Purpose Barrier Repair",
-        "brief_highlight": "Madecassoside + 5% Panthenol + Tribioma to restore and soothe irritated/rosacea barriers."
-    },
-
-    # CeraVe Products
-    {
-        "brand": "cerave",
-        "category": "moisturizer",
-        "product_name": "CeraVe Moisturizing Cream with 3 Essential Ceramides",
-        "rating": 4.8,
-        "review_count": 25000,
-        "image_url": "https://images.unsplash.com/photo-1608248597359-009117865239?auto=format&fit=crop&w=400&q=80",
-        "finish_or_tag": "MVE Technology Hydration",
-        "brief_highlight": "24-hour continuous hydration with skin-identical ceramides and hyaluronic acid."
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "badge": "Yoğun Bariyer Onarıcı",
+        "key_pro": "Rozasea kızarıklığını ve tahriş olmuş bariyeri anında yatıştırır",
+        "key_con": "Ağır yapılıdır, akneli yağlı ciltler sadece ince tabaka sürmeli"
     }
 ]
 
 
 def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
-    """
-    Detects if the user typed a broad brand + category inquiry (e.g. 'maybelline ruj', 'loreal fondoten')
-    without specifying a concrete product line.
-    Returns matched brand, category, and ranked list of popular products.
-    """
     lower = query.lower().strip()
 
-    # Identify brand
     matched_brand = None
     if any(b in lower for b in ["maybelline", "meybilin"]):
         matched_brand = "maybelline"
@@ -191,7 +176,6 @@ def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
     elif any(b in lower for b in ["nars"]):
         matched_brand = "nars"
 
-    # Identify category
     matched_category = None
     if any(c in lower for c in ["ruj", "lipstick", "lip", "gloss", "parlatici"]):
         matched_category = "lip"
@@ -206,7 +190,6 @@ def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
     elif any(c in lower for c in ["serum"]):
         matched_category = "serum"
 
-    # If both brand and category are detected, check if a specific product line was mentioned
     specific_lines = [
         "vinyl", "matte ink", "superstay", "fit me", "lifter", "sky high",
         "infallible", "telescopic", "ruby woo", "velvet teddy", "studio fix",
@@ -214,9 +197,7 @@ def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
     ]
     is_specific = any(line in lower for line in specific_lines)
 
-    # If it's a broad query (e.g. 'maybelline ruj')
     if matched_brand and matched_category and not is_specific:
-        # Filter and rank products by rating descending
         matched_items = [
             p for p in POPULAR_BRAND_CATALOG
             if p["brand"] == matched_brand and p["category"] == matched_category
@@ -224,18 +205,16 @@ def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
         matched_items.sort(key=lambda x: (x["rating"], x["review_count"]), reverse=True)
 
         if matched_items:
-            brand_title = "Maybelline New York" if matched_brand == "maybelline" else matched_brand.upper()
-            cat_title = "Ruj ve Dudak Ürünleri" if matched_category == "lip" else (
-                "Fondötenler" if matched_category == "foundation" else (
-                    "Maskaralar" if matched_category == "mascara" else (
-                        "Güneş Kremleri" if matched_category == "sunscreen" else "Cilt Bakım Ürünleri"
-                    )
+            brand_title = "Maybelline" if matched_brand == "maybelline" else matched_brand.upper()
+            cat_title = "Rujları" if matched_category == "lip" else (
+                "Fondötenleri" if matched_category == "foundation" else (
+                    "Maskaraları" if matched_category == "mascara" else "Güneş Kremleri"
                 )
             )
             return {
                 "brand": matched_brand,
                 "category": matched_category,
-                "disambiguation_message": f"En popüler ve en yüksek puanlı {brand_title} {cat_title} sıralandı. Hangi ürünü incelemek istersiniz?",
+                "disambiguation_message": f"En Çok Tercih Edilen {brand_title} {cat_title}",
                 "suggested_products": matched_items
             }
 

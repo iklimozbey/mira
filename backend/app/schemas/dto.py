@@ -98,9 +98,12 @@ class ProductSuggestionItem(BaseModel):
     category: str
     rating: float  # e.g., 4.8
     review_count: int  # e.g., 1420
-    image_url: str
-    finish_or_tag: str
-    brief_highlight: str
+    image_url: Optional[str] = None
+    badge: Optional[str] = None
+    key_pro: Optional[str] = None
+    key_con: Optional[str] = None
+    finish_or_tag: Optional[str] = None
+    brief_highlight: Optional[str] = None
 
 
 class ResearchReportResponse(BaseModel):

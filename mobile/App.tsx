@@ -14,6 +14,25 @@ import {
 import { apiClient } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 
+const getCategoryIcon = (category?: string) => {
+  switch (category?.toLowerCase()) {
+    case 'lip':
+      return '💄';
+    case 'mascara':
+      return '👁️';
+    case 'foundation':
+      return '✨';
+    case 'sunscreen':
+      return '☀️';
+    case 'moisturizer':
+      return '🧴';
+    case 'serum':
+      return '💧';
+    default:
+      return '💄';
+  }
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'shelf' | 'history' | 'settings'>('search');
 
@@ -341,43 +360,67 @@ export default function App() {
           <TouchableOpacity style={styles.backButton} onPress={() => setCurrentScreen('search')}>
             <Text style={styles.backButtonText}>← Search</Text>
           </TouchableOpacity>
-          <Text style={styles.topHeaderTitle}>Product Choices</Text>
+          <Text style={styles.topHeaderTitle}>Ürün Seçenekleri</Text>
           <View style={{ width: 60 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.detailScrollContent}>
-          <Text style={styles.disambiguationHeader}>{currentReport.disambiguation_message}</Text>
-          <Text style={styles.disambiguationSub}>Sıralama: En yüksek kullanıcı puanı ve değerlendirme sayısı</Text>
+        <ScrollView contentContainerStyle={styles.suggestionsScrollContent}>
+          <View style={styles.disambiguationCard}>
+            <Text style={styles.disambiguationHeader}>{currentReport.disambiguation_message}</Text>
+            <Text style={styles.disambiguationSub}>Puan ve değerlendirme sayısına göre sıralandı</Text>
+          </View>
 
           {currentReport.suggested_products.map((item, idx) => (
-            <View key={idx} style={styles.suggestionCard}>
-              <Image source={{ uri: item.image_url }} style={styles.suggestionImage} resizeMode="cover" />
-              <View style={styles.suggestionInfo}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <View style={styles.rankBadge}>
-                    <Text style={styles.rankBadgeText}>#{idx + 1}</Text>
-                  </View>
-                  <View style={styles.ratingBox}>
-                    <Text style={styles.ratingStar}>★</Text>
-                    <Text style={styles.ratingScore}>{item.rating}</Text>
-                    <Text style={styles.ratingCount}>({item.review_count.toLocaleString()})</Text>
-                  </View>
+            <View key={idx} style={styles.compactProductBox}>
+              {/* Header: Icon + Product Name + Star Rating */}
+              <View style={styles.compactBoxHeader}>
+                <View style={styles.productIconCircle}>
+                  <Text style={styles.productIconEmoji}>{getCategoryIcon(item.category)}</Text>
                 </View>
-
-                <Text style={styles.suggestionName}>{item.product_name}</Text>
-                <Text style={styles.suggestionTag}>{item.finish_or_tag}</Text>
-                <Text style={styles.suggestionHighlight}>{item.brief_highlight}</Text>
-
-                <TouchableOpacity
-                  style={styles.inspectBtn}
-                  onPress={() => {
-                    setQuery(item.product_name);
-                    handleAnalyze(item.product_name);
-                  }}
-                >
-                  <Text style={styles.inspectBtnText}>Bu Ürünü Detaylı İncele →</Text>
-                </TouchableOpacity>
+                <View style={styles.compactTitleArea}>
+                  <View style={styles.compactRowBetween}>
+                    <Text style={styles.compactRankText}>#{idx + 1}</Text>
+                    <View style={styles.starRatingBadge}>
+                      <Text style={styles.starRatingText}>⭐ {item.rating}</Text>
+                      <Text style={styles.starReviewCount}>({item.review_count.toLocaleString()})</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.compactProductName}>{item.product_name}</Text>
+                  {item.badge ? (
+                    <View style={styles.compactBadgePill}>
+                      <Text style={styles.compactBadgeText}>{item.badge}</Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
+
+              {/* Bold Green Pro (+) and Bold Red Con (-) Only - Zero Small Grey Text */}
+              <View style={styles.compactFeaturesContainer}>
+                {item.key_pro ? (
+                  <View style={styles.featureRowPro}>
+                    <Text style={styles.featureIconPro}>✓</Text>
+                    <Text style={styles.featureTextPro}>{item.key_pro}</Text>
+                  </View>
+                ) : null}
+
+                {item.key_con ? (
+                  <View style={styles.featureRowCon}>
+                    <Text style={styles.featureIconCon}>✕</Text>
+                    <Text style={styles.featureTextCon}>{item.key_con}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Action Button */}
+              <TouchableOpacity
+                style={styles.inspectBtnCompact}
+                onPress={() => {
+                  setQuery(item.product_name);
+                  handleAnalyze(item.product_name);
+                }}
+              >
+                <Text style={styles.inspectBtnTextCompact}>Bu Ürünü İncele →</Text>
+              </TouchableOpacity>
             </View>
           ))}
         </ScrollView>
@@ -443,18 +486,18 @@ export default function App() {
           {/* Pros & Cons Card */}
           <View style={styles.detailCard}>
             <Text style={styles.detailCardHeader}>Key Benefits</Text>
-            {currentReport.pros.map((p, idx) => (
+            {currentReport.pros?.map((p, idx) => (
               <Text key={idx} style={styles.proItem}>✓  {p}</Text>
             ))}
 
             <Text style={[styles.detailCardHeader, { marginTop: 16 }]}>Recurring Complaints</Text>
-            {currentReport.cons.map((c, idx) => (
+            {currentReport.cons?.map((c, idx) => (
               <Text key={idx} style={styles.conItem}>✕  {c}</Text>
             ))}
           </View>
 
           {/* Sponsored Content Warnings */}
-          {currentReport.sponsored_flags.length > 0 && (
+          {currentReport.sponsored_flags && currentReport.sponsored_flags.length > 0 && (
             <View style={styles.sponsoredCard}>
               <Text style={styles.sponsoredHeader}>Sponsored Marketing Notice</Text>
               {currentReport.sponsored_flags.map((flag, i) => (
@@ -501,7 +544,7 @@ export default function App() {
                 placeholderTextColor="#A89EAA"
                 value={query}
                 onChangeText={setQuery}
-                onSubmitEditing={handleAnalyze}
+                onSubmitEditing={() => handleAnalyze()}
               />
             </View>
 
@@ -939,40 +982,160 @@ const styles = StyleSheet.create({
   textOnlyBtn: { marginTop: 14, alignItems: 'center' },
   textOnlyBtnText: { color: '#7A4D62', fontSize: 13, fontWeight: '600' },
 
-  // Suggestions List Styles
-  disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#3A2732', marginBottom: 4, lineHeight: 24 },
-  disambiguationSub: { fontSize: 12, color: '#887580', marginBottom: 16 },
-  suggestionCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
+  // Suggestions List Styles (Compact Centered Box Layout)
+  suggestionsScrollContent: { padding: 16, alignItems: 'center', paddingBottom: 60 },
+  disambiguationCard: { width: '100%', maxWidth: 440, marginBottom: 16, alignItems: 'center' },
+  disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#2E1E26', textAlign: 'center', lineHeight: 24 },
+  disambiguationSub: { fontSize: 12.5, color: '#7A4D62', marginTop: 4, fontWeight: '600', textAlign: 'center' },
+  compactProductBox: {
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    maxWidth: 440,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1.5,
     borderColor: '#EFE5EA',
-    shadowColor: '#6D4658',
+    shadowColor: '#5C384B',
     shadowOpacity: 0.08,
-    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
     elevation: 3,
   },
-  suggestionImage: { width: '100%', height: 160, backgroundColor: '#FAF6F8' },
-  suggestionInfo: { padding: 16 },
-  rankBadge: { backgroundColor: '#F3E8EE', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  rankBadgeText: { fontSize: 11, fontWeight: '800', color: '#7A4D62' },
-  ratingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ratingStar: { color: '#F59E0B', fontSize: 14 },
-  ratingScore: { fontSize: 13, fontWeight: '800', color: '#2E1E26' },
-  ratingCount: { fontSize: 11, color: '#888' },
-  suggestionName: { fontSize: 16, fontWeight: '700', color: '#2E1E26', marginTop: 8 },
-  suggestionTag: { fontSize: 12, color: '#7A4D62', fontWeight: '600', marginTop: 2 },
-  suggestionHighlight: { fontSize: 12.5, color: '#685A62', marginTop: 6, lineHeight: 18 },
-  inspectBtn: {
+  compactBoxHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  productIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#FAF0F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#F2DDE7',
+  },
+  productIconEmoji: {
+    fontSize: 24,
+  },
+  compactTitleArea: {
+    flex: 1,
+  },
+  compactRowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  compactRankText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#7A4D62',
+    backgroundColor: '#F5EBF0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  starRatingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  starRatingText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#D97706',
+  },
+  starReviewCount: {
+    fontSize: 11,
+    color: '#887580',
+    fontWeight: '600',
+  },
+  compactProductName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1F141B',
+    marginTop: 2,
+  },
+  compactBadgePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F8EEF3',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  compactBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7A4D62',
+  },
+  compactFeaturesContainer: {
+    marginBottom: 12,
+    gap: 6,
+  },
+  featureRowPro: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  featureIconPro: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#16A34A',
+    marginRight: 8,
+    marginTop: 1,
+  },
+  featureTextPro: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#15803D',
+    flex: 1,
+    lineHeight: 18,
+  },
+  featureRowCon: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+  },
+  featureIconCon: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#DC2626',
+    marginRight: 8,
+    marginTop: 1,
+  },
+  featureTextCon: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#B91C1C',
+    flex: 1,
+    lineHeight: 18,
+  },
+  inspectBtnCompact: {
     backgroundColor: '#7A4D62',
-    paddingVertical: 12,
+    paddingVertical: 11,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 12,
   },
-  inspectBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  inspectBtnTextCompact: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
 
   // Shelf & History
   tabScrollContent: { padding: 18, paddingBottom: 50 },

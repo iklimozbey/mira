@@ -40,9 +40,12 @@ export interface ProductSuggestionItem {
   category: string;
   rating: number;
   review_count: number;
-  image_url: string;
-  finish_or_tag: string;
-  brief_highlight: string;
+  image_url?: string;
+  badge?: string;
+  key_pro?: string;
+  key_con?: string;
+  finish_or_tag?: string;
+  brief_highlight?: string;
 }
 
 export interface ResearchReport {
