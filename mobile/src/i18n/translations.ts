@@ -81,6 +81,21 @@ export const translations = {
     accountPrivacy: 'Hesap & KVKK Gizliliği',
     exportData: 'Kişisel Verilerimi İndir (JSON)',
     deleteAccount: 'Hesabımı Kalıcı Olarak Sil',
+
+    // Skin Type Filter Modal
+    skinModalTitle: 'Cilt Tipinizi Seçin',
+    skinModalSub: 'Uyum puanları ve tavsiyeler seçtiğiniz cilt tipine göre anında güncellenir.',
+    skinCombination: 'Karma Cilt',
+    skinCombinationDesc: 'T bölgesi yağlanmaya, yanaklar kuruluğa yatkın',
+    skinDry: 'Kuru Cilt',
+    skinDryDesc: 'Neme ihtiyaç duyar, pullanma ve gerginlik hissi olur',
+    skinOily: 'Yağlı Cilt',
+    skinOilyDesc: 'Parlama ve gözenek belirginliği yüksek',
+    skinSensitive: 'Hassas Cilt',
+    skinSensitiveDesc: 'Kızarıklık, yanma ve rozasea reaksiyonuna açık',
+    skinNormal: 'Normal Cilt',
+    skinNormalDesc: 'Dengeli sebum ve nem oranı',
+    close: 'Kapat',
   },
   en: {
     // Header & Navigation
@@ -162,5 +177,20 @@ export const translations = {
     accountPrivacy: 'Account & GDPR / KVKK Privacy',
     exportData: 'Export Personal Data (JSON)',
     deleteAccount: 'Permanently Delete Account',
+
+    // Skin Type Filter Modal
+    skinModalTitle: 'Select Your Skin Type',
+    skinModalSub: 'Suitability scores and reviews calibrate instantly to your choice.',
+    skinCombination: 'Combination Skin',
+    skinCombinationDesc: 'Oily T-zone, normal to dry cheeks',
+    skinDry: 'Dry Skin',
+    skinDryDesc: 'Needs intense hydration, prone to flaking',
+    skinOily: 'Oily Skin',
+    skinOilyDesc: 'Excess sebum, visible pores and shine',
+    skinSensitive: 'Sensitive Skin',
+    skinSensitiveDesc: 'Prone to redness, stinging, and rosacea',
+    skinNormal: 'Normal Skin',
+    skinNormalDesc: 'Well-balanced moisture and oil levels',
+    close: 'Close',
   }
 };

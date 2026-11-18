@@ -10,11 +10,13 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
+  Modal,
 } from 'react-native';
 import { apiClient } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 import { lightTheme, darkTheme, ThemeColors } from './src/theme/colors';
 import { translations, Language } from './src/i18n/translations';
+import { translateText } from './src/i18n/contentTranslator';
 
 const getCategoryIcon = (categoryOrName?: string) => {
   const lower = (categoryOrName || '').toLowerCase();
@@ -40,12 +42,32 @@ const getVerdictColor = (verdict?: string) => {
   }
 };
 
+const getLocalizedSkinType = (skinType?: string, lang: Language = 'tr') => {
+  const st = (skinType || '').toLowerCase();
+  if (lang === 'tr') {
+    if (st === 'dry') return 'KURU';
+    if (st === 'oily') return 'YAĞLI';
+    if (st === 'combination') return 'KARMA';
+    if (st === 'sensitive') return 'HASSAS';
+    if (st === 'normal') return 'NORMAL';
+    return 'CİLT';
+  } else {
+    if (st === 'dry') return 'DRY';
+    if (st === 'oily') return 'OILY';
+    if (st === 'combination') return 'COMBINATION';
+    if (st === 'sensitive') return 'SENSITIVE';
+    if (st === 'normal') return 'NORMAL';
+    return 'SKIN';
+  }
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'shelf' | 'history' | 'settings'>('search');
 
   // Appearance & Language state
   const [language, setLanguage] = useState<Language>('tr');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [showSkinTypeModal, setShowSkinTypeModal] = useState<boolean>(false);
 
   const t = translations[language];
   const theme = isDarkMode ? darkTheme : lightTheme;
@@ -235,6 +257,20 @@ export default function App() {
     }
   };
 
+  const handleSelectSkinType = async (newType: string) => {
+    setShowSkinTypeModal(false);
+    const updated = { ...profile, skin_type: newType };
+    setProfile(updated);
+    try {
+      await apiClient.updateProfile({ skin_type: newType });
+    } catch (err) {}
+
+    // Live recalibration of current product report if open
+    if (currentReport && currentReport.product_name) {
+      handleAnalyze(currentReport.product_name);
+    }
+  };
+
   const renderTopHeader = (title: string, showBack: boolean = false, onBack?: () => void) => (
     <View style={[styles.topHeader, { backgroundColor: theme.headerBg }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -273,19 +309,96 @@ export default function App() {
           <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
         </TouchableOpacity>
 
-        {/* Skin Type Tag */}
-        <View
+        {/* Interactive Skin Type Filter Button */}
+        <TouchableOpacity
           style={[
-            styles.skinProfileTag,
+            styles.skinProfileTagButton,
             { backgroundColor: isDarkMode ? '#3E2A35' : 'rgba(255, 255, 255, 0.25)' },
           ]}
+          onPress={() => setShowSkinTypeModal(true)}
         >
           <Text style={styles.skinProfileTagText}>
-            {profile.skin_type ? profile.skin_type.toUpperCase() : t.profileTag}
+            {getLocalizedSkinType(profile.skin_type, language)} ▼
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
+  );
+
+  const renderSkinTypeModal = () => (
+    <Modal
+      visible={showSkinTypeModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowSkinTypeModal(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalBackdrop}
+        activeOpacity={1}
+        onPress={() => setShowSkinTypeModal(false)}
+      >
+        <View
+          style={[
+            styles.skinModalBox,
+            { backgroundColor: theme.cardBg, borderColor: theme.border },
+          ]}
+        >
+          <Text style={[styles.skinModalTitle, { color: theme.textPrimary }]}>
+            {t.skinModalTitle}
+          </Text>
+          <Text style={[styles.skinModalSub, { color: theme.textSecondary }]}>
+            {t.skinModalSub}
+          </Text>
+
+          <View style={styles.skinModalOptionsList}>
+            {[
+              { key: 'combination', icon: '🌸', name: t.skinCombination, desc: t.skinCombinationDesc },
+              { key: 'dry', icon: '💧', name: t.skinDry, desc: t.skinDryDesc },
+              { key: 'oily', icon: '✨', name: t.skinOily, desc: t.skinOilyDesc },
+              { key: 'sensitive', icon: '🌿', name: t.skinSensitive, desc: t.skinSensitiveDesc },
+              { key: 'normal', icon: '⚪', name: t.skinNormal, desc: t.skinNormalDesc },
+            ].map((opt) => {
+              const isSelected = profile.skin_type === opt.key;
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[
+                    styles.skinOptionCard,
+                    { backgroundColor: isDarkMode ? theme.inputBg : '#FAF7F8', borderColor: theme.border },
+                    isSelected && { backgroundColor: theme.cardBgSecondary, borderColor: theme.accent, borderWidth: 1.5 },
+                  ]}
+                  onPress={() => handleSelectSkinType(opt.key)}
+                >
+                  <Text style={styles.skinOptionIcon}>{opt.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.skinOptionName,
+                        { color: theme.textPrimary },
+                        isSelected && { color: theme.accent, fontWeight: '800' },
+                      ]}
+                    >
+                      {opt.name}
+                    </Text>
+                    <Text style={[styles.skinOptionDesc, { color: theme.textMuted }]}>
+                      {opt.desc}
+                    </Text>
+                  </View>
+                  {isSelected && <Text style={[styles.skinOptionCheck, { color: theme.accent }]}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.skinModalCloseBtn, { backgroundColor: theme.accent }]}
+            onPress={() => setShowSkinTypeModal(false)}
+          >
+            <Text style={styles.skinModalCloseBtnText}>{t.close}</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Modal>
   );
 
   // 1. Auth View (Modern Minimalist Card)
@@ -483,6 +596,7 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        {renderSkinTypeModal()}
       </SafeAreaView>
     );
   }
@@ -627,6 +741,7 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        {renderSkinTypeModal()}
       </SafeAreaView>
     );
   }
@@ -719,7 +834,7 @@ export default function App() {
             {/* Summary */}
             {currentReport.summary ? (
               <Text style={[styles.boxSummaryText, { color: theme.textSecondary }]}>
-                {currentReport.summary}
+                {translateText(currentReport.summary, language)}
               </Text>
             ) : null}
 
@@ -740,7 +855,7 @@ export default function App() {
                   {t.skinAnalysisTitle}
                 </Text>
                 <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
-                  {currentReport.suitability_reason}
+                  {translateText(currentReport.suitability_reason, language)}
                 </Text>
               </View>
             ) : null}
@@ -760,7 +875,7 @@ export default function App() {
                   {t.shelfCheckTitle}
                 </Text>
                 <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
-                  {currentReport.reality_check_reason}
+                  {translateText(currentReport.reality_check_reason, language)}
                 </Text>
               </View>
             ) : null}
@@ -777,7 +892,7 @@ export default function App() {
                 <View style={{ flex: 1 }}>
                   {currentReport.clinical_warnings.map((w, idx) => (
                     <Text key={idx} style={[styles.boxWarningText, { color: theme.warningText }]}>
-                      {w}
+                      {translateText(w, language)}
                     </Text>
                   ))}
                 </View>
@@ -797,7 +912,9 @@ export default function App() {
                       ]}
                     >
                       <Text style={styles.featureIconPro}>✓</Text>
-                      <Text style={[styles.featureTextPro, { color: theme.proText }]}>{p}</Text>
+                      <Text style={[styles.featureTextPro, { color: theme.proText }]}>
+                        {translateText(p, language)}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -814,7 +931,9 @@ export default function App() {
                       ]}
                     >
                       <Text style={styles.featureIconCon}>✕</Text>
-                      <Text style={[styles.featureTextCon, { color: theme.conText }]}>{c}</Text>
+                      <Text style={[styles.featureTextCon, { color: theme.conText }]}>
+                        {translateText(c, language)}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -885,6 +1004,7 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        {renderSkinTypeModal()}
       </SafeAreaView>
     );
   }
@@ -1326,6 +1446,7 @@ export default function App() {
           </Text>
         </TouchableOpacity>
       </View>
+      {renderSkinTypeModal()}
     </SafeAreaView>
   );
 }
@@ -1382,6 +1503,81 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
+  },
+  skinProfileTagButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  skinModalBox: {
+    width: '100%',
+    maxWidth: 440,
+    borderRadius: 24,
+    padding: 22,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  skinModalTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  skinModalSub: {
+    fontSize: 12.5,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 16,
+    lineHeight: 18,
+  },
+  skinModalOptionsList: {
+    gap: 8,
+    marginBottom: 16,
+  },
+  skinOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  skinOptionIcon: {
+    fontSize: 22,
+    marginRight: 12,
+  },
+  skinOptionName: {
+    fontSize: 14.5,
+    fontWeight: '700',
+  },
+  skinOptionDesc: {
+    fontSize: 11.5,
+    marginTop: 2,
+  },
+  skinOptionCheck: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginLeft: 8,
+  },
+  skinModalCloseBtn: {
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  skinModalCloseBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   skinProfileTagText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
   backButton: { paddingVertical: 4, paddingHorizontal: 8 },
