@@ -1,11 +1,21 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { UserProfile, ResearchReport, InventoryItem, QuotaInfo } from '../types';
 
-// Automatically use localhost on Web, and Computer's LAN IP (10.150.41.155) when opened via Expo Go on Phone
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:8000/api/v1'
-    : 'http://10.150.41.155:8000/api/v1';
+// Dynamic host detection: use host IP from Expo Go on mobile, localhost on Web, or current WiFi IP fallback
+const getBaseUrl = (): string => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000/api/v1';
+  }
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    (Constants as any).manifest?.debuggerHost ||
+    (Constants as any).manifest2?.extra?.expoGo?.debuggerHost;
+  const ip = hostUri ? hostUri.split(':')[0] : '192.168.43.158';
+  return `http://${ip}:8000/api/v1`;
+};
+
+const API_BASE_URL = getBaseUrl();
 
 class MiraApiClient {
   private token: string | null = null;
