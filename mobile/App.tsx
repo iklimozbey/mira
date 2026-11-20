@@ -19,17 +19,6 @@ import { lightTheme, darkTheme, ThemeColors } from './src/theme/colors';
 import { translations, Language } from './src/i18n/translations';
 import { translateText } from './src/i18n/contentTranslator';
 
-const getCategoryIcon = (categoryOrName?: string) => {
-  const lower = (categoryOrName || '').toLowerCase();
-  if (lower.includes('lip') || lower.includes('ruj') || lower.includes('gloss')) return '💄';
-  if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel')) return '👁️';
-  if (lower.includes('foundation') || lower.includes('fondöten') || lower.includes('fit me')) return '✨';
-  if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf')) return '☀️';
-  if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('baume')) return '🧴';
-  if (lower.includes('serum') || lower.includes('hyaluron')) return '💧';
-  return '✨';
-};
-
 const getProductImage = (productName?: string, category?: string, imageUrl?: string): string => {
   const lower = ((productName || '') + ' ' + (category || '')).toLowerCase();
   if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel') || lower.includes('lash') || lower.includes('curl')) {
@@ -101,7 +90,7 @@ const getVerdictColor = (verdict?: string) => {
     case 'REDUNDANT':
       return { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' };
     default:
-      return { bg: '#F3E8EE', text: '#7A4D62', border: '#EBD7E2' };
+      return { bg: '#FFF1F5', text: '#FF1493', border: '#FECDD3' };
   }
 };
 
@@ -369,7 +358,7 @@ export default function App() {
           ]}
           onPress={() => setIsDarkMode(!isDarkMode)}
         >
-          <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
+          <Text style={styles.headerIconPillText}>{isDarkMode ? 'DARK' : 'LIGHT'}</Text>
         </TouchableOpacity>
 
         {/* Skin Quiz / Onboarding Trigger Button */}
@@ -381,7 +370,7 @@ export default function App() {
           onPress={() => setIsOnboardingCompleted(false)}
         >
           <Text style={styles.skinProfileTagText}>
-            {language === 'tr' ? '📝 Test' : '📝 Quiz'}
+            {language === 'tr' ? 'TEST' : 'QUIZ'}
           </Text>
         </TouchableOpacity>
 
@@ -428,11 +417,11 @@ export default function App() {
 
           <View style={styles.skinModalOptionsList}>
             {[
-              { key: 'combination', icon: '🌸', name: t.skinCombination, desc: t.skinCombinationDesc },
-              { key: 'dry', icon: '💧', name: t.skinDry, desc: t.skinDryDesc },
-              { key: 'oily', icon: '✨', name: t.skinOily, desc: t.skinOilyDesc },
-              { key: 'sensitive', icon: '🌿', name: t.skinSensitive, desc: t.skinSensitiveDesc },
-              { key: 'normal', icon: '⚪', name: t.skinNormal, desc: t.skinNormalDesc },
+              { key: 'combination', code: 'COMBI', name: t.skinCombination, desc: t.skinCombinationDesc },
+              { key: 'dry', code: 'DRY', name: t.skinDry, desc: t.skinDryDesc },
+              { key: 'oily', code: 'OILY', name: t.skinOily, desc: t.skinOilyDesc },
+              { key: 'sensitive', code: 'SENSITIVE', name: t.skinSensitive, desc: t.skinSensitiveDesc },
+              { key: 'normal', code: 'NORMAL', name: t.skinNormal, desc: t.skinNormalDesc },
             ].map((opt) => {
               const isSelected = profile.skin_type === opt.key;
               return (
@@ -440,12 +429,14 @@ export default function App() {
                   key={opt.key}
                   style={[
                     styles.skinOptionCard,
-                    { backgroundColor: isDarkMode ? theme.inputBg : '#FAF7F8', borderColor: theme.border },
+                    { backgroundColor: isDarkMode ? theme.inputBg : '#FFFFFF', borderColor: theme.border },
                     isSelected && { backgroundColor: theme.cardBgSecondary, borderColor: theme.accent, borderWidth: 1.5 },
                   ]}
                   onPress={() => handleSelectSkinType(opt.key)}
                 >
-                  <Text style={styles.skinOptionIcon}>{opt.icon}</Text>
+                  <View style={[styles.skinBadgePill, { backgroundColor: isSelected ? theme.accent : (isDarkMode ? '#27272A' : '#F4F4F5') }]}>
+                    <Text style={[styles.skinBadgePillText, { color: isSelected ? '#FFFFFF' : theme.textSecondary }]}>{opt.code}</Text>
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text
                       style={[
@@ -460,7 +451,7 @@ export default function App() {
                       {opt.desc}
                     </Text>
                   </View>
-                  {isSelected && <Text style={[styles.skinOptionCheck, { color: theme.accent }]}>✓</Text>}
+                  {isSelected && <Text style={[styles.skinOptionCheck, { color: theme.accent }]}>[OK]</Text>}
                 </TouchableOpacity>
               );
             })}
@@ -502,7 +493,7 @@ export default function App() {
             ]}
             onPress={() => setIsDarkMode(!isDarkMode)}
           >
-            <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
+            <Text style={styles.headerIconPillText}>{isDarkMode ? 'DARK' : 'LIGHT'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -544,14 +535,14 @@ export default function App() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.mainActionBtn, { backgroundColor: '#B56576', marginTop: 10 }]}
+              style={[styles.mainActionBtn, { backgroundColor: '#000000', borderWidth: 1.5, borderColor: theme.accent, marginTop: 10 }]}
               onPress={() => {
                 setEmail('demo@mira.app');
                 setPassword('mira1234');
                 handleAuth(false, 'demo@mira.app', 'mira1234');
               }}
             >
-              <Text style={styles.mainActionBtnText}>{t.quickDemo}</Text>
+              <Text style={[styles.mainActionBtnText, { color: theme.accent }]}>{t.quickDemo}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.textOnlyBtn} onPress={() => handleAuth(true)}>
@@ -573,7 +564,7 @@ export default function App() {
               onPress={() => handleAuth(false, undefined, undefined, true)}
             >
               <Text style={[styles.textOnlyBtnText, { color: theme.accent, fontWeight: '700' }]}>
-                {language === 'tr' ? '📝 Cilt Testini Başlat / Anketi Aç' : '📝 Start Skin Quiz / Open Survey'}
+                {language === 'tr' ? 'CİLT TESTİNİ BAŞLAT' : 'START SKIN QUIZ'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -739,7 +730,7 @@ export default function App() {
                       #{idx + 1}
                     </Text>
                     <View style={styles.starRatingBadge}>
-                      <Text style={styles.starRatingText}>⭐ {item.rating}</Text>
+                      <Text style={styles.starRatingText}>★ {item.rating}</Text>
                       <Text style={[styles.starReviewCount, { color: theme.textMuted }]}>
                         ({item.review_count.toLocaleString()})
                       </Text>
@@ -765,7 +756,7 @@ export default function App() {
                       { backgroundColor: theme.proBg, borderColor: theme.proBorder },
                     ]}
                   >
-                    <Text style={styles.featureIconPro}>✓</Text>
+                    <Text style={styles.featureIconPro}>[+]</Text>
                     <Text style={[styles.featureTextPro, { color: theme.proText }]}>{item.key_pro}</Text>
                   </View>
                 ) : null}
@@ -777,7 +768,7 @@ export default function App() {
                       { backgroundColor: theme.conBg, borderColor: theme.conBorder },
                     ]}
                   >
-                    <Text style={styles.featureIconCon}>✕</Text>
+                    <Text style={styles.featureIconCon}>[−]</Text>
                     <Text style={[styles.featureTextCon, { color: theme.conText }]}>{item.key_con}</Text>
                   </View>
                 ) : null}
@@ -814,7 +805,7 @@ export default function App() {
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
-                  <Text style={styles.clearInputBtnText}>✕</Text>
+                  <Text style={styles.clearInputBtnText}>×</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -944,7 +935,7 @@ export default function App() {
                 }}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 13 }}>⚡</Text>
+                  <View style={{ backgroundColor: '#0284C7', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 }}><Text style={{ fontSize: 9, fontWeight: '900', color: '#FFF' }}>CPU</Text></View>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: isDarkMode ? '#38BDF8' : '#0284C7' }}>
                     {language === 'tr' ? 'Laya Karar Motoru (CPU)' : 'Laya Decision Engine (CPU)'}
                   </Text>
@@ -971,8 +962,8 @@ export default function App() {
                     }}
                   >
                     {currentReport.decision_engine.guardrails_passed
-                      ? (language === 'tr' ? '🛡️ Guardrail: Güvenli' : '🛡️ Guardrail: Safe')
-                      : (language === 'tr' ? '🛡️ Guardrail: Veto' : '🛡️ Guardrail: Veto')}
+                      ? (language === 'tr' ? 'KLİNİK: ONAYLI' : 'GUARDRAIL: PASS')
+                      : (language === 'tr' ? 'KLİNİK: VETO' : 'GUARDRAIL: VETO')}
                   </Text>
                 </View>
               </View>
@@ -1028,7 +1019,7 @@ export default function App() {
                   { backgroundColor: theme.warningBg, borderColor: theme.warningBorder },
                 ]}
               >
-                <Text style={styles.boxWarningIcon}>⚠️</Text>
+                <View style={{ backgroundColor: '#D97706', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginRight: 8, marginTop: 1 }}><Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>CAUTION</Text></View>
                 <View style={{ flex: 1 }}>
                   {currentReport.clinical_warnings.map((w, idx) => (
                     <Text key={idx} style={[styles.boxWarningText, { color: theme.warningText }]}>
@@ -1039,7 +1030,7 @@ export default function App() {
               </View>
             ) : null}
 
-            {/* Key Benefits (Green ✓) and Complaints (Red ✕) */}
+            {/* Key Benefits (+) and Complaints (-) */}
             <View style={styles.boxProsConsContainer}>
               {currentReport.pros && currentReport.pros.length > 0 ? (
                 <View style={{ gap: 6 }}>
@@ -1051,7 +1042,7 @@ export default function App() {
                         { backgroundColor: theme.proBg, borderColor: theme.proBorder },
                       ]}
                     >
-                      <Text style={styles.featureIconPro}>✓</Text>
+                      <Text style={styles.featureIconPro}>[+]</Text>
                       <Text style={[styles.featureTextPro, { color: theme.proText }]}>
                         {translateText(p, language)}
                       </Text>
@@ -1070,7 +1061,7 @@ export default function App() {
                         { backgroundColor: theme.conBg, borderColor: theme.conBorder },
                       ]}
                     >
-                      <Text style={styles.featureIconCon}>✕</Text>
+                      <Text style={styles.featureIconCon}>[−]</Text>
                       <Text style={[styles.featureTextCon, { color: theme.conText }]}>
                         {translateText(c, language)}
                       </Text>
@@ -1123,7 +1114,7 @@ export default function App() {
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
-                  <Text style={styles.clearInputBtnText}>✕</Text>
+                  <Text style={styles.clearInputBtnText}>×</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -1187,24 +1178,28 @@ export default function App() {
               style={[styles.dashboardQuizBtn, { backgroundColor: theme.accent }]}
               onPress={() => setIsOnboardingCompleted(false)}
             >
-              <Text style={styles.dashboardQuizBtnText}>{language === 'tr' ? '📝 Testi Aç' : '📝 Quiz'}</Text>
+              <Text style={styles.dashboardQuizBtnText}>{language === 'tr' ? 'TESTİ AÇ' : 'QUIZ'}</Text>
             </TouchableOpacity>
           </View>
 
           {/* 2. Key Metrics Trio (Laya Karar Motoru, Guardrail Güvenliği, Dolap) */}
           <View style={styles.metricsRow}>
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-              <Text style={styles.metricIcon}>⚡</Text>
+              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#0C2A44' : '#E0F2FE' }]}>
+                <Text style={{ color: '#0284C7', fontSize: 10, fontWeight: '900' }}>CPU</Text>
+              </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
                 {language === 'tr' ? 'Laya Motoru' : 'Laya Engine'}
               </Text>
               <Text style={[styles.metricValue, { color: '#0284C7' }]}>
-                {language === 'tr' ? 'Sistem 1 (CPU)' : 'System 1 (CPU)'}
+                {language === 'tr' ? 'Sistem 1 (30ms)' : 'System 1 (30ms)'}
               </Text>
             </View>
 
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-              <Text style={styles.metricIcon}>🛡️</Text>
+              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#052E16' : '#DCFCE7' }]}>
+                <Text style={{ color: '#10B981', fontSize: 10, fontWeight: '900' }}>SAFE</Text>
+              </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
                 {language === 'tr' ? 'Guardrails' : 'Guardrails'}
               </Text>
@@ -1214,7 +1209,9 @@ export default function App() {
             </View>
 
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-              <Text style={styles.metricIcon}>🧴</Text>
+              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#2A141D' : '#FFF1F5' }]}>
+                <Text style={{ color: theme.accent, fontSize: 10, fontWeight: '900' }}>BAG</Text>
+              </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
                 {language === 'tr' ? 'Dolabım' : 'My Shelf'}
               </Text>
@@ -1245,7 +1242,7 @@ export default function App() {
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
-                  <Text style={styles.clearInputBtnText}>✕</Text>
+                  <Text style={styles.clearInputBtnText}>×</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -1293,16 +1290,17 @@ export default function App() {
             </Text>
             <View style={styles.categoryGrid}>
               {[
-                { name: language === 'tr' ? 'Rujlar' : 'Lipsticks', query: 'ruj', icon: '💄', img: BEAUTY_IMAGES.lipstick },
-                { name: language === 'tr' ? 'Maskaralar' : 'Mascaras', query: 'maskara', icon: '👁️', img: BEAUTY_IMAGES.mascara },
-                { name: language === 'tr' ? 'Fondötenler' : 'Foundations', query: 'fondöten', icon: '✨', img: BEAUTY_IMAGES.foundation },
-                { name: language === 'tr' ? 'Serumlar' : 'Serums', query: 'serum', icon: '💧', img: BEAUTY_IMAGES.serum },
-                { name: language === 'tr' ? 'Güneş Kremleri' : 'Sunscreens', query: 'güneş kremi', icon: '☀️', img: BEAUTY_IMAGES.sunscreen },
-                { name: language === 'tr' ? 'Nemlendiriciler' : 'Moisturizers', query: 'nemlendirici', icon: '🧴', img: BEAUTY_IMAGES.moisturizer },
+                { name: language === 'tr' ? 'RUJ' : 'LIPSTICK', query: 'ruj', img: BEAUTY_IMAGES.lipstick },
+                { name: language === 'tr' ? 'MASKARA' : 'MASCARA', query: 'maskara', img: BEAUTY_IMAGES.mascara },
+                { name: language === 'tr' ? 'FONDÖTEN' : 'FOUNDATION', query: 'fondöten', img: BEAUTY_IMAGES.foundation },
+                { name: language === 'tr' ? 'SERUM' : 'SERUM', query: 'serum', img: BEAUTY_IMAGES.serum },
+                { name: language === 'tr' ? 'GÜNEŞ KREMİ' : 'SUNSCREEN', query: 'güneş kremi', img: BEAUTY_IMAGES.sunscreen },
+                { name: language === 'tr' ? 'NEMLENDİRİCİ' : 'MOISTURIZER', query: 'nemlendirici', img: BEAUTY_IMAGES.moisturizer },
               ].map((cat) => (
                 <TouchableOpacity
                   key={cat.query}
-                  style={[styles.categoryTile, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
+                  style={[styles.categoryTile, { backgroundColor: '#000000', borderColor: theme.border }]}
+                  activeOpacity={0.85}
                   onPress={() => {
                     setQuery(cat.query);
                     handleAnalyze(cat.query);
@@ -1310,7 +1308,6 @@ export default function App() {
                 >
                   <Image source={{ uri: cat.img }} style={styles.categoryTileImage} resizeMode="cover" />
                   <View style={styles.categoryTileOverlay}>
-                    <Text style={styles.categoryTileEmoji}>{cat.icon}</Text>
                     <Text style={styles.categoryTileName}>{cat.name}</Text>
                   </View>
                 </TouchableOpacity>
@@ -1699,7 +1696,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF6F4' },
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
   centerContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   authTopBar: {
     flexDirection: 'row',
@@ -1712,20 +1709,22 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  // Top Mauve/Dark Header
+  // Top Sephora Noir Black Header
   topHeader: {
-    backgroundColor: '#6D4658',
+    backgroundColor: '#000000',
     paddingVertical: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#27272A',
   },
   topHeaderTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#FFF',
-    letterSpacing: 1.5,
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 2,
     textAlign: 'center',
   },
   headerActionsRow: {
@@ -1734,19 +1733,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   headerIconPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerIconPillText: {
-    color: '#FFF',
-    fontSize: 11,
+    color: '#FFFFFF',
+    fontSize: 10.5,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   skinProfileTag: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#18181B',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -1760,7 +1760,7 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -1768,11 +1768,11 @@ const styles = StyleSheet.create({
   skinModalBox: {
     width: '100%',
     maxWidth: 440,
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 22,
-    borderWidth: 1.5,
+    borderWidth: 1,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -1780,6 +1780,7 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '800',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   skinModalSub: {
     fontSize: 12.5,
@@ -1796,37 +1797,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
   },
+  skinBadgePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  skinBadgePillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
   skinOptionIcon: {
-    fontSize: 22,
+    fontSize: 20,
     marginRight: 12,
   },
   skinOptionName: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '700',
   },
   skinOptionDesc: {
-    fontSize: 11.5,
+    fontSize: 11,
     marginTop: 2,
   },
   skinOptionCheck: {
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: '900',
     marginLeft: 8,
   },
   skinModalCloseBtn: {
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
   skinModalCloseBtnText: {
     color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
-  skinProfileTagText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
+  skinProfileTagText: { color: '#FFF', fontSize: 10.5, fontWeight: '800', letterSpacing: 0.5 },
   backButton: { paddingVertical: 4, paddingHorizontal: 8 },
   backButtonText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
 
@@ -1844,50 +1858,54 @@ const styles = StyleSheet.create({
   },
   searchPromptBig: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#3C2833',
+    fontWeight: '800',
+    color: '#0A0A0A',
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 30,
+    letterSpacing: -0.3,
   },
   bigSearchInputContainer: {
     width: '100%',
     backgroundColor: '#FFF',
-    borderRadius: 18,
+    borderRadius: 14,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#E8DCE1',
-    shadowColor: '#8C566C',
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     elevation: 3,
     marginBottom: 16,
   },
   bigSearchInput: {
-    fontSize: 16,
-    color: '#2A1F26',
+    fontSize: 15,
+    color: '#0A0A0A',
   },
   bigSearchActionBtn: {
     width: '100%',
-    backgroundColor: '#7A4D62',
+    backgroundColor: '#000000',
     paddingVertical: 15,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#7A4D62',
-    shadowOpacity: 0.25,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#FF1493',
   },
   bigSearchActionBtnText: {
     color: '#FFF',
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   searchMicroHint: {
     fontSize: 12,
-    color: '#9E8D96',
+    color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 16,
     lineHeight: 18,
@@ -1896,27 +1914,27 @@ const styles = StyleSheet.create({
   // Unified Centered Single-Box Product Report Styles
   detailCard: {
     backgroundColor: '#FFF',
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#EFE5EA',
+    borderColor: '#E5E7EB',
     marginBottom: 14,
   },
-  detailCardHeader: { fontSize: 15, fontWeight: '700', color: '#3A2732', marginBottom: 10 },
+  detailCardHeader: { fontSize: 15, fontWeight: '800', color: '#0A0A0A', marginBottom: 10, letterSpacing: 0.5 },
   unifiedScrollContent: { padding: 16, alignItems: 'center', paddingBottom: 60, width: '100%' },
   unifiedProductBox: {
     backgroundColor: '#FFFFFF',
     width: '100%',
     maxWidth: 520,
-    borderRadius: 22,
+    borderRadius: 18,
     padding: 20,
-    borderWidth: 1.5,
-    borderColor: '#EFE5EA',
-    shadowColor: '#5C384B',
-    shadowOpacity: 0.1,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 14,
-    elevation: 4,
+    elevation: 3,
     marginBottom: 14,
     position: 'relative',
   },
@@ -1926,17 +1944,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
   boxLoadingText: {
     marginTop: 10,
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#7A4D62',
+    color: '#FF1493',
   },
   boxHeaderRow: {
     flexDirection: 'row',
@@ -1953,21 +1971,21 @@ const styles = StyleSheet.create({
   boxCategoryBadge: {
     width: 48,
     height: 48,
-    borderRadius: 14,
-    backgroundColor: '#FAF0F4',
+    borderRadius: 12,
+    backgroundColor: '#FFF1F5',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#F2DDE7',
+    borderColor: '#FECDD3',
   },
   boxCategoryEmoji: {
-    fontSize: 24,
+    fontSize: 20,
   },
   boxProductName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
-    color: '#1F141B',
+    color: '#0A0A0A',
     lineHeight: 22,
   },
   boxVerdictBadge: {
@@ -1981,56 +1999,58 @@ const styles = StyleSheet.create({
   boxVerdictText: {
     fontSize: 11,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   boxScoreBadge: {
-    backgroundColor: '#FAF0F4',
-    borderRadius: 14,
+    backgroundColor: '#000000',
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#F2DDE7',
+    borderWidth: 1,
+    borderColor: '#FF1493',
   },
   boxScoreNumber: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
-    color: '#7A4D62',
+    color: '#FF1493',
   },
   boxScoreLabel: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
-    color: '#887580',
+    color: '#FFFFFF',
     letterSpacing: 1,
   },
   boxSummaryText: {
     fontSize: 13.5,
-    color: '#4A3B44',
+    color: '#374151',
     lineHeight: 20,
     marginBottom: 10,
   },
   boxDivider: {
     height: 1,
-    backgroundColor: '#F0E5EB',
+    backgroundColor: '#F3F4F6',
     marginVertical: 10,
   },
   boxSectionRow: {
     marginBottom: 10,
-    backgroundColor: '#FAF7F9',
+    backgroundColor: '#F9FAFB',
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#F2EAEE',
+    borderColor: '#E5E7EB',
   },
   boxSectionLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#7A4D62',
+    color: '#FF1493',
     marginBottom: 3,
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   boxSectionBody: {
     fontSize: 13,
-    color: '#2E1E26',
+    color: '#1F2937',
     lineHeight: 18,
     fontWeight: '500',
   },
@@ -2045,7 +2065,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   boxWarningIcon: {
-    fontSize: 16,
+    fontSize: 14,
     marginRight: 8,
     marginTop: 1,
   },
@@ -2060,18 +2080,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   boxAddToShelfBtn: {
-    backgroundColor: '#FAF0F4',
-    borderWidth: 1.5,
-    borderColor: '#F2DDE7',
+    backgroundColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#FF1493',
     paddingVertical: 11,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 4,
   },
   boxAddToShelfBtnText: {
-    color: '#7A4D62',
+    color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 
   // Persistent Bottom Search Bar
@@ -2088,13 +2110,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#E8DCE1',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     paddingHorizontal: 14,
     height: 48,
-    shadowColor: '#5C384B',
-    shadowOpacity: 0.06,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 2,
@@ -2102,32 +2124,32 @@ const styles = StyleSheet.create({
   bottomSearchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#2E1E26',
+    color: '#0A0A0A',
   },
   clearInputBtn: {
     padding: 4,
   },
   clearInputBtnText: {
-    color: '#999',
-    fontSize: 13,
+    color: '#9CA3AF',
+    fontSize: 16,
     fontWeight: 'bold',
   },
   bottomSearchBtn: {
-    backgroundColor: '#7A4D62',
-    borderRadius: 16,
+    backgroundColor: '#000000',
+    borderRadius: 12,
     paddingHorizontal: 18,
     height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#7A4D62',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#FF1493',
   },
   bottomSearchBtnText: {
     color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
 
   // Onboarding Form Card (Compact Popup Style)
@@ -2135,91 +2157,91 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 460,
     backgroundColor: '#FFF',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#EDE2E7',
-    shadowColor: '#6D4658',
-    shadowOpacity: 0.1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
     shadowRadius: 20,
     elevation: 4,
   },
-  formTitle: { fontSize: 20, fontWeight: '800', color: '#3A2732', textAlign: 'center' },
-  formSubtitle: { fontSize: 13, color: '#887580', textAlign: 'center', marginTop: 6, marginBottom: 20, lineHeight: 18 },
-  formSectionLabel: { fontSize: 12, fontWeight: '700', color: '#7E6B75', textTransform: 'uppercase', marginBottom: 8, marginTop: 10 },
+  formTitle: { fontSize: 20, fontWeight: '800', color: '#0A0A0A', textAlign: 'center', letterSpacing: 0.5 },
+  formSubtitle: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginTop: 6, marginBottom: 20, lineHeight: 18 },
+  formSectionLabel: { fontSize: 11, fontWeight: '800', color: '#4B5563', textTransform: 'uppercase', marginBottom: 8, marginTop: 10, letterSpacing: 0.8 },
   gridRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
   chipButton: {
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 14,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E8DCE1',
-    backgroundColor: '#FAF7F8',
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
   chipButtonActive: {
-    backgroundColor: '#7A4D62',
-    borderColor: '#7A4D62',
+    backgroundColor: '#000000',
+    borderColor: '#FF1493',
   },
-  chipButtonText: { fontSize: 13, color: '#55454F', fontWeight: '500' },
-  chipButtonTextActive: { color: '#FFF', fontWeight: '700' },
+  chipButtonText: { fontSize: 12.5, color: '#4B5563', fontWeight: '600' },
+  chipButtonTextActive: { color: '#FF1493', fontWeight: '800' },
 
   // Auth Card
   modernAuthCard: {
     width: '100%',
     maxWidth: 400,
     backgroundColor: '#FFF',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 26,
     borderWidth: 1,
-    borderColor: '#EDE2E7',
-    shadowColor: '#6D4658',
-    shadowOpacity: 0.1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
     shadowRadius: 20,
     elevation: 4,
   },
-  heroLogo: { fontSize: 32, fontWeight: '900', color: '#6D4658', textAlign: 'center', letterSpacing: 3 },
-  heroSubtitle: { fontSize: 13, color: '#887580', textAlign: 'center', marginTop: 4, marginBottom: 24 },
+  heroLogo: { fontSize: 34, fontWeight: '900', color: '#000000', textAlign: 'center', letterSpacing: 4 },
+  heroSubtitle: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginTop: 4, marginBottom: 24 },
   heroInput: {
-    backgroundColor: '#FAF7F8',
-    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E8DCE1',
+    borderColor: '#E5E7EB',
     paddingHorizontal: 16,
     paddingVertical: 13,
     fontSize: 14,
-    color: '#333',
+    color: '#0A0A0A',
     marginBottom: 12,
   },
   mainActionBtn: {
-    backgroundColor: '#7A4D62',
+    backgroundColor: '#000000',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 6,
   },
-  mainActionBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  mainActionBtnText: { color: '#FFF', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
   textOnlyBtn: { marginTop: 14, alignItems: 'center' },
-  textOnlyBtnText: { color: '#7A4D62', fontSize: 13, fontWeight: '600' },
+  textOnlyBtnText: { color: '#FF1493', fontSize: 12.5, fontWeight: '700', letterSpacing: 0.5 },
 
   // Suggestions List Styles (Compact Centered Box Layout)
   suggestionsScrollContent: { padding: 16, alignItems: 'center', paddingBottom: 60 },
   disambiguationCard: { width: '100%', maxWidth: 440, marginBottom: 16, alignItems: 'center' },
-  disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#2E1E26', textAlign: 'center', lineHeight: 24 },
-  disambiguationSub: { fontSize: 12.5, color: '#7A4D62', marginTop: 4, fontWeight: '600', textAlign: 'center' },
+  disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#0A0A0A', textAlign: 'center', lineHeight: 24 },
+  disambiguationSub: { fontSize: 12, color: '#FF1493', marginTop: 4, fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.8 },
   compactProductBox: {
     backgroundColor: '#FFFFFF',
     width: '100%',
     maxWidth: 440,
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 14,
-    borderWidth: 1.5,
-    borderColor: '#EFE5EA',
-    shadowColor: '#5C384B',
-    shadowOpacity: 0.08,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
   compactBoxHeader: {
     flexDirection: 'row',
@@ -2229,16 +2251,16 @@ const styles = StyleSheet.create({
   productIconCircle: {
     width: 48,
     height: 48,
-    borderRadius: 14,
-    backgroundColor: '#FAF0F4',
+    borderRadius: 12,
+    backgroundColor: '#FFF1F5',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#F2DDE7',
+    borderColor: '#FECDD3',
   },
   productIconEmoji: {
-    fontSize: 24,
+    fontSize: 20,
   },
   compactTitleArea: {
     flex: 1,
@@ -2250,13 +2272,14 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   compactRankText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#7A4D62',
-    backgroundColor: '#F5EBF0',
+    fontSize: 10.5,
+    fontWeight: '900',
+    color: '#FF1493',
+    backgroundColor: '#FFF1F5',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
+    letterSpacing: 0.5,
   },
   starRatingBadge: {
     flexDirection: 'row',
@@ -2264,33 +2287,34 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   starRatingText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#D97706',
   },
   starReviewCount: {
     fontSize: 11,
-    color: '#887580',
-    fontWeight: '600',
+    color: '#6B7280',
+    fontWeight: '500',
   },
   compactProductName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1F141B',
+    fontWeight: '800',
+    color: '#0A0A0A',
     marginTop: 2,
   },
   compactBadgePill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#F8EEF3',
+    backgroundColor: '#FFF1F5',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 4,
     marginTop: 4,
   },
   compactBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#7A4D62',
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#FF1493',
+    letterSpacing: 0.5,
   },
   compactFeaturesContainer: {
     marginBottom: 12,
@@ -2301,102 +2325,106 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     backgroundColor: '#F0FDF4',
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#DCFCE7',
   },
   featureIconPro: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '900',
     color: '#16A34A',
     marginRight: 8,
     marginTop: 1,
   },
   featureTextPro: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
     color: '#15803D',
     flex: 1,
-    lineHeight: 18,
+    lineHeight: 17,
   },
   featureRowCon: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FEE2E2',
+    borderColor: '#FECDD3',
   },
   featureIconCon: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '900',
     color: '#DC2626',
     marginRight: 8,
     marginTop: 1,
   },
   featureTextCon: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
-    color: '#B91C1C',
+    color: '#BE123C',
     flex: 1,
-    lineHeight: 18,
+    lineHeight: 17,
   },
   inspectBtnCompact: {
-    backgroundColor: '#7A4D62',
+    backgroundColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#FF1493',
     paddingVertical: 11,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   inspectBtnTextCompact: {
     color: '#FFF',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
 
   // Shelf & History
   tabScrollContent: { padding: 18, paddingBottom: 50 },
   shelfCard: {
     backgroundColor: '#FFF',
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EFE5EA',
+    borderColor: '#E5E7EB',
     marginBottom: 10,
   },
-  shelfCardTitle: { fontSize: 15, fontWeight: '700', color: '#2E1E26' },
-  shelfCardNotes: { fontSize: 12.5, color: '#685A62', marginTop: 4, lineHeight: 18 },
-  deleteLinkText: { color: '#D32F2F', fontSize: 12, fontWeight: '600' },
-  historyMatchBadge: { backgroundColor: '#EBF4FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  shelfCardTitle: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
+  shelfCardNotes: { fontSize: 12.5, color: '#4B5563', marginTop: 4, lineHeight: 18 },
+  deleteLinkText: { color: '#DC2626', fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+  historyMatchBadge: { backgroundColor: '#EBF4FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   historyMatchBadgeText: { color: '#1565C0', fontSize: 11, fontWeight: '700' },
 
   // Settings
   outlineActionBtn: {
     borderWidth: 1,
-    borderColor: '#7A4D62',
-    borderRadius: 12,
+    borderColor: '#000000',
+    borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  outlineActionBtnText: { color: '#7A4D62', fontSize: 13, fontWeight: '600' },
-  jsonPreviewBox: { backgroundColor: '#F5EFF2', padding: 10, borderRadius: 10, marginTop: 8 },
-  jsonPreviewText: { fontSize: 11, color: '#333' },
-  successText: { color: '#2E7D32', fontSize: 13, fontWeight: '600', marginBottom: 8 },
-  errorText: { color: '#D32F2F', fontSize: 13, textAlign: 'center', marginBottom: 10 },
+  outlineActionBtnText: { color: '#000000', fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
+  jsonPreviewBox: { backgroundColor: '#F3F4F6', padding: 10, borderRadius: 8, marginTop: 8 },
+  jsonPreviewText: { fontSize: 11, color: '#1F2937' },
+  successText: { color: '#16A34A', fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  errorText: { color: '#DC2626', fontSize: 13, textAlign: 'center', marginBottom: 10 },
 
-  // Bottom Nav Bar
+  // Bottom Nav Bar (Sephora Noir)
   bottomNavBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: '#000000',
     borderTopWidth: 1,
-    borderTopColor: '#EBE0E5',
+    borderTopColor: '#27272A',
     paddingVertical: 13,
   },
   navItem: { flex: 1, alignItems: 'center' },
-  navText: { fontSize: 12, color: '#9E8D96', fontWeight: '500' },
-  navTextActive: { color: '#6D4658', fontWeight: '800' },
+  navText: { fontSize: 11, color: '#71717A', fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  navTextActive: { color: '#FF1493', fontWeight: '900' },
 
   // Dashboard Styles
   dashboardScrollContent: { padding: 16, paddingBottom: 60 },
@@ -2408,59 +2436,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  dashboardGreeting: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
+  dashboardGreeting: { fontSize: 11, fontWeight: '700', marginBottom: 2, letterSpacing: 0.8, textTransform: 'uppercase' },
   dashboardProfileTitle: { fontSize: 16, fontWeight: '800' },
   dashboardProfileSub: { fontSize: 11, marginTop: 4 },
-  dashboardQuizBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
-  dashboardQuizBtnText: { color: '#FFF', fontSize: 12, fontWeight: '700' },
+  dashboardQuizBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  dashboardQuizBtnText: { color: '#FFF', fontSize: 11.5, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
 
   metricsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   metricCard: {
     flex: 1,
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 8,
     borderWidth: 1,
     alignItems: 'center',
   },
-  metricIcon: { fontSize: 16, marginBottom: 4 },
-  metricTitle: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
-  metricValue: { fontSize: 10.5, fontWeight: '800', marginTop: 2, textAlign: 'center' },
+  metricTagBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginBottom: 4 },
+  metricIcon: { fontSize: 14, marginBottom: 4 },
+  metricTitle: { fontSize: 10, fontWeight: '700', textAlign: 'center', letterSpacing: 0.5, textTransform: 'uppercase' },
+  metricValue: { fontSize: 10.5, fontWeight: '800', marginTop: 3, textAlign: 'center' },
 
   dashboardSearchCard: { borderRadius: 16, padding: 16, borderWidth: 1, marginBottom: 16 },
-  dashboardSearchTitle: { fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  dashboardSearchTitle: { fontSize: 14, fontWeight: '800', marginBottom: 10, letterSpacing: 0.5 },
   dashboardInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 12,
     height: 46,
   },
   dashboardInput: { flex: 1, fontSize: 14 },
-  dashboardActionBtn: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
-  dashboardActionBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  dashboardActionBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
+  dashboardActionBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
   trendingChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 12 },
-  trendingLabel: { fontSize: 11, fontWeight: '600' },
-  trendingChip: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1 },
-  trendingChipText: { fontSize: 11, fontWeight: '600' },
+  trendingLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  trendingChip: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1 },
+  trendingChipText: { fontSize: 11, fontWeight: '700' },
 
   categorySection: { marginBottom: 20 },
-  categorySectionTitle: { fontSize: 15, fontWeight: '800', marginBottom: 10 },
+  categorySectionTitle: { fontSize: 14, fontWeight: '800', marginBottom: 10, letterSpacing: 0.8, textTransform: 'uppercase' },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  categoryTile: { width: '31%', height: 95, borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
+  categoryTile: {
+    width: '31%',
+    height: 105,
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+    position: 'relative',
+  },
   categoryTileImage: { width: '100%', height: '100%' },
   categoryTileOverlay: {
     position: 'absolute',
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#FF2E63',
   },
-  categoryTileEmoji: { fontSize: 18, marginBottom: 2 },
-  categoryTileName: { color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  categoryTileEmoji: { display: 'none' },
+  categoryTileName: { color: '#FFF', fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8, textAlign: 'center' },
 });
