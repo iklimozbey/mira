@@ -147,6 +147,7 @@ async def analyze_product(
             "reality_check_reason": report_record.reality_check_reason,
             "sources": report_record.sources,
             "sponsored_flags": report_record.sponsored_flags,
+            "decision_engine": analysis_result.get("decision_engine"),
             "created_at": report_record.created_at
         }
 

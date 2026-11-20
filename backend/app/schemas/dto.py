@@ -106,6 +106,19 @@ class ProductSuggestionItem(BaseModel):
     brief_highlight: Optional[str] = None
 
 
+class DecisionEngineMetadata(BaseModel):
+    engine: str = "Laya System 1 Decision Engine (Convai / Local CPU)"
+    latency_ms: float = 0.0
+    guardrails_passed: bool = True
+    guardrail_violations: List[str] = []
+    verdict_choice: str = "CONSIDER"
+    choice_confidence: float = 0.90
+    calibrated_score: int = 85
+    is_comedogenic_bool: bool = False
+    is_barrier_safe_bool: bool = True
+    is_shelf_duplicate_bool: bool = False
+
+
 class ResearchReportResponse(BaseModel):
     # Mode flag: 'report' when specific product analyzed, 'suggestions' when general query detected
     mode: str = "report"  # 'report' | 'suggestions'
@@ -128,6 +141,7 @@ class ResearchReportResponse(BaseModel):
     reality_check_reason: Optional[str] = None
     sources: List[SourceItem] = []
     sponsored_flags: List[str] = []
+    decision_engine: Optional[DecisionEngineMetadata] = None
     created_at: Optional[datetime] = None
 
     class Config:

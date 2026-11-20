@@ -48,6 +48,19 @@ export interface ProductSuggestionItem {
   brief_highlight?: string;
 }
 
+export interface DecisionEngineMetadata {
+  engine: string;
+  latency_ms: number;
+  guardrails_passed: boolean;
+  guardrail_violations: string[];
+  verdict_choice: string;
+  choice_confidence: number;
+  calibrated_score: number;
+  is_comedogenic_bool: boolean;
+  is_barrier_safe_bool: boolean;
+  is_shelf_duplicate_bool: boolean;
+}
+
 export interface ResearchReport {
   mode?: 'report' | 'suggestions';
   suggested_products?: ProductSuggestionItem[];
@@ -63,6 +76,7 @@ export interface ResearchReport {
   suitability_reason?: string;
   reality_check_verdict?: string;
   reality_check_reason?: string;
+  decision_engine?: DecisionEngineMetadata;
   sources?: SourceItem[];
   sponsored_flags?: string[];
   created_at?: string;

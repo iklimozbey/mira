@@ -838,6 +838,57 @@ export default function App() {
               </Text>
             ) : null}
 
+            {/* Laya Decision Engine & Guardrails Badge */}
+            {currentReport.decision_engine ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: isDarkMode ? '#17202A' : '#F0F9FF',
+                  borderRadius: 8,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  marginTop: 10,
+                  borderWidth: 1,
+                  borderColor: isDarkMode ? '#1F3A52' : '#BAE6FD',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 13 }}>⚡</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: isDarkMode ? '#38BDF8' : '#0284C7' }}>
+                    {language === 'tr' ? 'Laya Karar Motoru (CPU)' : 'Laya Decision Engine (CPU)'}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: theme.textMuted }}>
+                    ({currentReport.decision_engine.latency_ms} ms)
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    backgroundColor: currentReport.decision_engine.guardrails_passed
+                      ? (isDarkMode ? '#064E3B' : '#DCFCE7')
+                      : (isDarkMode ? '#7F1D1D' : '#FEE2E2'),
+                    paddingHorizontal: 7,
+                    paddingVertical: 2,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: '700',
+                      color: currentReport.decision_engine.guardrails_passed ? '#10B981' : '#EF4444',
+                    }}
+                  >
+                    {currentReport.decision_engine.guardrails_passed
+                      ? (language === 'tr' ? '🛡️ Guardrail: Güvenli' : '🛡️ Guardrail: Safe')
+                      : (language === 'tr' ? '🛡️ Guardrail: Veto' : '🛡️ Guardrail: Veto')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
             <View style={[styles.boxDivider, { backgroundColor: theme.divider }]} />
 
             {/* Skin Fit Analysis */}

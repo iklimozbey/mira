@@ -7,6 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnableSequence
 from app.core.config import settings
 from app.services.rag_knowledge_base import cosmetic_rag_retriever
+from app.services.laya_engine import LayaDecisionEngine
 
 
 MIRA_RAG_PROMPT_TEMPLATE = PromptTemplate.from_template(
@@ -554,12 +555,27 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
         return state
 
     def step_5_reality_check_and_format(state: Dict[str, Any]) -> Dict[str, Any]:
+        # Execute Laya System 1 Decision Engine + Clinical Guardrails on CPU
+        laya_output = LayaDecisionEngine.evaluate(
+            product_name=state["product_name"],
+            traits=state["traits"],
+            user_profile=state.get("user_profile"),
+            shelf_notes=state.get("user_inventory_notes"),
+            evidence_text=f"{state.get('rag_text', '')} {state.get('formulation', {}).get('summary', '')}"
+        )
+
         reality = RealityCheckAgent.check_shelf(
             product_name=state["product_name"],
             traits=state["traits"],
-            suitability_score=state["skin_match"]["suitability_score"],
+            suitability_score=laya_output.calibrated_score,
             user_inventory_notes=state.get("user_inventory_notes")
         )
+
+        # Merge Guardrail Violations at top priority
+        merged_warnings = list(laya_output.guardrail_violations)
+        for w in state["clinical"]["clinical_warnings"]:
+            if w not in merged_warnings:
+                merged_warnings.append(w)
 
         sources = []
         for doc in state.get("rag_docs", [])[:1]:
@@ -591,12 +607,13 @@ def _build_langchain_lcel_pipeline() -> RunnableSequence:
             "summary": state["formulation"]["summary"],
             "pros": state["formulation"]["pros"],
             "cons": state["formulation"]["cons"],
-            "clinical_warnings": state["clinical"]["clinical_warnings"],
-            "suitability_score": state["skin_match"]["suitability_score"],
+            "clinical_warnings": merged_warnings,
+            "suitability_score": laya_output.calibrated_score,
             "suitability_reason": state["skin_match"]["suitability_reason"],
-            "reality_check_verdict": reality["verdict"],
+            "reality_check_verdict": laya_output.verdict_choice,
             "reality_check_reason": reality["reason"],
             "sponsored_flags": state["formulation"]["sponsored_flags"],
+            "decision_engine": laya_output.model_dump(),
             "sources": sources
         }
 
