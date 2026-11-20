@@ -27,9 +27,7 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
 
-      {/* ==============================================================
-          TOP HEADER
-          ============================================================== */}
+      {/* TOP HEADER */}
       <View style={styles.topHeader}>
         <Text style={styles.brandSubtitle}>MIRA Clinical Atelier</Text>
         <View style={styles.topHeaderRight}>
@@ -44,17 +42,11 @@ export default function App() {
         </View>
       </View>
 
-      {/* ==============================================================
-          MAIN CONTENT - DİKEY & MİNİMAL PROPORTIONS
-          ============================================================== */}
       <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
 
-        {/* ==============================================================
-            TAB 1: KEŞFET (Dikey Kartlar, Büyük Okunabilir Tipografi)
-            ============================================================== */}
+        {/* TAB 1: KEŞFET */}
         {activeTab === 'explore' && (
           <View style={styles.screenWrapper}>
-            {/* Consultation Greeting */}
             <View style={styles.greetingRow}>
               <View>
                 <Text style={styles.goldOverline}>KİŞİSEL KONSÜLTASYON</Text>
@@ -66,7 +58,7 @@ export default function App() {
               </View>
             </View>
 
-            {/* Cilt Bariyeri İndeksi - Dikey & Minimal Kart */}
+            {/* Cilt Bariyeri İndeksi - Kompakt Form Düzeni */}
             <View style={styles.card}>
               <View style={styles.barrierCardHeader}>
                 <View style={styles.barrierScoreRow}>
@@ -89,24 +81,24 @@ export default function App() {
                 </TouchableOpacity>
               </View>
 
-              {/* 3 Sub-Metrics (Büyük & Net Rakamlar) */}
-              <View style={styles.barrierMetricsRow}>
-                <View style={styles.metricItem}>
-                  <Text style={styles.metricLabel}>Hidrasyon</Text>
-                  <Text style={styles.metricValue}>92%</Text>
+              {/* 3 Kompakt Form Kutusu */}
+              <View style={styles.formTilesRow}>
+                <View style={styles.formTile}>
+                  <Text style={styles.formTileLabel}>Hidrasyon</Text>
+                  <Text style={styles.formTileVal}>92%</Text>
                 </View>
-                <View style={[styles.metricItem, styles.metricItemBorder]}>
-                  <Text style={styles.metricLabel}>Sebum</Text>
-                  <Text style={styles.metricValue}>Dengeli</Text>
+                <View style={styles.formTile}>
+                  <Text style={styles.formTileLabel}>Sebum</Text>
+                  <Text style={styles.formTileVal}>Dengeli</Text>
                 </View>
-                <View style={styles.metricItem}>
-                  <Text style={styles.metricLabel}>Hassasiyet</Text>
-                  <Text style={[styles.metricValue, { color: '#34D399' }]}>Düşük</Text>
+                <View style={styles.formTile}>
+                  <Text style={styles.formTileLabel}>Hassasiyet</Text>
+                  <Text style={[styles.formTileVal, { color: '#34D399' }]}>Düşük</Text>
                 </View>
               </View>
             </View>
 
-            {/* Küratör Seçimi - Velvet Couture Taller Hero Card */}
+            {/* Velvet Couture Hero Card */}
             <TouchableOpacity
               activeOpacity={0.9}
               style={styles.heroProductCard}
@@ -129,11 +121,11 @@ export default function App() {
         )}
 
         {/* ==============================================================
-            TAB 2: TEŞHİS (Büyük Radyal Skor %92 & Dikey Metrikler)
+            TAB 2: TEŞHİS - KOMPAKT FORM ŞEKLİNDE
+            No more wide stretched lines! Compact Form Card with 2x2 Form Tiles!
             ============================================================== */}
         {(activeTab === 'diagnostic' || activeTab === 'scan') && (
           <View style={styles.screenWrapper}>
-            {/* Live Telemetry Pills */}
             <View style={styles.telemetryRow}>
               <View style={styles.telemetryPill}>
                 <View style={[styles.greenDot, { backgroundColor: '#34D399' }]} />
@@ -142,13 +134,11 @@ export default function App() {
               <Text style={styles.timeText}>Son Analiz: Bugün 14:20</Text>
             </View>
 
-            {/* Header Titles */}
             <View style={styles.titleBlock}>
               <Text style={styles.screenMainTitle}>Klinik Teşhis Matrisi</Text>
               <Text style={styles.screenSubTitle}>Dermatolojik Biyometri & Formülasyon Uyumu</Text>
             </View>
 
-            {/* Cilt Taraması Banner */}
             <View style={styles.scanBanner}>
               <View style={styles.csvBlock}>
                 <View style={styles.csvIcon}>
@@ -164,68 +154,81 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Biyometrik Sağlık Özeti Card */}
+            {/* BİYOMETRİK SAĞLIK FORMU: 2x2 KOMPAKT FORM KUTULARI */}
             <View style={styles.card}>
               <View style={styles.summaryHeader}>
-                <Text style={styles.summaryOverline}>BİYOMETRİK SAĞLIK ÖZETİ</Text>
+                <Text style={styles.summaryOverline}>BİYOMETRİK SAĞLIK FORMU</Text>
                 <View style={styles.highCalibPill}>
                   <Text style={styles.highCalibText}>Klinik Kalibrasyon: Yüksek</Text>
                 </View>
               </View>
 
-              {/* Taller Radial Donut %92 */}
-              <View style={styles.scoreDonutContainer}>
-                <View style={styles.outerDonutBorder}>
-                  <View style={styles.innerDonutCard}>
-                    <Text style={styles.genelSkorLabel}>GENEL SKOR</Text>
-                    <Text style={styles.genelSkorNumber}>%92</Text>
-                    <Text style={styles.genelSkorSub}>Mükemmel Denge</Text>
-                  </View>
+              {/* Kompakt Form Başlık Kartı: %92 Donut */}
+              <View style={styles.formHeaderCard}>
+                <View style={styles.formDonut}>
+                  <Text style={styles.formDonutOverline}>GENEL SKOR</Text>
+                  <Text style={styles.formDonutNumber}>%92</Text>
+                  <Text style={styles.formDonutSub}>Mükemmel</Text>
                 </View>
-                <Text style={styles.biometricDesc}>
-                  Dermal hidrasyon katsayısı optimum düzeyde. Transepidermal su kaybı (TEWL) minimum eşikte.
-                </Text>
+                <View style={styles.formHeaderCol}>
+                  <Text style={styles.formHeaderTitle}>Optimal Biyometrik Denge</Text>
+                  <Text style={styles.formHeaderDesc}>
+                    Dermal hidrasyon katsayısı optimum düzeyde. Transepidermal su kaybı (TEWL) minimum eşikte.
+                  </Text>
+                </View>
               </View>
 
-              {/* 4 Metric Progress Sliders (Taller & Legible) */}
-              <View style={styles.slidersContainer}>
-                <View style={styles.sliderItem}>
-                  <View style={styles.sliderLabelRow}>
-                    <Text style={styles.sliderLabel}>Sebum Dengesi</Text>
-                    <Text style={[styles.sliderVal, { color: '#E298A6' }]}>%42 (Dengeli)</Text>
+              {/* 2x2 Form Izgarası: Her metrik kendi kutucuğunda! */}
+              <View style={styles.formSectionWrapper}>
+                <Text style={styles.formSectionLabel}>BİYOMETRİK PARAMETRELER</Text>
+                
+                <View style={styles.formGrid2x2}>
+                  {/* Kutucuk 1: Sebum */}
+                  <View style={styles.metricFormBox}>
+                    <View style={styles.boxTopRow}>
+                      <Text style={styles.boxLabel}>Sebum</Text>
+                      <Text style={[styles.boxVal, { color: '#E298A6' }]}>%42</Text>
+                    </View>
+                    <View style={styles.boxBarTrack}>
+                      <View style={[styles.boxBarFill, { width: '42%', backgroundColor: '#E298A6' }]} />
+                    </View>
+                    <Text style={styles.boxSub}>Dengeli Salgılama</Text>
                   </View>
-                  <View style={styles.progressBarTrack}>
-                    <View style={[styles.progressBarFill, { width: '42%', backgroundColor: '#E298A6' }]} />
-                  </View>
-                </View>
 
-                <View style={styles.sliderItem}>
-                  <View style={styles.sliderLabelRow}>
-                    <Text style={styles.sliderLabel}>Nem Tutma Kapasitesi</Text>
-                    <Text style={[styles.sliderVal, { color: '#34D399' }]}>%88 (Yüksek)</Text>
+                  {/* Kutucuk 2: Nem Tutma */}
+                  <View style={styles.metricFormBox}>
+                    <View style={styles.boxTopRow}>
+                      <Text style={styles.boxLabel}>Nem Tutma</Text>
+                      <Text style={[styles.boxVal, { color: '#34D399' }]}>%88</Text>
+                    </View>
+                    <View style={styles.boxBarTrack}>
+                      <View style={[styles.boxBarFill, { width: '88%', backgroundColor: '#34D399' }]} />
+                    </View>
+                    <Text style={[styles.boxSub, { color: '#34D399' }]}>Yüksek Hidrasyon</Text>
                   </View>
-                  <View style={styles.progressBarTrack}>
-                    <View style={[styles.progressBarFill, { width: '88%', backgroundColor: '#34D399' }]} />
-                  </View>
-                </View>
 
-                <View style={styles.sliderItem}>
-                  <View style={styles.sliderLabelRow}>
-                    <Text style={styles.sliderLabel}>Bariyer Direnci</Text>
-                    <Text style={[styles.sliderVal, { color: '#E298A6' }]}>%94 (Güçlü)</Text>
+                  {/* Kutucuk 3: Bariyer Direnci */}
+                  <View style={styles.metricFormBox}>
+                    <View style={styles.boxTopRow}>
+                      <Text style={styles.boxLabel}>Bariyer</Text>
+                      <Text style={[styles.boxVal, { color: '#E298A6' }]}>%94</Text>
+                    </View>
+                    <View style={styles.boxBarTrack}>
+                      <View style={[styles.boxBarFill, { width: '94%', backgroundColor: '#E298A6' }]} />
+                    </View>
+                    <Text style={styles.boxSub}>Güçlü Kalkan</Text>
                   </View>
-                  <View style={styles.progressBarTrack}>
-                    <View style={[styles.progressBarFill, { width: '94%', backgroundColor: '#E298A6' }]} />
-                  </View>
-                </View>
 
-                <View style={styles.sliderItem}>
-                  <View style={styles.sliderLabelRow}>
-                    <Text style={styles.sliderLabel}>Gözenek Temizliği</Text>
-                    <Text style={[styles.sliderVal, { color: '#9CA3AF' }]}>%90 (Açık & Sağlıklı)</Text>
-                  </View>
-                  <View style={styles.progressBarTrack}>
-                    <View style={[styles.progressBarFill, { width: '90%', backgroundColor: '#9CA3AF' }]} />
+                  {/* Kutucuk 4: Gözenek */}
+                  <View style={styles.metricFormBox}>
+                    <View style={styles.boxTopRow}>
+                      <Text style={styles.boxLabel}>Gözenek</Text>
+                      <Text style={[styles.boxVal, { color: '#D1D5DB' }]}>%90</Text>
+                    </View>
+                    <View style={styles.boxBarTrack}>
+                      <View style={[styles.boxBarFill, { width: '90%', backgroundColor: '#9CA3AF' }]} />
+                    </View>
+                    <Text style={styles.boxSub}>Açık & Sağlıklı</Text>
                   </View>
                 </View>
               </View>
@@ -233,9 +236,7 @@ export default function App() {
           </View>
         )}
 
-        {/* ==============================================================
-            TAB 4: ENVANTER (Dikey Protokoller, Ferah Boşluklar)
-            ============================================================== */}
+        {/* TAB 4: ENVANTER */}
         {activeTab === 'inventory' && (
           <View style={styles.screenWrapper}>
             <View style={styles.telemetryRow}>
@@ -248,10 +249,9 @@ export default function App() {
 
             <View style={styles.titleBlock}>
               <Text style={styles.screenMainTitle}>Klinik Envanterim & Günlük Rutin Kasası</Text>
-              <Text style={styles.screenSubTitle}>Cilt bariyeri biyometrisi ile doğrulanmış kozmetik kompozisyonu ve aktif sinerji rehberi.</Text>
+              <Text style={styles.screenSubTitle}>Cilt bariyeri biyometrisi ile doğrulanmış kozmetik kompozisyonu.</Text>
             </View>
 
-            {/* Filter Pills */}
             <View style={styles.filterPillsRow}>
               <TouchableOpacity
                 style={[styles.filterPill, activeRoutineFilter === 'sabah' && styles.filterPillActive]}
@@ -279,7 +279,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Bileşen Uyumu: Mükemmel (0 Çakışma) Banner */}
             <View style={styles.compatibilityBanner}>
               <View style={styles.compatHeader}>
                 <View style={styles.compatTitleGroup}>
@@ -295,13 +294,12 @@ export default function App() {
               </Text>
             </View>
 
-            {/* Protokol Sıralaması */}
             <View style={styles.protocolHeader}>
               <Text style={styles.protocolTitle}>PROTOKOL SIRALAMASI · Kronolojik Emilim</Text>
               <Text style={styles.protocolBadge}>Sıra Korumalı</Text>
             </View>
 
-            {/* Step 01: Dikey & Okunabilir */}
+            {/* Step 01 */}
             <View style={styles.protocolCard}>
               <View style={styles.stepCardTop}>
                 <View style={styles.stepNumCol}>
@@ -323,7 +321,7 @@ export default function App() {
               </View>
             </View>
 
-            {/* Step 02: Dikey & Okunabilir */}
+            {/* Step 02 */}
             <View style={styles.protocolCard}>
               <View style={styles.stepCardTop}>
                 <View style={styles.stepNumCol}>
@@ -349,9 +347,7 @@ export default function App() {
           </View>
         )}
 
-        {/* ==============================================================
-            TAB 5: ATELİER (Dikey Form, Geniş Butonlar)
-            ============================================================== */}
+        {/* TAB 5: ATELİER */}
         {activeTab === 'atelier' && (
           <View style={styles.screenWrapper}>
             <View style={styles.atelierBrandBlock}>
@@ -360,7 +356,6 @@ export default function App() {
               <Text style={styles.atelierItalicTagline}>Zarafet ve Bilimin Kesişimi</Text>
             </View>
 
-            {/* Banner with Amber Dropper Jar */}
             <View style={styles.atelierBannerCard}>
               <Image source={{ uri: AMBER_JAR_IMG }} style={styles.atelierBannerImg} />
               <View style={styles.atelierBannerOverlay}>
@@ -374,7 +369,6 @@ export default function App() {
               </View>
             </View>
 
-            {/* Segmented Switcher */}
             <View style={styles.segmentedLoginRow}>
               <TouchableOpacity
                 style={[styles.segmentBtn, activeLoginTab === 'login' && styles.segmentBtnActive]}
@@ -394,7 +388,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Login Inputs */}
             <View style={styles.loginForm}>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>E-POSTA VEYA ÜYELİK NO</Text>
@@ -418,7 +411,6 @@ export default function App() {
                 />
               </View>
 
-              {/* Big Pink Action Button */}
               <TouchableOpacity
                 style={styles.pinkActionBtn}
                 onPress={() => setActiveTab('explore')}
@@ -432,12 +424,10 @@ export default function App() {
                 <View style={styles.dividerLine} />
               </View>
 
-              {/* Face ID Button */}
               <TouchableOpacity style={styles.faceIdBtn} onPress={() => setActiveTab('explore')}>
                 <Text style={styles.faceIdText}>Face ID & Dermatolojik Profil ile Giriş</Text>
               </TouchableOpacity>
 
-              {/* Invitation Code Banner */}
               <View style={styles.inviteCodeCard}>
                 <View style={styles.inviteLeft}>
                   <View style={styles.keyIcon}>
@@ -458,9 +448,7 @@ export default function App() {
 
       </ScrollView>
 
-      {/* ==============================================================
-          5-PILL BOTTOM NAVIGATION BAR
-          ============================================================== */}
+      {/* 5-PILL BOTTOM NAVIGATION */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.bottomTabItem}
@@ -511,46 +499,46 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0B0D10',
+    backgroundColor: '#0C0E12',
   },
   topHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   brandSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#E5E7EB',
   },
   topHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   logoTextCol: {
     alignItems: 'flex-end',
   },
   miraLogoTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
     color: '#E298A6',
     letterSpacing: 2,
   },
   miraLogoSub: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: '800',
     color: '#9CA3AF',
     letterSpacing: 1,
   },
   dashedAvatarRing: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E298A6',
     borderStyle: 'dashed',
@@ -558,21 +546,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dashedIcon: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#E298A6',
     fontWeight: '800',
   },
   userAvatarImg: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
   contentContainer: {
     flex: 1,
   },
   screenWrapper: {
-    padding: 18,
-    gap: 18,
+    padding: 16,
+    gap: 14,
   },
   greetingRow: {
     flexDirection: 'row',
@@ -580,43 +568,43 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   goldOverline: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 2,
     color: '#D4AF37',
   },
   greetingTitle: {
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginTop: 4,
+    marginTop: 2,
   },
   barrierPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#13161C',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 18,
+    backgroundColor: '#14171E',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   greenDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#34D399',
   },
   barrierText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#E5E7EB',
   },
   card: {
-    backgroundColor: '#181B22',
-    borderRadius: 24,
-    padding: 18,
+    backgroundColor: '#191C24',
+    borderRadius: 22,
+    padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
@@ -624,33 +612,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   barrierScoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
   },
   donutCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    borderWidth: 2.5,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
     borderColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   donutScoreText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '900',
     color: '#E298A6',
   },
   barrierScoreTextCol: {
-    gap: 3,
+    gap: 2,
   },
   barrierIndexLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -658,62 +646,62 @@ const styles = StyleSheet.create({
   optimalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   optimalText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   greenCheck: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#34D399',
     fontWeight: 'bold',
   },
   circleChevronBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(255,255,255,0.15)',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
   },
   chevronText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#9CA3AF',
     marginTop: -2,
   },
-  barrierMetricsRow: {
+  formTilesRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 12,
   },
-  metricItem: {
+  formTile: {
     flex: 1,
+    backgroundColor: '#1E222C',
+    borderRadius: 14,
+    padding: 10,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
   },
-  metricItemBorder: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-  },
-  metricLabel: {
-    fontSize: 11,
+  formTileLabel: {
+    fontSize: 9,
     color: '#9CA3AF',
-    marginBottom: 3,
+    marginBottom: 2,
   },
-  metricValue: {
-    fontSize: 15,
+  formTileVal: {
+    fontSize: 13,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   heroProductCard: {
-    backgroundColor: '#181B22',
-    borderRadius: 24,
+    backgroundColor: '#191C24',
+    borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -721,43 +709,43 @@ const styles = StyleSheet.create({
   },
   curatorBadge: {
     position: 'absolute',
-    top: 14,
-    left: 14,
+    top: 12,
+    left: 12,
     zIndex: 10,
     backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
   curatorBadgeText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '900',
     color: '#E5E7EB',
     letterSpacing: 1.5,
   },
   heroPackshotImage: {
     width: '100%',
-    height: 280,
+    height: 260,
   },
   heroFooter: {
-    padding: 18,
-    backgroundColor: '#181B22',
+    padding: 16,
+    backgroundColor: '#191C24',
   },
   heroMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   heroMetaText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.5,
     color: '#9CA3AF',
   },
   heroProductTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -771,53 +759,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#13161C',
+    backgroundColor: '#14171E',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 16,
+    paddingVertical: 4,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   telemetryText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#34D399',
   },
   timeText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   titleBlock: {
-    gap: 3,
+    gap: 2,
   },
   screenMainTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: '#FFFFFF',
   },
   screenSubTitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#9CA3AF',
   },
   scanBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#181B22',
-    borderRadius: 20,
-    padding: 14,
+    backgroundColor: '#191C24',
+    borderRadius: 18,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   csvBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   csvIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
@@ -825,27 +813,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   csvText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '900',
     color: '#E298A6',
   },
   scanTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   scanSub: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   pinkBtnSmall: {
     backgroundColor: '#E298A6',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
   pinkBtnSmallText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
     color: '#0E1013',
   },
@@ -853,10 +841,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   summaryOverline: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -865,105 +853,126 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 211, 153, 0.1)',
     borderColor: 'rgba(52, 211, 153, 0.3)',
     borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
   },
   highCalibText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     color: '#34D399',
   },
-  scoreDonutContainer: {
+  formHeaderCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    gap: 12,
+    backgroundColor: '#1E222C',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 12,
   },
-  outerDonutBorder: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 3.5,
-    borderColor: 'rgba(226, 152, 166, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  innerDonutCard: {
-    width: 122,
-    height: 122,
-    borderRadius: 61,
+  formDonut: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 2,
     borderColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  genelSkorLabel: {
-    fontSize: 9,
+  formDonutOverline: {
+    fontSize: 7,
     fontWeight: '900',
-    letterSpacing: 1,
     color: '#9CA3AF',
   },
-  genelSkorNumber: {
-    fontSize: 32,
+  formDonutNumber: {
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
-    marginVertical: 2,
   },
-  genelSkorSub: {
-    fontSize: 11,
+  formDonutSub: {
+    fontSize: 7,
     fontWeight: '800',
     color: '#E298A6',
   },
-  biometricDesc: {
+  formHeaderCol: {
+    flex: 1,
+    gap: 2,
+  },
+  formHeaderTitle: {
     fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  formHeaderDesc: {
+    fontSize: 10,
     color: '#D1D5DB',
-    textAlign: 'center',
-    marginTop: 12,
-    lineHeight: 18,
-    paddingHorizontal: 12,
+    lineHeight: 14,
   },
-  slidersContainer: {
-    gap: 12,
-    marginTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 12,
+  formSectionWrapper: {
+    gap: 6,
   },
-  sliderItem: {
-    gap: 5,
+  formSectionLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: '#9CA3AF',
+    marginLeft: 2,
   },
-  sliderLabelRow: {
+  formGrid2x2: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  metricFormBox: {
+    width: '48.5%',
+    backgroundColor: '#1E222C',
+    borderRadius: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    gap: 6,
+  },
+  boxTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  sliderLabel: {
-    fontSize: 12,
+  boxLabel: {
+    fontSize: 11,
     fontWeight: '700',
     color: '#E5E7EB',
   },
-  sliderVal: {
+  boxVal: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '900',
   },
-  progressBarTrack: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  boxBarTrack: {
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     overflow: 'hidden',
   },
-  progressBarFill: {
+  boxBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 2.5,
+  },
+  boxSub: {
+    fontSize: 9,
+    color: '#9CA3AF',
   },
   filterPillsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   filterPill: {
-    backgroundColor: '#181B22',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 20,
+    backgroundColor: '#191C24',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
@@ -972,7 +981,7 @@ const styles = StyleSheet.create({
     borderColor: '#E298A6',
   },
   filterPillText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#D1D5DB',
   },
@@ -981,12 +990,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   compatibilityBanner: {
-    backgroundColor: '#181B22',
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor: '#191C24',
+    borderRadius: 18,
+    padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(52, 211, 153, 0.3)',
-    gap: 8,
+    gap: 6,
   },
   compatHeader: {
     flexDirection: 'row',
@@ -996,15 +1005,15 @@ const styles = StyleSheet.create({
   compatTitleGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   compatCheck: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#34D399',
     fontWeight: 'bold',
   },
   compatTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#34D399',
   },
@@ -1012,44 +1021,44 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 211, 153, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(52, 211, 153, 0.3)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   zeroConflictText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#34D399',
   },
   compatDesc: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#D1D5DB',
-    lineHeight: 18,
+    lineHeight: 15,
   },
   protocolHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 6,
+    paddingTop: 4,
   },
   protocolTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#9CA3AF',
     letterSpacing: 1,
   },
   protocolBadge: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#E298A6',
   },
   protocolCard: {
-    backgroundColor: '#181B22',
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor: '#191C24',
+    borderRadius: 18,
+    padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    gap: 12,
+    gap: 10,
   },
   stepCardTop: {
     flexDirection: 'row',
@@ -1059,38 +1068,38 @@ const styles = StyleSheet.create({
   stepNumCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   stepNum: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '900',
     color: '#E298A6',
   },
   stepCategory: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#E5E7EB',
     letterSpacing: 1,
   },
   safetyScore: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#34D399',
   },
   comedogenicScore: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: '#9CA3AF',
   },
   stepBodyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 10,
   },
   phBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: 46,
+    height: 46,
+    borderRadius: 12,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -1098,34 +1107,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   phDrop: {
-    fontSize: 16,
+    fontSize: 15,
   },
   phText: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: '800',
     color: '#E298A6',
     marginTop: 2,
   },
   stepThumbImg: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: 46,
+    height: 46,
+    borderRadius: 12,
   },
   stepTextCol: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   stepProdTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   stepProdSub: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   stepUsage: {
-    fontSize: 11,
+    fontSize: 10,
     fontStyle: 'italic',
     color: '#D1D5DB',
     marginTop: 2,
@@ -1140,47 +1149,46 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(226, 152, 166, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(226, 152, 166, 0.3)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   dosePillText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
     color: '#E298A6',
   },
   warmText: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#9CA3AF',
   },
   atelierBrandBlock: {
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   atelierOverline: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     letterSpacing: 2,
     color: '#9CA3AF',
   },
   atelierMainLogo: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: 3,
-    marginVertical: 2,
+    letterSpacing: 2,
   },
   atelierItalicTagline: {
-    fontSize: 13,
+    fontSize: 12,
     fontStyle: 'italic',
     color: '#E298A6',
   },
   atelierBannerCard: {
-    borderRadius: 22,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    height: 140,
+    height: 125,
     position: 'relative',
   },
   atelierBannerImg: {
@@ -1192,7 +1200,7 @@ const styles = StyleSheet.create({
     inset: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
-    padding: 12,
+    padding: 10,
   },
   atelierBannerRow: {
     flexDirection: 'row',
@@ -1205,34 +1213,34 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   diagActiveText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#34D399',
   },
   versionText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#D1D5DB',
   },
   segmentedLoginRow: {
     flexDirection: 'row',
-    backgroundColor: '#181B22',
-    borderRadius: 16,
-    padding: 4,
+    backgroundColor: '#191C24',
+    borderRadius: 14,
+    padding: 3,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   segmentBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   segmentBtnActive: {
     backgroundColor: '#262A34',
   },
   segmentBtnText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#9CA3AF',
   },
@@ -1240,13 +1248,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   loginForm: {
-    gap: 14,
+    gap: 12,
   },
   inputGroup: {
-    gap: 6,
+    gap: 4,
   },
   inputLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -1257,30 +1265,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotPwd: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#E298A6',
   },
   textInput: {
-    backgroundColor: '#181B22',
+    backgroundColor: '#1E222C',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 13,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 12,
     color: '#FFFFFF',
   },
   pinkActionBtn: {
     backgroundColor: '#E298A6',
-    borderRadius: 18,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E298A6',
   },
   pinkActionBtnText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '900',
     color: '#0E1013',
     letterSpacing: 1,
@@ -1289,8 +1297,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    marginVertical: 4,
+    gap: 8,
+    marginVertical: 2,
   },
   dividerLine: {
     flex: 1,
@@ -1298,20 +1306,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
   orText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#6B7280',
   },
   faceIdBtn: {
-    backgroundColor: '#181B22',
+    backgroundColor: '#191C24',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingVertical: 10,
     alignItems: 'center',
   },
   faceIdText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#E5E7EB',
   },
@@ -1319,45 +1327,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#181B22',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: '#191C24',
+    borderRadius: 14,
+    padding: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   inviteLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   keyIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 8,
     backgroundColor: 'rgba(212, 175, 55, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   keyEmoji: {
-    fontSize: 14,
+    fontSize: 13,
   },
   inviteTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   inviteSub: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#9CA3AF',
   },
   activateBtn: {
     backgroundColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   activateBtnText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#FFFFFF',
   },
@@ -1369,22 +1377,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   bottomTabItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 3,
+    gap: 2,
   },
   tabIcon: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#6B7280',
   },
   tabActiveIcon: {
     color: '#E298A6',
   },
   tabText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#6B7280',
@@ -1395,30 +1403,30 @@ const styles = StyleSheet.create({
   centerAiScanBtnWrapper: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -20,
+    marginTop: -16,
   },
   centerAiScanBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#E298A6',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.65,
-    shadowRadius: 12,
+    shadowRadius: 10,
     elevation: 8,
     borderWidth: 2,
-    borderColor: '#171920',
+    borderColor: '#16181F',
   },
   aiScanIcon: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
     color: '#0E1013',
   },
   aiScanLabel: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '900',
     color: '#E298A6',
     letterSpacing: 1,
