@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   SafeAreaView,
   StatusBar,
   Image,
@@ -29,7 +28,7 @@ export default function App() {
       <StatusBar barStyle="light-content" />
 
       {/* ==============================================================
-          MIRA CLINICAL ATELIER TOP HEADER
+          TOP HEADER
           ============================================================== */}
       <View style={styles.topHeader}>
         <Text style={styles.brandSubtitle}>MIRA Clinical Atelier</Text>
@@ -46,12 +45,12 @@ export default function App() {
       </View>
 
       {/* ==============================================================
-          MAIN CONTENT ACCORDING TO ACTIVE STITCH TAB
+          MAIN CONTENT - DİKEY & MİNİMAL PROPORTIONS
           ============================================================== */}
       <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
 
         {/* ==============================================================
-            TAB 1: KEŞFET (Screenshot 1: "İyi Akşamlar, Sayın Alara", 89/100, Velvet Couture)
+            TAB 1: KEŞFET (Dikey Kartlar, Büyük Okunabilir Tipografi)
             ============================================================== */}
         {activeTab === 'explore' && (
           <View style={styles.screenWrapper}>
@@ -67,7 +66,7 @@ export default function App() {
               </View>
             </View>
 
-            {/* Cilt Bariyeri İndeksi Card */}
+            {/* Cilt Bariyeri İndeksi - Dikey & Minimal Kart */}
             <View style={styles.card}>
               <View style={styles.barrierCardHeader}>
                 <View style={styles.barrierScoreRow}>
@@ -90,7 +89,7 @@ export default function App() {
                 </TouchableOpacity>
               </View>
 
-              {/* 3 Sub-Metrics */}
+              {/* 3 Sub-Metrics (Büyük & Net Rakamlar) */}
               <View style={styles.barrierMetricsRow}>
                 <View style={styles.metricItem}>
                   <Text style={styles.metricLabel}>Hidrasyon</Text>
@@ -107,7 +106,7 @@ export default function App() {
               </View>
             </View>
 
-            {/* Küratör Seçimi - Velvet Couture Hero Card */}
+            {/* Küratör Seçimi - Velvet Couture Taller Hero Card */}
             <TouchableOpacity
               activeOpacity={0.9}
               style={styles.heroProductCard}
@@ -130,7 +129,7 @@ export default function App() {
         )}
 
         {/* ==============================================================
-            TAB 2: TEŞHİS (Screenshot 2: Klinik Teşhis Matrisi, Biyometri & Skor %92)
+            TAB 2: TEŞHİS (Büyük Radyal Skor %92 & Dikey Metrikler)
             ============================================================== */}
         {(activeTab === 'diagnostic' || activeTab === 'scan') && (
           <View style={styles.screenWrapper}>
@@ -149,7 +148,7 @@ export default function App() {
               <Text style={styles.screenSubTitle}>Dermatolojik Biyometri & Formülasyon Uyumu</Text>
             </View>
 
-            {/* Cilt Taraması Banner with YENİ TARA Button */}
+            {/* Cilt Taraması Banner */}
             <View style={styles.scanBanner}>
               <View style={styles.csvBlock}>
                 <View style={styles.csvIcon}>
@@ -157,7 +156,7 @@ export default function App() {
                 </View>
                 <View>
                   <Text style={styles.scanTitle}>Cilt Taramasın</Text>
-                  <Text style={styles.scanSub}>Mikro-hücresel optik...</Text>
+                  <Text style={styles.scanSub}>Mikro-hücresel optik analiz</Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.pinkBtnSmall} onPress={() => setActiveTab('diagnostic')}>
@@ -174,7 +173,7 @@ export default function App() {
                 </View>
               </View>
 
-              {/* Radial Donut %92 */}
+              {/* Taller Radial Donut %92 */}
               <View style={styles.scoreDonutContainer}>
                 <View style={styles.outerDonutBorder}>
                   <View style={styles.innerDonutCard}>
@@ -188,9 +187,8 @@ export default function App() {
                 </Text>
               </View>
 
-              {/* 4 Metric Progress Sliders */}
+              {/* 4 Metric Progress Sliders (Taller & Legible) */}
               <View style={styles.slidersContainer}>
-                {/* Metric 1 */}
                 <View style={styles.sliderItem}>
                   <View style={styles.sliderLabelRow}>
                     <Text style={styles.sliderLabel}>Sebum Dengesi</Text>
@@ -201,7 +199,6 @@ export default function App() {
                   </View>
                 </View>
 
-                {/* Metric 2 */}
                 <View style={styles.sliderItem}>
                   <View style={styles.sliderLabelRow}>
                     <Text style={styles.sliderLabel}>Nem Tutma Kapasitesi</Text>
@@ -212,7 +209,6 @@ export default function App() {
                   </View>
                 </View>
 
-                {/* Metric 3 */}
                 <View style={styles.sliderItem}>
                   <View style={styles.sliderLabelRow}>
                     <Text style={styles.sliderLabel}>Bariyer Direnci</Text>
@@ -223,7 +219,6 @@ export default function App() {
                   </View>
                 </View>
 
-                {/* Metric 4 */}
                 <View style={styles.sliderItem}>
                   <View style={styles.sliderLabelRow}>
                     <Text style={styles.sliderLabel}>Gözenek Temizliği</Text>
@@ -239,7 +234,7 @@ export default function App() {
         )}
 
         {/* ==============================================================
-            TAB 4: ENVANTER (Screenshot 4: Klinik Envanterim, Bileşen Uyumu, Protokoller)
+            TAB 4: ENVANTER (Dikey Protokoller, Ferah Boşluklar)
             ============================================================== */}
         {activeTab === 'inventory' && (
           <View style={styles.screenWrapper}>
@@ -256,7 +251,7 @@ export default function App() {
               <Text style={styles.screenSubTitle}>Cilt bariyeri biyometrisi ile doğrulanmış kozmetik kompozisyonu ve aktif sinerji rehberi.</Text>
             </View>
 
-            {/* Filter Pills (Sabah 3 / Akşam 4 / Arşiv 12) */}
+            {/* Filter Pills */}
             <View style={styles.filterPillsRow}>
               <TouchableOpacity
                 style={[styles.filterPill, activeRoutineFilter === 'sabah' && styles.filterPillActive]}
@@ -300,13 +295,13 @@ export default function App() {
               </Text>
             </View>
 
-            {/* Protokol Sıralaması Section */}
+            {/* Protokol Sıralaması */}
             <View style={styles.protocolHeader}>
               <Text style={styles.protocolTitle}>PROTOKOL SIRALAMASI · Kronolojik Emilim</Text>
               <Text style={styles.protocolBadge}>Sıra Korumalı</Text>
             </View>
 
-            {/* Step 01 */}
+            {/* Step 01: Dikey & Okunabilir */}
             <View style={styles.protocolCard}>
               <View style={styles.stepCardTop}>
                 <View style={styles.stepNumCol}>
@@ -328,7 +323,7 @@ export default function App() {
               </View>
             </View>
 
-            {/* Step 02 */}
+            {/* Step 02: Dikey & Okunabilir */}
             <View style={styles.protocolCard}>
               <View style={styles.stepCardTop}>
                 <View style={styles.stepNumCol}>
@@ -355,7 +350,7 @@ export default function App() {
         )}
 
         {/* ==============================================================
-            TAB 5: ATELİER (Screenshot 3: MIRA Zarafet ve Bilim, v4.8 Clinique, Giriş)
+            TAB 5: ATELİER (Dikey Form, Geniş Butonlar)
             ============================================================== */}
         {activeTab === 'atelier' && (
           <View style={styles.screenWrapper}>
@@ -423,7 +418,7 @@ export default function App() {
                 />
               </View>
 
-              {/* Big Pink Button */}
+              {/* Big Pink Action Button */}
               <TouchableOpacity
                 style={styles.pinkActionBtn}
                 onPress={() => setActiveTab('explore')}
@@ -464,10 +459,9 @@ export default function App() {
       </ScrollView>
 
       {/* ==============================================================
-          5-PILL BOTTOM NAVIGATION BAR (KEŞFET, TEŞHİS, AI TARA, ENVANTER, ATELİER)
+          5-PILL BOTTOM NAVIGATION BAR
           ============================================================== */}
       <View style={styles.bottomBar}>
-        {/* Tab 1 */}
         <TouchableOpacity
           style={styles.bottomTabItem}
           onPress={() => setActiveTab('explore')}
@@ -476,7 +470,6 @@ export default function App() {
           <Text style={[styles.tabText, activeTab === 'explore' && styles.tabActiveText]}>KEŞFET</Text>
         </TouchableOpacity>
 
-        {/* Tab 2 */}
         <TouchableOpacity
           style={styles.bottomTabItem}
           onPress={() => setActiveTab('diagnostic')}
@@ -485,7 +478,6 @@ export default function App() {
           <Text style={[styles.tabText, activeTab === 'diagnostic' && styles.tabActiveText]}>TEŞHİS</Text>
         </TouchableOpacity>
 
-        {/* Tab 3: Center Glowing AI TARA Button */}
         <TouchableOpacity
           style={styles.centerAiScanBtnWrapper}
           onPress={() => setActiveTab('diagnostic')}
@@ -496,7 +488,6 @@ export default function App() {
           <Text style={styles.aiScanLabel}>AI TARA</Text>
         </TouchableOpacity>
 
-        {/* Tab 4 */}
         <TouchableOpacity
           style={styles.bottomTabItem}
           onPress={() => setActiveTab('inventory')}
@@ -505,7 +496,6 @@ export default function App() {
           <Text style={[styles.tabText, activeTab === 'inventory' && styles.tabActiveText]}>ENVANTER</Text>
         </TouchableOpacity>
 
-        {/* Tab 5 */}
         <TouchableOpacity
           style={styles.bottomTabItem}
           onPress={() => setActiveTab('atelier')}
@@ -521,46 +511,46 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0E1013',
+    backgroundColor: '#0B0D10',
   },
   topHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   brandSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#D1D5DB',
+    color: '#E5E7EB',
   },
   topHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   logoTextCol: {
     alignItems: 'flex-end',
   },
   miraLogoTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '900',
     color: '#E298A6',
     letterSpacing: 2,
   },
   miraLogoSub: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: '800',
     color: '#9CA3AF',
     letterSpacing: 1,
   },
   dashedAvatarRing: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: '#E298A6',
     borderStyle: 'dashed',
@@ -568,21 +558,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dashedIcon: {
-    fontSize: 9,
+    fontSize: 10,
     color: '#E298A6',
     fontWeight: '800',
   },
   userAvatarImg: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
   contentContainer: {
     flex: 1,
   },
   screenWrapper: {
-    padding: 16,
-    gap: 14,
+    padding: 18,
+    gap: 18,
   },
   greetingRow: {
     flexDirection: 'row',
@@ -590,76 +580,77 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   goldOverline: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 2,
-    color: '#C9914A',
+    color: '#D4AF37',
   },
   greetingTitle: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginTop: 2,
+    marginTop: 4,
   },
   barrierPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#16191F',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 16,
+    backgroundColor: '#13161C',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   greenDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: '#34D399',
   },
   barrierText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#E5E7EB',
   },
   card: {
-    backgroundColor: '#16191F',
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor: '#181B22',
+    borderRadius: 24,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#232732',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   barrierCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   barrierScoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   donutCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2.5,
     borderColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   donutScoreText: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
     color: '#E298A6',
   },
   barrierScoreTextCol: {
-    gap: 2,
+    gap: 3,
   },
   barrierIndexLabel: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -667,30 +658,30 @@ const styles = StyleSheet.create({
   optimalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   optimalText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   greenCheck: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#34D399',
     fontWeight: 'bold',
   },
   circleChevronBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.18)',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
   },
   chevronText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#9CA3AF',
     marginTop: -2,
   },
@@ -699,7 +690,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 10,
+    paddingTop: 12,
   },
   metricItem: {
     flex: 1,
@@ -711,62 +702,62 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.06)',
   },
   metricLabel: {
-    fontSize: 9,
+    fontSize: 11,
     color: '#9CA3AF',
-    marginBottom: 2,
+    marginBottom: 3,
   },
   metricValue: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
     color: '#FFFFFF',
   },
   heroProductCard: {
-    backgroundColor: '#16191F',
-    borderRadius: 20,
+    backgroundColor: '#181B22',
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#232732',
+    borderColor: 'rgba(255,255,255,0.08)',
     position: 'relative',
   },
   curatorBadge: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 14,
+    left: 14,
     zIndex: 10,
     backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
   curatorBadgeText: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '900',
-    color: '#D1D5DB',
+    color: '#E5E7EB',
     letterSpacing: 1.5,
   },
   heroPackshotImage: {
     width: '100%',
-    height: 250,
+    height: 280,
   },
   heroFooter: {
-    padding: 14,
-    backgroundColor: '#16191F',
+    padding: 18,
+    backgroundColor: '#181B22',
   },
   heroMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   heroMetaText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1.5,
     color: '#9CA3AF',
   },
   heroProductTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -780,53 +771,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#16191F',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 14,
+    backgroundColor: '#13161C',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   telemetryText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     color: '#34D399',
   },
   timeText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#9CA3AF',
   },
   titleBlock: {
-    gap: 2,
+    gap: 3,
   },
   screenMainTitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: '800',
     color: '#FFFFFF',
   },
   screenSubTitle: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#9CA3AF',
   },
   scanBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#16191F',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: '#181B22',
+    borderRadius: 20,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#232732',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   csvBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   csvIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
@@ -834,38 +825,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   csvText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '900',
     color: '#E298A6',
   },
   scanTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   scanSub: {
-    fontSize: 9,
+    fontSize: 11,
     color: '#9CA3AF',
   },
   pinkBtnSmall: {
     backgroundColor: '#E298A6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 12,
   },
   pinkBtnSmallText: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 12,
+    fontWeight: '900',
     color: '#0E1013',
   },
   summaryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   summaryOverline: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -874,104 +865,105 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 211, 153, 0.1)',
     borderColor: 'rgba(52, 211, 153, 0.3)',
     borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 14,
   },
   highCalibText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
     color: '#34D399',
   },
   scoreDonutContainer: {
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 14,
   },
   outerDonutBorder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 3.5,
     borderColor: 'rgba(226, 152, 166, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   innerDonutCard: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 122,
+    height: 122,
+    borderRadius: 61,
     borderWidth: 2,
     borderColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   genelSkorLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1,
     color: '#9CA3AF',
   },
   genelSkorNumber: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '900',
     color: '#FFFFFF',
+    marginVertical: 2,
   },
   genelSkorSub: {
-    fontSize: 9,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     color: '#E298A6',
   },
   biometricDesc: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#D1D5DB',
     textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 14,
-    paddingHorizontal: 8,
+    marginTop: 12,
+    lineHeight: 18,
+    paddingHorizontal: 12,
   },
   slidersContainer: {
-    gap: 10,
-    marginTop: 10,
+    gap: 12,
+    marginTop: 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 10,
+    paddingTop: 12,
   },
   sliderItem: {
-    gap: 4,
+    gap: 5,
   },
   sliderLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   sliderLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#E5E7EB',
   },
   sliderVal: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
   },
   progressBarTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   filterPillsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   filterPill: {
-    backgroundColor: '#16191F',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
+    backgroundColor: '#181B22',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
@@ -980,20 +972,21 @@ const styles = StyleSheet.create({
     borderColor: '#E298A6',
   },
   filterPillText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#D1D5DB',
   },
   filterPillTextActive: {
     color: '#0E1013',
+    fontWeight: '900',
   },
   compatibilityBanner: {
-    backgroundColor: '#16191F',
-    borderRadius: 18,
-    padding: 14,
+    backgroundColor: '#181B22',
+    borderRadius: 20,
+    padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(52, 211, 153, 0.3)',
-    gap: 6,
+    gap: 8,
   },
   compatHeader: {
     flexDirection: 'row',
@@ -1003,15 +996,15 @@ const styles = StyleSheet.create({
   compatTitleGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   compatCheck: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#34D399',
     fontWeight: 'bold',
   },
   compatTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '800',
     color: '#34D399',
   },
@@ -1019,44 +1012,44 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 211, 153, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(52, 211, 153, 0.3)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   zeroConflictText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     color: '#34D399',
   },
   compatDesc: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#D1D5DB',
-    lineHeight: 14,
+    lineHeight: 18,
   },
   protocolHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 4,
+    paddingTop: 6,
   },
   protocolTitle: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     color: '#9CA3AF',
     letterSpacing: 1,
   },
   protocolBadge: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     color: '#E298A6',
   },
   protocolCard: {
-    backgroundColor: '#16191F',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: '#181B22',
+    borderRadius: 20,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#232732',
-    gap: 10,
+    borderColor: 'rgba(255,255,255,0.08)',
+    gap: 12,
   },
   stepCardTop: {
     flexDirection: 'row',
@@ -1066,38 +1059,38 @@ const styles = StyleSheet.create({
   stepNumCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   stepNum: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '900',
     color: '#E298A6',
   },
   stepCategory: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     color: '#E5E7EB',
     letterSpacing: 1,
   },
   safetyScore: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     color: '#34D399',
   },
   comedogenicScore: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
     color: '#9CA3AF',
   },
   stepBodyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
   },
   phBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -1105,34 +1098,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   phDrop: {
-    fontSize: 14,
+    fontSize: 16,
   },
   phText: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: '800',
     color: '#E298A6',
     marginTop: 2,
   },
   stepThumbImg: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
   },
   stepTextCol: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
   stepProdTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   stepProdSub: {
-    fontSize: 9,
+    fontSize: 11,
     color: '#9CA3AF',
   },
   stepUsage: {
-    fontSize: 9,
+    fontSize: 11,
     fontStyle: 'italic',
     color: '#D1D5DB',
     marginTop: 2,
@@ -1147,46 +1140,47 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(226, 152, 166, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(226, 152, 166, 0.3)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 8,
   },
   dosePillText: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '800',
     color: '#E298A6',
   },
   warmText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   atelierBrandBlock: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   atelierOverline: {
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 2,
     color: '#9CA3AF',
   },
   atelierMainLogo: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: 2,
+    letterSpacing: 3,
+    marginVertical: 2,
   },
   atelierItalicTagline: {
-    fontSize: 11,
+    fontSize: 13,
     fontStyle: 'italic',
     color: '#E298A6',
   },
   atelierBannerCard: {
-    borderRadius: 18,
+    borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#232732',
-    height: 120,
+    borderColor: 'rgba(255,255,255,0.08)',
+    height: 140,
     position: 'relative',
   },
   atelierBannerImg: {
@@ -1198,7 +1192,7 @@ const styles = StyleSheet.create({
     inset: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
-    padding: 10,
+    padding: 12,
   },
   atelierBannerRow: {
     flexDirection: 'row',
@@ -1211,34 +1205,34 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   diagActiveText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     color: '#34D399',
   },
   versionText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
     color: '#D1D5DB',
   },
   segmentedLoginRow: {
     flexDirection: 'row',
-    backgroundColor: '#16191F',
-    borderRadius: 12,
-    padding: 3,
+    backgroundColor: '#181B22',
+    borderRadius: 16,
+    padding: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   segmentBtn: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
   },
   segmentBtnActive: {
     backgroundColor: '#262A34',
   },
   segmentBtnText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#9CA3AF',
   },
@@ -1246,13 +1240,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   loginForm: {
-    gap: 12,
+    gap: 14,
   },
   inputGroup: {
-    gap: 4,
+    gap: 6,
   },
   inputLabel: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#9CA3AF',
@@ -1263,30 +1257,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotPwd: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
     color: '#E298A6',
   },
   textInput: {
-    backgroundColor: '#16191F',
+    backgroundColor: '#181B22',
     borderWidth: 1,
-    borderColor: '#232732',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 12,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 13,
     color: '#FFFFFF',
   },
   pinkActionBtn: {
     backgroundColor: '#E298A6',
-    borderRadius: 16,
-    paddingVertical: 12,
+    borderRadius: 18,
+    paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E298A6',
   },
   pinkActionBtnText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
     color: '#0E1013',
     letterSpacing: 1,
@@ -1295,7 +1289,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
     marginVertical: 4,
   },
   dividerLine: {
@@ -1304,20 +1298,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
   orText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     color: '#6B7280',
   },
   faceIdBtn: {
-    backgroundColor: '#16191F',
+    backgroundColor: '#181B22',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    paddingVertical: 10,
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   faceIdText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#E5E7EB',
   },
@@ -1325,45 +1319,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#16191F',
-    borderRadius: 12,
-    padding: 10,
+    backgroundColor: '#181B22',
+    borderRadius: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
   inviteLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   keyIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: 'rgba(201, 145, 74, 0.2)',
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   keyEmoji: {
-    fontSize: 12,
+    fontSize: 14,
   },
   inviteTitle: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   inviteSub: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   activateBtn: {
     backgroundColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
   activateBtnText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     color: '#FFFFFF',
   },
@@ -1371,26 +1365,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#0C0D10',
+    backgroundColor: '#090A0D',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   bottomTabItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
   },
   tabIcon: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#6B7280',
   },
   tabActiveIcon: {
     color: '#E298A6',
   },
   tabText: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '800',
     letterSpacing: 1,
     color: '#6B7280',
@@ -1401,30 +1395,30 @@ const styles = StyleSheet.create({
   centerAiScanBtnWrapper: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -16,
+    marginTop: -20,
   },
   centerAiScanBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#E298A6',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#E298A6',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
+    shadowOpacity: 0.65,
+    shadowRadius: 12,
     elevation: 8,
     borderWidth: 2,
-    borderColor: '#181A20',
+    borderColor: '#171920',
   },
   aiScanIcon: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
     color: '#0E1013',
   },
   aiScanLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '900',
     color: '#E298A6',
     letterSpacing: 1,
