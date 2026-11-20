@@ -1,4 +1,6 @@
+import os
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.core.config import settings
@@ -68,6 +70,11 @@ app.add_middleware(
 
 # Mount API V1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Mount Static Files (Cosmetic Product Photos)
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/", tags=["Root"])

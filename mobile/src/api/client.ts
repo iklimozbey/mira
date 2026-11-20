@@ -16,6 +16,7 @@ const getBaseUrl = (): string => {
 };
 
 const API_BASE_URL = getBaseUrl();
+export const STATIC_ASSETS_URL = API_BASE_URL.replace('/api/v1', '/static/images');
 
 class MiraApiClient {
   private token: string | null = null;

@@ -12,7 +12,7 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import { apiClient } from './src/api/client';
+import { apiClient, STATIC_ASSETS_URL } from './src/api/client';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 import { lightTheme, darkTheme, ThemeColors } from './src/theme/colors';
 import { translations, Language } from './src/i18n/translations';
@@ -30,29 +30,75 @@ const getCategoryIcon = (categoryOrName?: string) => {
 };
 
 const getProductImage = (productName?: string, category?: string, imageUrl?: string): string => {
-  if (imageUrl && !imageUrl.includes('flaticon.com')) {
+  if (imageUrl && !imageUrl.includes('flaticon.com') && !imageUrl.includes('unsplash.com')) {
     return imageUrl;
   }
   const lower = ((productName || '') + ' ' + (category || '')).toLowerCase();
   if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel') || lower.includes('lash') || lower.includes('curl')) {
-    return 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/mascara.jpg`;
   }
   if (lower.includes('lip') || lower.includes('ruj') || lower.includes('gloss') || lower.includes('stain') || lower.includes('tattoo')) {
-    return 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/lipstick.jpg`;
   }
   if (lower.includes('foundation') || lower.includes('fondöten') || lower.includes('fit me') || lower.includes('coverage') || lower.includes('infallible')) {
-    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/foundation.jpg`;
   }
   if (lower.includes('serum') || lower.includes('niacinamide') || lower.includes('hyaluronic') || lower.includes('acid') || lower.includes('asit')) {
-    return 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/serum.jpg`;
   }
   if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf') || lower.includes('anthelios')) {
-    return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/sunscreen.jpg`;
   }
   if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('cerave') || lower.includes('cicaplast')) {
-    return 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=80';
+    return `${STATIC_ASSETS_URL}/moisturizer.jpg`;
   }
-  return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80';
+  return `${STATIC_ASSETS_URL}/foundation.jpg`;
+};
+
+const ProductAvatar = ({
+  productName,
+  category,
+  imageUrl,
+  size = 54,
+  theme,
+}: {
+  productName?: string;
+  category?: string;
+  imageUrl?: string;
+  size?: number;
+  theme: ThemeColors;
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const uri = getProductImage(productName, category, imageUrl);
+  const emoji = getCategoryIcon(productName || category);
+
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 12,
+        marginRight: 12,
+        backgroundColor: theme.cardBgSecondary,
+        borderWidth: 1,
+        borderColor: theme.border,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {!hasError && uri ? (
+        <Image
+          source={{ uri }}
+          style={{ width: '100%', height: '100%' }}
+          resizeMode="cover"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <Text style={{ fontSize: size * 0.45 }}>{emoji}</Text>
+      )}
+    </View>
+  );
 };
 
 const getVerdictColor = (verdict?: string) => {
@@ -684,18 +730,12 @@ export default function App() {
             >
               {/* Header: Product Photo + Product Name + Star Rating */}
               <View style={styles.compactBoxHeader}>
-                <Image
-                  source={{ uri: getProductImage(item.product_name, item.category, item.image_url) }}
-                  style={{
-                    width: 54,
-                    height: 54,
-                    borderRadius: 10,
-                    marginRight: 12,
-                    backgroundColor: theme.cardBgSecondary,
-                    borderWidth: 1,
-                    borderColor: theme.border,
-                  }}
-                  resizeMode="cover"
+                <ProductAvatar
+                  productName={item.product_name}
+                  category={item.category}
+                  imageUrl={item.image_url}
+                  size={54}
+                  theme={theme}
                 />
                 <View style={styles.compactTitleArea}>
                   <View style={styles.compactRowBetween}>
@@ -849,18 +889,10 @@ export default function App() {
             {/* Header: Product Photo + Product Name + Match Score Badge */}
             <View style={styles.boxHeaderRow}>
               <View style={styles.boxIconAndTitle}>
-                <Image
-                  source={{ uri: getProductImage(currentReport.product_name) }}
-                  style={{
-                    width: 58,
-                    height: 58,
-                    borderRadius: 12,
-                    marginRight: 12,
-                    backgroundColor: theme.cardBgSecondary,
-                    borderWidth: 1,
-                    borderColor: theme.border,
-                  }}
-                  resizeMode="cover"
+                <ProductAvatar
+                  productName={currentReport.product_name}
+                  size={58}
+                  theme={theme}
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.boxProductName, { color: theme.textPrimary }]}>
