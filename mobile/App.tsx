@@ -21,6 +21,34 @@ import { translateText } from './src/i18n/contentTranslator';
 
 const getProductImage = (productName?: string, category?: string, imageUrl?: string): string => {
   const lower = ((productName || '') + ' ' + (category || '')).toLowerCase();
+
+  // 1. Direct specific product packshot images
+  if (lower.includes('kiss me more') || lower.includes('water lip stain')) {
+    return BEAUTY_IMAGES.flormar_kiss_me_more || BEAUTY_IMAGES.lipstick;
+  }
+  if (lower.includes('matte ink')) {
+    return BEAUTY_IMAGES.maybelline_matte_ink || BEAUTY_IMAGES.lipstick;
+  }
+  if (lower.includes('vinyl ink') || lower.includes('lifter gloss')) {
+    return BEAUTY_IMAGES.maybelline_vinyl_ink || BEAUTY_IMAGES.lipstick;
+  }
+  if (lower.includes('mac') || lower.includes('ruby woo') || lower.includes('velvet matte') || lower.includes('golden rose') || lower.includes('kiko')) {
+    return BEAUTY_IMAGES.mac_ruby_woo || BEAUTY_IMAGES.lipstick;
+  }
+  if (lower.includes('cerave')) {
+    return BEAUTY_IMAGES.cerave_cream || BEAUTY_IMAGES.moisturizer;
+  }
+  if (lower.includes('the ordinary') || lower.includes('niacinamide')) {
+    return BEAUTY_IMAGES.the_ordinary_serum || BEAUTY_IMAGES.serum;
+  }
+
+  // 2. If imageUrl is provided
+  if (imageUrl) {
+    if (imageUrl.startsWith('data:') || imageUrl.startsWith('http')) return imageUrl;
+    if (imageUrl.startsWith('/static/')) return `${STATIC_ASSETS_URL}${imageUrl}`;
+  }
+
+  // 3. Category Fallbacks
   if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel') || lower.includes('lash') || lower.includes('curl')) {
     return BEAUTY_IMAGES.mascara;
   }
@@ -36,7 +64,7 @@ const getProductImage = (productName?: string, category?: string, imageUrl?: str
   if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf') || lower.includes('anthelios')) {
     return BEAUTY_IMAGES.sunscreen;
   }
-  if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('cerave') || lower.includes('cicaplast')) {
+  if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('cicaplast')) {
     return BEAUTY_IMAGES.moisturizer;
   }
   return BEAUTY_IMAGES.foundation;
@@ -745,6 +773,20 @@ export default function App() {
                       <Text style={[styles.compactBadgeText, { color: theme.accent }]}>{item.badge}</Text>
                     </View>
                   ) : null}
+
+                  {item.shade_hex ? (
+                    <View
+                      style={[
+                        styles.shadeSwatchRow,
+                        { backgroundColor: isDarkMode ? theme.inputBg : '#FAF7F9', borderColor: theme.border },
+                      ]}
+                    >
+                      <View style={[styles.shadeSwatchCircle, { backgroundColor: item.shade_hex }]} />
+                      <Text style={[styles.shadeSwatchText, { color: theme.textSecondary }]}>
+                        {item.shade_name || 'Renk Tonu'}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               </View>
 
@@ -919,54 +961,54 @@ export default function App() {
               </Text>
             ) : null}
 
-            {/* Laya Decision Engine & Guardrails Badge */}
+            {/* Clinical Guardrails Approval Badge */}
             {currentReport.decision_engine ? (
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  backgroundColor: isDarkMode ? '#17202A' : '#F0F9FF',
+                  backgroundColor: currentReport.decision_engine.guardrails_passed
+                    ? (isDarkMode ? '#052E16' : '#F0FDF4')
+                    : (isDarkMode ? '#4C0519' : '#FFF1F2'),
                   borderRadius: 8,
-                  paddingVertical: 6,
-                  paddingHorizontal: 10,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
                   marginTop: 10,
                   borderWidth: 1,
-                  borderColor: isDarkMode ? '#1F3A52' : '#BAE6FD',
+                  borderColor: currentReport.decision_engine.guardrails_passed
+                    ? (isDarkMode ? '#14532D' : '#BBF7D0')
+                    : (isDarkMode ? '#881337' : '#FECDD3'),
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <View style={{ backgroundColor: '#0284C7', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 }}><Text style={{ fontSize: 9, fontWeight: '900', color: '#FFF' }}>CPU</Text></View>
-                  <Text style={{ fontSize: 11, fontWeight: '700', color: isDarkMode ? '#38BDF8' : '#0284C7' }}>
-                    {language === 'tr' ? 'Laya Karar Motoru (CPU)' : 'Laya Decision Engine (CPU)'}
-                  </Text>
-                  <Text style={{ fontSize: 10, color: theme.textMuted }}>
-                    ({currentReport.decision_engine.latency_ms} ms)
-                  </Text>
-                </View>
-
-                <View
+                <Text
                   style={{
-                    backgroundColor: currentReport.decision_engine.guardrails_passed
-                      ? (isDarkMode ? '#064E3B' : '#DCFCE7')
-                      : (isDarkMode ? '#7F1D1D' : '#FEE2E2'),
-                    paddingHorizontal: 7,
-                    paddingVertical: 2,
-                    borderRadius: 12,
+                    fontSize: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.8,
+                    color: currentReport.decision_engine.guardrails_passed
+                      ? (isDarkMode ? '#4ADE80' : '#15803D')
+                      : (isDarkMode ? '#FB7185' : '#BE123C'),
+                    textTransform: 'uppercase',
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      fontWeight: '700',
-                      color: currentReport.decision_engine.guardrails_passed ? '#10B981' : '#EF4444',
-                    }}
-                  >
-                    {currentReport.decision_engine.guardrails_passed
-                      ? (language === 'tr' ? 'KLİNİK: ONAYLI' : 'GUARDRAIL: PASS')
-                      : (language === 'tr' ? 'KLİNİK: VETO' : 'GUARDRAIL: VETO')}
-                  </Text>
-                </View>
+                  {currentReport.decision_engine.guardrails_passed
+                    ? (language === 'tr' ? 'KLİNİK ONAYLI' : 'CLINICALLY APPROVED')
+                    : (language === 'tr' ? 'KLİNİK VETO' : 'CLINICAL VETO')}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '800',
+                    color: currentReport.decision_engine.guardrails_passed
+                      ? (isDarkMode ? '#4ADE80' : '#15803D')
+                      : (isDarkMode ? '#FB7185' : '#BE123C'),
+                  }}
+                >
+                  {currentReport.decision_engine.guardrails_passed
+                    ? (language === 'tr' ? 'GÜVENLİ İÇERİK [OK]' : 'SAFE FORMULA [OK]')
+                    : (language === 'tr' ? 'RİSKLİ BİLEŞEN [!]' : 'RISK INGREDIENT [!]')}
+                </Text>
               </View>
             ) : null}
 
@@ -1183,35 +1225,35 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {/* 2. Key Metrics Trio (Laya Karar Motoru, Guardrail Güvenliği, Dolap) */}
+          {/* 2. Key Metrics Trio (Klinik Güvenlik, İçerik Analizi, Dolap) */}
           <View style={styles.metricsRow}>
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#0C2A44' : '#E0F2FE' }]}>
-                <Text style={{ color: '#0284C7', fontSize: 10, fontWeight: '900' }}>CPU</Text>
-              </View>
-              <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
-                {language === 'tr' ? 'Laya Motoru' : 'Laya Engine'}
-              </Text>
-              <Text style={[styles.metricValue, { color: '#0284C7' }]}>
-                {language === 'tr' ? 'Sistem 1 (30ms)' : 'System 1 (30ms)'}
-              </Text>
-            </View>
-
-            <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
               <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#052E16' : '#DCFCE7' }]}>
-                <Text style={{ color: '#10B981', fontSize: 10, fontWeight: '900' }}>SAFE</Text>
+                <Text style={{ color: '#10B981', fontSize: 10, fontWeight: '900' }}>KLİNİK</Text>
               </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
-                {language === 'tr' ? 'Guardrails' : 'Guardrails'}
+                {language === 'tr' ? 'Klinik Güvenlik' : 'Clinical Safety'}
               </Text>
               <Text style={[styles.metricValue, { color: '#10B981' }]}>
-                {language === 'tr' ? 'Klinik Güvenli' : 'Clinical Safe'}
+                {language === 'tr' ? 'Klinik Onaylı' : 'Clinically Safe'}
               </Text>
             </View>
 
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
               <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#2A141D' : '#F8EEF2' }]}>
-                <Text style={{ color: theme.accent, fontSize: 10, fontWeight: '900' }}>BAG</Text>
+                <Text style={{ color: theme.accent, fontSize: 10, fontWeight: '900' }}>İÇERİK</Text>
+              </View>
+              <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
+                {language === 'tr' ? 'Bileşen Analizi' : 'Formula Check'}
+              </Text>
+              <Text style={[styles.metricValue, { color: theme.accent }]}>
+                {language === 'tr' ? 'Temiz Formül' : 'Clean Formula'}
+              </Text>
+            </View>
+
+            <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#2A141D' : '#F8EEF2' }]}>
+                <Text style={{ color: theme.accent, fontSize: 10, fontWeight: '900' }}>DOLAP</Text>
               </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
                 {language === 'tr' ? 'Dolabım' : 'My Shelf'}
@@ -2594,4 +2636,29 @@ const styles = StyleSheet.create({
   },
   categoryTileEmoji: { display: 'none' },
   categoryTileName: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textAlign: 'center' },
+
+  // Shade Swatch Badge Styles
+  shadeSwatchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 5,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  shadeSwatchCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  shadeSwatchText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
 });

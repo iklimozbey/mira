@@ -46,6 +46,8 @@ export interface ProductSuggestionItem {
   key_con?: string;
   finish_or_tag?: string;
   brief_highlight?: string;
+  shade_hex?: string;
+  shade_name?: string;
 }
 
 export interface DecisionEngineMetadata {

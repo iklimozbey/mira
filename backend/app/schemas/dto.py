@@ -104,6 +104,8 @@ class ProductSuggestionItem(BaseModel):
     key_con: Optional[str] = None
     finish_or_tag: Optional[str] = None
     brief_highlight: Optional[str] = None
+    shade_hex: Optional[str] = None
+    shade_name: Optional[str] = None
 
 
 class DecisionEngineMetadata(BaseModel):
