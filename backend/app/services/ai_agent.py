@@ -149,72 +149,72 @@ class FormulationReviewAgent:
         if cat == "mascara":
             is_wp = finish == "waterproof"
             return {
-                "summary": f"{product_name} is an eye mascara designed to provide lash separation, volume, and curl hold.",
+                "summary": f"{product_name}, kirpikleri tel tel ayıran ve kıvrık tutan maskaradır.",
                 "pros": [
-                    "Strong lash lengthening effect without immediate clumping on the first coat",
-                    "Holds curl throughout the day without dropping the lashes",
-                    "Flake-resistant formula during 8+ hours of wear" if not is_wp else "Completely smudge-proof and tear-resistant waterproof hold"
+                    "Tek katta belirgin uzunluk ve sıfır topaklanma",
+                    "8+ saat boyunca dökülme yapmayan dayanıklı tutuş",
+                    "Suya ve tere tam dayanıklı akmayan formül" if is_wp else "Kirpikleri ağırlaştırmadan kolay temizlenen yapı"
                 ],
                 "cons": [
-                    "Can become clumpy or spidery if more than two coats are applied without combing",
-                    "Requires dedicated bi-phase oil makeup remover to avoid tugging delicate eyelashes" if is_wp else "May experience slight transfer onto upper eyelid under high humidity or oily lids"
+                    "Çok kat sürülürse hafif kalınlaşabilir",
+                    "Çıkarmak için çift aşamalı temizleyici gerekir" if is_wp else "Yağlı göz kapaklarında gün sonu hafif bulaşma yapabilir"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "High prevalence of TikTok lash filter demonstrations and false lash tucking in viral reviews; expect natural buildable length rather than falsie effect."
+                    "Sosyal medya filtrelerine aldanmayın; takma kirpik etkisi yerine doğal uzunluk sağlar."
                 ]
             }
 
         # Lip evaluation
         if cat == "lip":
             return {
-                "summary": f"{product_name} is a pigmented lip formulation offering smooth color payoff with daily lip comfort.",
+                "summary": f"{product_name}, tek sürüşte net renk veren konforlu dudak ürünüdür.",
                 "pros": [
-                    "Smooth glide across lip texture without settling into fine vertical lip lines",
-                    "Rich pigmentation in a single swipe",
-                    "Comfortable wear without excessive stickiness"
+                    "Dudak çizgilerine dolmayan pürüzsüz ve kadife doku",
+                    "Tek sürüşte yüksek örtücülük ve net renk",
+                    "Dudakta ağırlık ve yapışkanlık hissi bırakmaz"
                 ],
                 "cons": [
-                    "Requires reapplication after meals and drinks",
-                    "Can emphasize dry flaky patches if lips are not exfoliated and pre-hydrated"
+                    "Yemek ve içecek sonrası hafif tazeleme gerektirir",
+                    "Kuru dudaklarda pürüzsüz durması için öncesinde nemlendirici ister"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "Influencer swatches on Instagram often use high-gloss post-production lighting; true finish is softer in daylight."
+                    "Stüdyo ışıklarındaki aşırı parlaklığa aldanmayın; gün ışığında daha doğal durur."
                 ]
             }
 
         # Sunscreen evaluation
         if cat == "sunscreen":
             return {
-                "summary": f"{product_name} provides broad-spectrum UVA/UVB protection with an easy-to-spread daily texture.",
+                "summary": f"{product_name}, geniş spektrumlu UVA/UVB koruması sağlayan hafif günlük güneş koruyucudur.",
                 "pros": [
-                    "High photostable sun protection filters",
-                    "Quick absorption that layers well under foundation without excessive pilling",
-                    "Minimal white cast after 3-5 minutes of absorption"
+                    "Hızlı emilir; ciltte beyazlık ve yapışkanlık bırakmaz",
+                    "Makyaj altında kusma ve soyulma yapmayan pürüzsüz bitiş",
+                    "Fotostabil yüksek UV filtreleriyle güçlü koruma"
                 ],
                 "cons": [
-                    "Can cause stinging around the eyes if sweat migrates into the tear line",
-                    "May leave a slightly dewy sheen on very oily skin types by midday"
+                    "Göz çevresine çok yakın sürülürse terlemeyle hafif yanma yapabilir",
+                    "Çok yağlı ciltlerde gün ortası hafif parlama yapabilir"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "Heavily featured in sponsored skincare routines; always apply two full finger lengths regardless of influencer micro-dosing."
+                    "Sosyal medyadaki az sürme trendlerine uymayın; iki parmak kuralı uygulayın."
                 ]
             }
 
         # Skincare Serum evaluation
         if cat == "serum":
             return {
-                "summary": f"{product_name} is a concentrated active skincare treatment targeting texture, tone, and skin barrier health.",
+                "summary": f"{product_name}, cilt bariyerini ve tonunu hedefleyen konsantre aktif bakım serumudur.",
                 "pros": [
-                    "Fast-absorbing lightweight texture that layers easily into skincare routines",
-                    "Targeted active concentration for visible texture and tone improvements over 4-6 weeks",
-                    "High yield and cost-effectiveness per milliliter"
+                    "Hızlı emilen, ağırlık yapmayan su bazlı hafif doku",
+                    "Düzenli kullanımda gözenek ve doku pürüzlerini gözle görülür azaltır",
+                    "Rutinlerdeki nemlendirici ve kremlerle rahat katmanlanır"
                 ],
                 "cons": [
-                    "Potential for initial tingling, micro-purging, or irritation if combined with strong exfoliants",
-                    "Can pill if applied excessively (>3 drops) before moisturizer sets"
+                    "Güçlü asitlerle aynı anda uygulanırsa hafif karıncalanma yapabilir",
+                    "Fazla uygulanırsa makyaj altında pütürlenme yapabilir"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "Viral 'overnight glass skin' claims on social media are unrealistic; cellular turnover requires 28+ days of consistent application."
+                    "Bir gecede cam cilt vaatleri gerçek dışıdır; sonuç için 4 hafta düzenli kullanım gerekir."
                 ]
             }
 
@@ -222,85 +222,85 @@ class FormulationReviewAgent:
         if cat == "foundation":
             if finish == "matte":
                 return {
-                    "summary": f"{product_name} is a high-coverage, oil-controlling matte foundation engineered for extended wear and shine prevention.",
+                    "summary": f"{product_name}, parlamayı önleyen ve kusurları örten yüksek kapatıcı mat fondötendir.",
                     "pros": [
-                        "Reliable sebum absorption in the T-zone for 8+ hours",
-                        "High pigmentation that masks redness, blemishes, and uneven tone effortlessly",
-                        "Transfer-resistant once fully set"
+                        "8+ saat boyunca güvenilir sebum ve parlama kontrolü",
+                        "Kızarıklık ve lekeleri tek katta tamamen örten formül",
+                        "Sabitlendikten sonra bulaşmaya karşı yüksek direnç"
                     ],
                     "cons": [
-                        "Can cling to dry patches or emphasize textural lines without thorough moisturizing prep",
-                        "Users note potential 0.5 to 1 shade of oxidation as volatile film-formers dry"
+                        "Kuru bölgelere tutunabilir; altına iyi nemlendirici ister",
+                        "Kururken yarım ton oksitlenme yapabilir"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "TikTok 'beauty filter' ring lighting frequently masks real-world cakey texture; apply sparingly with a damp sponge."
+                        "Filtreli videolara aldanmayın; kalın durmaması için nemli süngerle az miktarda uygulayın."
                     ]
                 }
             elif finish == "radiant":
                 return {
-                    "summary": f"{product_name} delivers a luminous, skin-like finish with buildable medium coverage and hydrating emollients.",
+                    "summary": f"{product_name}, cilde doğal ışıltı ve canlılık veren nemlendirici fondötendir.",
                     "pros": [
-                        "Healthy radiant glow that avoids clinging to dry flakes",
-                        "Seamless blendability and breathable skin feel",
-                        "Minimal oxidation compared to heavy matte formulas"
+                        "Kuru pullara tutunmayan taze ve aydınlık görünüm",
+                        "Cildi boğmayan nefes alan hafif yapı",
+                        "Ağır mat fondötenlere kıyasla minimum oksitlenme"
                     ],
                     "cons": [
-                        "Can break down around the nose and forehead after 4-5 hours on oilier skin types",
-                        "Requires translucent setting powder on the center of the face to prevent transfer"
+                        "Yağlı T bölgesinde gün ortası pudra tazelemesi ister",
+                        "Bulaşmayı önlemek için hafif sabitleme gerektirir"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "Promoted heavily in sponsored 'clean girl' aesthetics; 16-hour wear claims are exaggerated for oily or humid conditions."
+                        "16 saat parlama yapmama iddiası yağlı ciltler için geçerli değildir."
                     ]
                 }
             else:
                 return {
-                    "summary": f"{product_name} offers balanced medium coverage with a natural satin finish suitable for versatile daily wear.",
+                    "summary": f"{product_name}, doğal saten bitişli ve dengeli orta kapatıcılık sunan günlük fondötendir.",
                     "pros": [
-                        "Weightless breathable texture that stays comfortable all day",
-                        "Blurs minor pore texture without looking heavy",
-                        "Adapts well across changing weather conditions"
+                        "Gün boyu ağırlık yapmayan nefes alan hafif doku",
+                        "Gözenekleri pürüzsüzleştiren homojen kapatıcılık",
+                        "Farklı hava koşullarında yapısını koruyan denge"
                     ],
                     "cons": [
-                        "Slight oxidation (half a shade darker) reported by users with higher skin acidity",
-                        "May require a midday powder touch-up in the T-zone"
+                        "Kurudukça yarım ton koyulaşma gözlemlenebilir",
+                        "T bölgesinde gün ortası hafif pudra isteyebilir"
                     ],
                     "sponsored_flags": detected_ad_flags or [
-                        "Moderate social media seeding detected; always check shade swatches in natural indirect daylight."
+                        "Ton seçerken mağaza ışıkları yerine gün ışığında deneyin."
                     ]
                 }
 
         # Concealer evaluation
         if cat == "concealer":
             return {
-                "summary": f"{product_name} is a targeted corrector formulated to neutralize dark circles and spot-conceal blemishes.",
+                "summary": f"{product_name}, koyu halkaları ve lokal lekeleri hedefleyen hedefe yönelik kapatıcıdır.",
                 "pros": [
-                    "High opacity pigment that covers discoloration with a minimal amount of product",
-                    "Does not migrate immediately into fine under-eye expression lines",
-                    "Convenient applicator for on-the-go spot touch-ups"
+                    "Az miktarla bile tam örtücülük sağlayan yüksek pigment",
+                    "İnce mimik çizgilerine hemen dolma ve birikme yapmaz",
+                    "Gün içi pratik rötuşlar sağlayan kullanışlı aplikatör"
                 ],
                 "cons": [
-                    "Needs a light dusting of translucent powder to prevent creasing after 4-5 hours",
-                    "Certain shades run warmer or oxidize slightly darker under-eye"
+                    "Çizgilere dolmaması için hafif transparan pudra ister",
+                    "Bazı tonları kurudukça hafif daha sıcak kalabilir"
                 ],
                 "sponsored_flags": detected_ad_flags or [
-                    "Sponsored PR tutorials frequently demonstrate heavy under-eye triangles that look thick in natural light."
+                    "Videolardaki yoğun üçgen uygulamalar yerine birkaç nokta yeterlidir."
                 ]
             }
 
         # Default General Cosmetic
         return {
-            "summary": f"{product_name} is a versatile cosmetic product balancing performance with comfortable daily wear.",
+            "summary": f"{product_name}, günlük kullanım için konforlu ve dengeli bir kozmetik ürünüdür.",
             "pros": [
-                "Reliable formulation from an established brand",
-                "Smooth application and good blendability",
-                "Accessible for everyday beauty routines"
+                "Kolay sürülen homojen ve hafif doku",
+                "Günlük rutinlerle rahat uyum sağlayan yapı",
+                "Kullanıcılar tarafından güvenilen dengeli formül"
             ],
             "cons": [
-                "Individual longevity varies depending on skin prep and environmental humidity",
-                "Patch-testing is recommended before daily use"
+                "Kalıcılığı cilt hazırlığına göre değişiklik gösterebilir",
+                "Kullanmadan önce küçük bir bölgede test edilmesi önerilir"
             ],
             "sponsored_flags": detected_ad_flags or [
-                "Social media unboxings focus on initial impression rather than longevity test."
+                "Sosyal medya yorumları ilk izlenime odaklıdır; uzun süreli performansı inceleyin."
             ]
         }
 
@@ -491,13 +491,13 @@ class RealityCheckAgent:
         if suitability_score < 65:
             return {
                 "verdict": "SKIP",
-                "reason": f"De-influencing Alert: Based on your skin profile and clinical trigger checks, this {cat} formula has a high risk of underperforming or causing irritation. Save your money."
+                "reason": "Cilt profilinize uygun değil; tahriş ve parlama riski yüksek, gereksiz harcamadan kaçının."
             }
 
         if not user_inventory_notes:
             return {
                 "verdict": "BUY",
-                "reason": f"You don't have a conflicting {cat} logged in your shelf yet, and this product scores well."
+                "reason": "Cildinizle yüksek uyum sağlıyor ve dolabınızda çakışan benzer bir ürün bulunmuyor."
             }
 
         # Check for category-specific duplicates in shelf
@@ -509,15 +509,12 @@ class RealityCheckAgent:
         if matching_shelf:
             return {
                 "verdict": "REDUNDANT",
-                "reason": (
-                    f"Shelf Redundancy: You already own a highly-rated {cat} ({matching_shelf[0].split(':')[0]}). "
-                    "Unless your current product is expired or empty, purchasing another is unnecessary spending."
-                )
+                "reason": f"Dolabınızda zaten yüksek puanlı benzer bir ürün ({matching_shelf[0].split(':')[0]}) var; yeni alım gereksiz."
             }
 
         return {
             "verdict": "CONSIDER",
-            "reason": f"Fits your criteria well. Verify your current makeup shelf to ensure you need a new {cat} before buying."
+            "reason": "Cildinizle uyumlu. Satın almadan önce dolabınızdaki mevcut ürünleri tüketmeniz önerilir."
         }
 
 

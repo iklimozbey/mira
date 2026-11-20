@@ -123,7 +123,7 @@ export default function App() {
     } catch (err) {}
   };
 
-  const handleAuth = async (isRegister: boolean, overrideEmail?: string, overridePass?: string) => {
+  const handleAuth = async (isRegister: boolean, overrideEmail?: string, overridePass?: string, forceOnboarding?: boolean) => {
     const targetEmail = (overrideEmail || email || '').trim().toLowerCase();
     const targetPass = overridePass !== undefined ? overridePass : password;
     setAuthError('');
@@ -137,10 +137,10 @@ export default function App() {
       await refreshQuota();
       setIsAuthenticated(true);
 
-      if (userProf.skin_type && userProf.skin_undertone) {
-        setIsOnboardingCompleted(true);
-      } else {
+      if (forceOnboarding || isRegister || !userProf.skin_type || !userProf.skin_undertone) {
         setIsOnboardingCompleted(false);
+      } else {
+        setIsOnboardingCompleted(true);
       }
     } catch (err: any) {
       setAuthError(err.message || 'Authentication error');
@@ -307,6 +307,19 @@ export default function App() {
           onPress={() => setIsDarkMode(!isDarkMode)}
         >
           <Text style={styles.headerIconPillText}>{isDarkMode ? '🌙' : '☀️'}</Text>
+        </TouchableOpacity>
+
+        {/* Skin Quiz / Onboarding Trigger Button */}
+        <TouchableOpacity
+          style={[
+            styles.skinProfileTagButton,
+            { backgroundColor: isDarkMode ? '#3E2A35' : 'rgba(255, 255, 255, 0.25)', marginRight: 4 },
+          ]}
+          onPress={() => setIsOnboardingCompleted(false)}
+        >
+          <Text style={styles.skinProfileTagText}>
+            {language === 'tr' ? '📝 Test' : '📝 Quiz'}
+          </Text>
         </TouchableOpacity>
 
         {/* Interactive Skin Type Filter Button */}
@@ -480,6 +493,25 @@ export default function App() {
 
             <TouchableOpacity style={styles.textOnlyBtn} onPress={() => handleAuth(true)}>
               <Text style={[styles.textOnlyBtnText, { color: theme.accent }]}>{t.createAccount}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.textOnlyBtn,
+                {
+                  marginTop: 6,
+                  paddingVertical: 9,
+                  backgroundColor: isDarkMode ? '#2A2027' : '#FDF2F5',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                },
+              ]}
+              onPress={() => handleAuth(false, undefined, undefined, true)}
+            >
+              <Text style={[styles.textOnlyBtnText, { color: theme.accent, fontWeight: '700' }]}>
+                {language === 'tr' ? '📝 Cilt Testini Başlat / Anketi Aç' : '📝 Start Skin Quiz / Open Survey'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

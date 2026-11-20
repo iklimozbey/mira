@@ -2,7 +2,64 @@ from typing import List, Dict, Any, Optional
 
 # Curated catalog of top rated products with reliable emoji/visual indicators and clear Pros/Cons
 POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
-    # Maybelline Lips
+    # --- FLORMAR PRODUCTS ---
+    {
+        "brand": "flormar",
+        "category": "lip",
+        "product_name": "Flormar Kiss Me More Lip Tattoo",
+        "rating": 4.7,
+        "review_count": 9200,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Kalıcı Likit Mat",
+        "key_pro": "Sıfır bulaşma, yemek ve içeceğe 8 saat tam direnç",
+        "key_con": "Kuru dudaklarda çizgi yapabilir, altına balm şart"
+    },
+    {
+        "brand": "flormar",
+        "category": "mascara",
+        "product_name": "Flormar Precious Curl Mascara",
+        "rating": 4.6,
+        "review_count": 8100,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "badge": "Kıvırıcı Kavisli Fırça",
+        "key_pro": "Düz kirpikleri kıvırarak gün boyu dik tutar",
+        "key_con": "2 kattan sonra hafif topaklanma yapabilir"
+    },
+    {
+        "brand": "flormar",
+        "category": "foundation",
+        "product_name": "Flormar Perfect Coverage Foundation",
+        "rating": 4.5,
+        "review_count": 6700,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "badge": "12 Saat Tam Kapatıcı",
+        "key_pro": "Tüm lekeleri ve kızarıklıkları tek katta tamamen örter",
+        "key_con": "Yoğun yapılıdır, kuru ciltlerde maske gibi durabilir"
+    },
+    {
+        "brand": "flormar",
+        "category": "mascara",
+        "product_name": "Flormar Hero Volume & Curl Mascara",
+        "rating": 4.7,
+        "review_count": 5400,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "badge": "Ekstra Hacim & Yoğunluk",
+        "key_pro": "Kum saati fırçasıyla kirpikleri tek tek ayırıp dolgunlaştırır",
+        "key_con": "Çift aşamalı yağ bazlı temizleyici ile çıkarılmalıdır"
+    },
+    {
+        "brand": "flormar",
+        "category": "lip",
+        "product_name": "Flormar Water Lip Stain",
+        "rating": 4.4,
+        "review_count": 4100,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Su Bazlı Dudak Tinti",
+        "key_pro": "Ağırlık yapmayan tüy gibi doğal renk ve kalıcılık",
+        "key_con": "Hızlı sabitlenir, sürerken anında dağıtılmalıdır"
+    },
+
+    # --- MAYBELLINE PRODUCTS ---
     {
         "brand": "maybelline",
         "category": "lip",
@@ -38,19 +95,6 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
     },
     {
         "brand": "maybelline",
-        "category": "lip",
-        "product_name": "Maybelline Color Sensational Matte",
-        "rating": 4.4,
-        "review_count": 4310,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
-        "badge": "Konforlu Klasik Ruj",
-        "key_pro": "Dudak çizgilerine dolmayan yumuşak saten-mat doku",
-        "key_con": "Likit rujlar kadar uzun süre kalıcı değil"
-    },
-
-    # Maybelline Mascaras
-    {
-        "brand": "maybelline",
         "category": "mascara",
         "product_name": "Maybelline Sky High Mascara",
         "rating": 4.8,
@@ -71,32 +115,19 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "key_pro": "Kıvrık fırçasıyla kirpikleri dipten kaldırır ve hacim verir",
         "key_con": "Göz kapağı çok yağlıysa gün sonuna doğru hafif akma yapabilir"
     },
-
-    # Maybelline Foundations
     {
         "brand": "maybelline",
         "category": "foundation",
         "product_name": "Maybelline Fit Me Matte + Poreless",
         "rating": 4.6,
         "review_count": 14200,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3200.png",
         "badge": "Gözenek Gizleyici Mat",
         "key_pro": "T bölgesindeki parlamayı alır ve gözenekleri pürüzsüzleştirir",
         "key_con": "Kuru bölgelere tutunur, yarım ton oksitlenme yapabilir"
     },
-    {
-        "brand": "maybelline",
-        "category": "foundation",
-        "product_name": "Maybelline SuperStay Lumi-Matte",
-        "rating": 4.5,
-        "review_count": 5100,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
-        "badge": "Hafif Işıltılı Mat",
-        "key_pro": "Maske hissi vermeyen nefes alan hafif yüksek kapatıcılık",
-        "key_con": "Kuru ciltlerde gün içinde pudralı görünebilir"
-    },
 
-    # L'Oreal Products
+    # --- L'OREAL PRODUCTS ---
     {
         "brand": "loreal",
         "category": "foundation",
@@ -120,20 +151,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "key_con": "Hacimden ziyade sadece uzunluk odaklı bir üründür"
     },
 
-    # MAC Products
-    {
-        "brand": "mac",
-        "category": "lip",
-        "product_name": "MAC Retro Matte (Velvet Teddy)",
-        "rating": 4.8,
-        "review_count": 16500,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
-        "badge": "Kült Mat Ruj",
-        "key_pro": "Tek sürüşte yoğun renk veren dünyaca ünlü ikonik matlık",
-        "key_con": "Dudakta kuruluk hissi bırakabilir, pürüzsüz dudak ister"
-    },
-
-    # La Roche-Posay
+    # --- LA ROCHE-POSAY & CERAVE ---
     {
         "brand": "la roche",
         "category": "sunscreen",
@@ -155,6 +173,65 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "badge": "Yoğun Bariyer Onarıcı",
         "key_pro": "Rozasea kızarıklığını ve tahriş olmuş bariyeri anında yatıştırır",
         "key_con": "Ağır yapılıdır, akneli yağlı ciltler sadece ince tabaka sürmeli"
+    },
+    {
+        "brand": "cerave",
+        "category": "moisturizer",
+        "product_name": "CeraVe Nemlendirici Krem",
+        "rating": 4.8,
+        "review_count": 24000,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "badge": "3 Temel Seramid",
+        "key_pro": "Kuru ve tahriş olmuş bariyeri 24 saat derinlemesine nemlendirir",
+        "key_con": "Çok yağlı ciltlerde gün içinde ağır hissedilebilir"
+    },
+
+    # --- THE ORDINARY ---
+    {
+        "brand": "the ordinary",
+        "category": "serum",
+        "product_name": "The Ordinary Niacinamide 10% + Zinc 1%",
+        "rating": 4.6,
+        "review_count": 28000,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "badge": "Sebum & Gözenek Kontrolü",
+        "key_pro": "T bölgesindeki fazla yağı keser ve gözenek görünümünü sıkılaştırır",
+        "key_con": "Çok sürülürse beyaz köpürme veya pütürlenme yapabilir"
+    },
+    {
+        "brand": "the ordinary",
+        "category": "serum",
+        "product_name": "The Ordinary Hyaluronic Acid 2% + B5",
+        "rating": 4.7,
+        "review_count": 19500,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "badge": "Çoklu Moleküler Nem",
+        "key_pro": "Cildi neme doyurur ve anında dolgun, canlı görünüm sağlar",
+        "key_con": "Kuru havada nemli cilde uygulanmazsa gerginlik hissi verebilir"
+    },
+
+    # --- KIKO & GOLDEN ROSE ---
+    {
+        "brand": "kiko",
+        "category": "lip",
+        "product_name": "Kiko 3D Hydra Lipgloss",
+        "rating": 4.8,
+        "review_count": 11500,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "3D Cam Parlaklık",
+        "key_pro": "Yapışkanlık yapmayan pürüzsüz cam ayna ışıltısı",
+        "key_con": "Yemek sonrası tazeleme gerektirir"
+    },
+    {
+        "brand": "golden rose",
+        "category": "lip",
+        "product_name": "Golden Rose Velvet Matte Lipstick",
+        "rating": 4.5,
+        "review_count": 8900,
+        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "badge": "Kadife Matlık",
+        "key_pro": "Tek sürüşte yüksek pigment ve yumuşak kadifemsi his",
+        "key_con": "Kalıcılığı likit mat rujlar kadar yüksek değildir"
     }
 ]
 
@@ -162,60 +239,99 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
 def detect_general_category_query(query: str) -> Optional[Dict[str, Any]]:
     lower = query.lower().strip()
 
+    # Detect Brands
     matched_brand = None
-    if any(b in lower for b in ["maybelline", "meybilin"]):
+    if any(b in lower for b in ["flormar", "flormare"]):
+        matched_brand = "flormar"
+    elif any(b in lower for b in ["maybelline", "meybilin", "maybeline"]):
         matched_brand = "maybelline"
     elif any(b in lower for b in ["loreal", "l'oreal", "loriel"]):
         matched_brand = "loreal"
-    elif any(b in lower for b in ["mac", "m.a.c"]):
-        matched_brand = "mac"
-    elif any(b in lower for b in ["la roche", "laroche", "posay"]):
-        matched_brand = "la roche"
     elif any(b in lower for b in ["cerave", "sera ve"]):
         matched_brand = "cerave"
-    elif any(b in lower for b in ["nars"]):
-        matched_brand = "nars"
+    elif any(b in lower for b in ["la roche", "laroche", "posay"]):
+        matched_brand = "la roche"
+    elif any(b in lower for b in ["the ordinary", "ordinary"]):
+        matched_brand = "the ordinary"
+    elif any(b in lower for b in ["kiko"]):
+        matched_brand = "kiko"
+    elif any(b in lower for b in ["golden rose", "goldenrose"]):
+        matched_brand = "golden rose"
 
+    # Detect Categories
     matched_category = None
-    if any(c in lower for c in ["ruj", "lipstick", "lip", "gloss", "parlatici"]):
+    if any(c in lower for c in ["ruj", "lipstick", "lip", "gloss", "parlatici", "tint", "balm"]):
         matched_category = "lip"
-    elif any(c in lower for c in ["fondoten", "fondöten", "foundation"]):
+    elif any(c in lower for c in ["fondoten", "fondöten", "foundation", "bb"]):
         matched_category = "foundation"
-    elif any(c in lower for c in ["maskara", "mascara", "rimel"]):
+    elif any(c in lower for c in ["maskara", "mascara", "rimel", "lash"]):
         matched_category = "mascara"
     elif any(c in lower for c in ["gunes", "güneş", "sunscreen", "spf"]):
         matched_category = "sunscreen"
     elif any(c in lower for c in ["krem", "nemlendirici", "moisturizer"]):
         matched_category = "moisturizer"
-    elif any(c in lower for c in ["serum"]):
+    elif any(c in lower for c in ["serum", "asit", "acid"]):
         matched_category = "serum"
 
+    # Specific product lines that mean user wants a specific product report, NOT suggestions
     specific_lines = [
         "vinyl", "matte ink", "superstay", "fit me", "lifter", "sky high",
-        "infallible", "telescopic", "ruby woo", "velvet teddy", "studio fix",
-        "anthelios", "cicaplast", "uvmune", "baume"
+        "kiss me more", "precious curl", "perfect coverage", "hero volume",
+        "infallible", "telescopic", "anthelios", "cicaplast", "uvmune",
+        "niacinamide", "hyaluronic", "3d hydra", "velvet matte"
     ]
     is_specific = any(line in lower for line in specific_lines)
 
-    if matched_brand and matched_category and not is_specific:
+    # If it is a specific product, do NOT intercept as general query
+    if is_specific:
+        return None
+
+    words = lower.split()
+
+    # CASE 1: Brand + Category (e.g. "maybelline ruj", "flormar maskara")
+    if matched_brand and matched_category and len(words) <= 3:
         matched_items = [
             p for p in POPULAR_BRAND_CATALOG
             if p["brand"] == matched_brand and p["category"] == matched_category
         ]
-        matched_items.sort(key=lambda x: (x["rating"], x["review_count"]), reverse=True)
-
         if matched_items:
-            brand_title = "Maybelline" if matched_brand == "maybelline" else matched_brand.upper()
-            cat_title = "Rujları" if matched_category == "lip" else (
-                "Fondötenleri" if matched_category == "foundation" else (
-                    "Maskaraları" if matched_category == "mascara" else "Güneş Kremleri"
-                )
-            )
+            brand_title = matched_brand.title()
+            cat_map = {"lip": "Rujları", "foundation": "Fondötenleri", "mascara": "Maskaraları", "sunscreen": "Güneş Kremleri", "moisturizer": "Nemlendiricileri", "serum": "Serumları"}
             return {
                 "brand": matched_brand,
                 "category": matched_category,
-                "disambiguation_message": f"En Çok Tercih Edilen {brand_title} {cat_title}",
-                "suggested_products": matched_items
+                "disambiguation_message": f"En Çok Tercih Edilen {brand_title} {cat_map.get(matched_category, 'Ürünleri')}",
+                "suggested_products": sorted(matched_items, key=lambda x: (x["rating"], x["review_count"]), reverse=True)
+            }
+
+    # CASE 2: Brand Alone (e.g. "flormar", "maybelline", "cerave", "the ordinary")
+    if matched_brand and len(words) <= 2:
+        matched_items = [
+            p for p in POPULAR_BRAND_CATALOG
+            if p["brand"] == matched_brand
+        ]
+        if matched_items:
+            brand_title = matched_brand.title()
+            return {
+                "brand": matched_brand,
+                "category": None,
+                "disambiguation_message": f"En Popüler {brand_title} Ürünleri",
+                "suggested_products": sorted(matched_items, key=lambda x: (x["rating"], x["review_count"]), reverse=True)
+            }
+
+    # CASE 3: Category Alone (e.g. "ruj", "fondöten", "güneş kremi", "maskara")
+    if matched_category and not matched_brand and len(words) <= 2:
+        matched_items = [
+            p for p in POPULAR_BRAND_CATALOG
+            if p["category"] == matched_category
+        ]
+        if matched_items:
+            cat_map = {"lip": "Rujlar", "foundation": "Fondötenler", "mascara": "Maskaralar", "sunscreen": "Güneş Kremleri", "moisturizer": "Nemlendiriciler", "serum": "Serumlar"}
+            return {
+                "brand": None,
+                "category": matched_category,
+                "disambiguation_message": f"En Çok Puan Alan {cat_map.get(matched_category, 'Ürünler')}",
+                "suggested_products": sorted(matched_items, key=lambda x: (x["rating"], x["review_count"]), reverse=True)[:6]
             }
 
     return None
