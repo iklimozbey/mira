@@ -90,7 +90,7 @@ const getVerdictColor = (verdict?: string) => {
     case 'REDUNDANT':
       return { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' };
     default:
-      return { bg: '#FFF1F5', text: '#FF1493', border: '#FECDD3' };
+      return { bg: '#F8EEF2', text: '#C87D8A', border: '#FECDD3' };
   }
 };
 
@@ -126,6 +126,7 @@ export default function App() {
 
   // View state: 'search' | 'report_detail' | 'suggestions_list'
   const [currentScreen, setCurrentScreen] = useState<'search' | 'report_detail' | 'suggestions_list'>('search');
+  const [beautySection, setBeautySection] = useState<'makeup' | 'skincare'>('makeup');
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -343,33 +344,33 @@ export default function App() {
         <TouchableOpacity
           style={[
             styles.headerIconPill,
-            { backgroundColor: isDarkMode ? '#34262E' : 'rgba(255, 255, 255, 0.2)' },
+            { backgroundColor: isDarkMode ? '#261C23' : '#33202C', borderWidth: 1, borderColor: theme.border },
           ]}
           onPress={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
         >
-          <Text style={styles.headerIconPillText}>{language.toUpperCase()}</Text>
+          <Text style={[styles.headerIconPillText, { color: '#FAF5F8' }]}>{language.toUpperCase()}</Text>
         </TouchableOpacity>
 
         {/* Dark / Light Mode Toggle Pill */}
         <TouchableOpacity
           style={[
             styles.headerIconPill,
-            { backgroundColor: isDarkMode ? '#34262E' : 'rgba(255, 255, 255, 0.2)' },
+            { backgroundColor: isDarkMode ? '#261C23' : '#33202C', borderWidth: 1, borderColor: theme.border },
           ]}
           onPress={() => setIsDarkMode(!isDarkMode)}
         >
-          <Text style={styles.headerIconPillText}>{isDarkMode ? 'DARK' : 'LIGHT'}</Text>
+          <Text style={[styles.headerIconPillText, { color: '#FAF5F8' }]}>{isDarkMode ? 'DARK' : 'LIGHT'}</Text>
         </TouchableOpacity>
 
         {/* Skin Quiz / Onboarding Trigger Button */}
         <TouchableOpacity
           style={[
             styles.skinProfileTagButton,
-            { backgroundColor: isDarkMode ? '#3E2A35' : 'rgba(255, 255, 255, 0.25)', marginRight: 4 },
+            { backgroundColor: theme.accent, marginRight: 4 },
           ]}
           onPress={() => setIsOnboardingCompleted(false)}
         >
-          <Text style={styles.skinProfileTagText}>
+          <Text style={[styles.skinProfileTagText, { color: '#FFFFFF', fontWeight: '800' }]}>
             {language === 'tr' ? 'TEST' : 'QUIZ'}
           </Text>
         </TouchableOpacity>
@@ -378,11 +379,11 @@ export default function App() {
         <TouchableOpacity
           style={[
             styles.skinProfileTagButton,
-            { backgroundColor: isDarkMode ? '#3E2A35' : 'rgba(255, 255, 255, 0.25)' },
+            { backgroundColor: isDarkMode ? '#261C23' : '#33202C', borderWidth: 1, borderColor: theme.border },
           ]}
           onPress={() => setShowSkinTypeModal(true)}
         >
-          <Text style={styles.skinProfileTagText}>
+          <Text style={[styles.skinProfileTagText, { color: '#FAF5F8' }]}>
             {getLocalizedSkinType(profile.skin_type, language)} ▼
           </Text>
         </TouchableOpacity>
@@ -1209,7 +1210,7 @@ export default function App() {
             </View>
 
             <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#2A141D' : '#FFF1F5' }]}>
+              <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#2A141D' : '#F8EEF2' }]}>
                 <Text style={{ color: theme.accent, fontSize: 10, fontWeight: '900' }}>BAG</Text>
               </View>
               <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
@@ -1266,9 +1267,12 @@ export default function App() {
             {/* Trending Quick Search Chips */}
             <View style={styles.trendingChipsWrap}>
               <Text style={[styles.trendingLabel, { color: theme.textMuted }]}>
-                {language === 'tr' ? 'Trendler:' : 'Trending:'}
+                {t.trendingBrands}:
               </Text>
-              {['Flormar', 'Maybelline', 'CeraVe', 'The Ordinary', "L'Oreal"].map((brandTag) => (
+              {(beautySection === 'makeup'
+                ? ['Flormar', 'Maybelline', 'MAC', 'NARS', 'Fenty Beauty', 'Golden Rose', 'Kiko']
+                : ['The Ordinary', 'CeraVe', 'La Roche-Posay', 'Bioderma', 'Bionnex', 'Cosrx']
+              ).map((brandTag) => (
                 <TouchableOpacity
                   key={brandTag}
                   style={[styles.trendingChip, { backgroundColor: theme.cardBgSecondary, borderColor: theme.border }]}
@@ -1283,23 +1287,78 @@ export default function App() {
             </View>
           </View>
 
-          {/* 4. Quick Category Tiles Grid with Real Images */}
+          {/* 4. Segmented Control: MAKYAJ vs CİLT BAKIMI */}
+          <View style={[styles.segmentContainer, { backgroundColor: isDarkMode ? '#221920' : '#F5EAEF', borderColor: theme.border }]}>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                beautySection === 'makeup' && [
+                  styles.segmentButtonActive,
+                  { backgroundColor: theme.accent, borderColor: theme.accent },
+                ],
+              ]}
+              onPress={() => setBeautySection('makeup')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  { color: beautySection === 'makeup' ? '#FFFFFF' : theme.textSecondary },
+                ]}
+              >
+                {t.makeupTab}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                beautySection === 'skincare' && [
+                  styles.segmentButtonActive,
+                  { backgroundColor: theme.accent, borderColor: theme.accent },
+                ],
+              ]}
+              onPress={() => setBeautySection('skincare')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  { color: beautySection === 'skincare' ? '#FFFFFF' : theme.textSecondary },
+                ]}
+              >
+                {t.skincareTab}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 5. Distinct Category Tiles for Selected Beauty Section */}
           <View style={styles.categorySection}>
-            <Text style={[styles.categorySectionTitle, { color: theme.textPrimary }]}>
-              {language === 'tr' ? 'Kategorilere Göre Keşfet' : 'Explore by Category'}
-            </Text>
+            <View style={styles.categorySectionHeader}>
+              <Text style={[styles.categorySectionTitle, { color: theme.textPrimary }]}>
+                {beautySection === 'makeup' ? t.makeupSectionTitle : t.skincareSectionTitle}
+              </Text>
+              <Text style={[styles.categorySectionSubtitle, { color: theme.textMuted }]}>
+                {beautySection === 'makeup' ? t.makeupSubtitle : t.skincareSubtitle}
+              </Text>
+            </View>
+
             <View style={styles.categoryGrid}>
-              {[
-                { name: language === 'tr' ? 'RUJ' : 'LIPSTICK', query: 'ruj', img: BEAUTY_IMAGES.lipstick },
-                { name: language === 'tr' ? 'MASKARA' : 'MASCARA', query: 'maskara', img: BEAUTY_IMAGES.mascara },
-                { name: language === 'tr' ? 'FONDÖTEN' : 'FOUNDATION', query: 'fondöten', img: BEAUTY_IMAGES.foundation },
-                { name: language === 'tr' ? 'SERUM' : 'SERUM', query: 'serum', img: BEAUTY_IMAGES.serum },
-                { name: language === 'tr' ? 'GÜNEŞ KREMİ' : 'SUNSCREEN', query: 'güneş kremi', img: BEAUTY_IMAGES.sunscreen },
-                { name: language === 'tr' ? 'NEMLENDİRİCİ' : 'MOISTURIZER', query: 'nemlendirici', img: BEAUTY_IMAGES.moisturizer },
-              ].map((cat) => (
+              {(beautySection === 'makeup'
+                ? [
+                    { name: language === 'tr' ? 'RUJ & DUDAK' : 'LIPSTICK & LIPS', query: 'ruj', img: BEAUTY_IMAGES.lipstick },
+                    { name: language === 'tr' ? 'MASKARA & GÖZ' : 'MASCARA & EYES', query: 'maskara', img: BEAUTY_IMAGES.mascara },
+                    { name: language === 'tr' ? 'FONDÖTEN & TEN' : 'FOUNDATION & BASE', query: 'fondöten', img: BEAUTY_IMAGES.foundation },
+                  ]
+                : [
+                    { name: language === 'tr' ? 'SERUMLAR' : 'SERUMS', query: 'serum', img: BEAUTY_IMAGES.serum },
+                    { name: language === 'tr' ? 'NEMLENDİRİCİ' : 'MOISTURIZERS', query: 'nemlendirici', img: BEAUTY_IMAGES.moisturizer },
+                    { name: language === 'tr' ? 'GÜNEŞ KREMİ' : 'SUNSCREEN & SPF', query: 'güneş kremi', img: BEAUTY_IMAGES.sunscreen },
+                  ]
+              ).map((cat) => (
                 <TouchableOpacity
                   key={cat.query}
-                  style={[styles.categoryTile, { backgroundColor: '#000000', borderColor: theme.border }]}
+                  style={[styles.categoryTile, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
                   activeOpacity={0.85}
                   onPress={() => {
                     setQuery(cat.query);
@@ -1307,7 +1366,7 @@ export default function App() {
                   }}
                 >
                   <Image source={{ uri: cat.img }} style={styles.categoryTileImage} resizeMode="cover" />
-                  <View style={styles.categoryTileOverlay}>
+                  <View style={[styles.categoryTileOverlay, { borderTopColor: theme.accent }]}>
                     <Text style={styles.categoryTileName}>{cat.name}</Text>
                   </View>
                 </TouchableOpacity>
@@ -1894,7 +1953,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
   },
   bigSearchActionBtnText: {
     color: '#FFF',
@@ -1954,7 +2013,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 13,
     fontWeight: '700',
-    color: '#FF1493',
+    color: '#C87D8A',
   },
   boxHeaderRow: {
     flexDirection: 'row',
@@ -1972,7 +2031,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#FFF1F5',
+    backgroundColor: '#F8EEF2',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -2008,12 +2067,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
   },
   boxScoreNumber: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#FF1493',
+    color: '#C87D8A',
   },
   boxScoreLabel: {
     fontSize: 8.5,
@@ -2043,7 +2102,7 @@ const styles = StyleSheet.create({
   boxSectionLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#FF1493',
+    color: '#C87D8A',
     marginBottom: 3,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -2082,7 +2141,7 @@ const styles = StyleSheet.create({
   boxAddToShelfBtn: {
     backgroundColor: '#000000',
     borderWidth: 1,
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
     paddingVertical: 11,
     borderRadius: 12,
     alignItems: 'center',
@@ -2142,7 +2201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
   },
   bottomSearchBtnText: {
     color: '#FFF',
@@ -2180,10 +2239,10 @@ const styles = StyleSheet.create({
   },
   chipButtonActive: {
     backgroundColor: '#000000',
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
   },
   chipButtonText: { fontSize: 12.5, color: '#4B5563', fontWeight: '600' },
-  chipButtonTextActive: { color: '#FF1493', fontWeight: '800' },
+  chipButtonTextActive: { color: '#C87D8A', fontWeight: '800' },
 
   // Auth Card
   modernAuthCard: {
@@ -2221,13 +2280,13 @@ const styles = StyleSheet.create({
   },
   mainActionBtnText: { color: '#FFF', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
   textOnlyBtn: { marginTop: 14, alignItems: 'center' },
-  textOnlyBtnText: { color: '#FF1493', fontSize: 12.5, fontWeight: '700', letterSpacing: 0.5 },
+  textOnlyBtnText: { color: '#C87D8A', fontSize: 12.5, fontWeight: '700', letterSpacing: 0.5 },
 
   // Suggestions List Styles (Compact Centered Box Layout)
   suggestionsScrollContent: { padding: 16, alignItems: 'center', paddingBottom: 60 },
   disambiguationCard: { width: '100%', maxWidth: 440, marginBottom: 16, alignItems: 'center' },
   disambiguationHeader: { fontSize: 18, fontWeight: '800', color: '#0A0A0A', textAlign: 'center', lineHeight: 24 },
-  disambiguationSub: { fontSize: 12, color: '#FF1493', marginTop: 4, fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.8 },
+  disambiguationSub: { fontSize: 12, color: '#C87D8A', marginTop: 4, fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.8 },
   compactProductBox: {
     backgroundColor: '#FFFFFF',
     width: '100%',
@@ -2252,7 +2311,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#FFF1F5',
+    backgroundColor: '#F8EEF2',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -2274,8 +2333,8 @@ const styles = StyleSheet.create({
   compactRankText: {
     fontSize: 10.5,
     fontWeight: '900',
-    color: '#FF1493',
-    backgroundColor: '#FFF1F5',
+    color: '#C87D8A',
+    backgroundColor: '#F8EEF2',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -2304,7 +2363,7 @@ const styles = StyleSheet.create({
   },
   compactBadgePill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFF1F5',
+    backgroundColor: '#F8EEF2',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
@@ -2313,7 +2372,7 @@ const styles = StyleSheet.create({
   compactBadgeText: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#FF1493',
+    color: '#C87D8A',
     letterSpacing: 0.5,
   },
   compactFeaturesContainer: {
@@ -2371,7 +2430,7 @@ const styles = StyleSheet.create({
   inspectBtnCompact: {
     backgroundColor: '#000000',
     borderWidth: 1,
-    borderColor: '#FF1493',
+    borderColor: '#C87D8A',
     paddingVertical: 11,
     borderRadius: 10,
     alignItems: 'center',
@@ -2423,8 +2482,36 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
   },
   navItem: { flex: 1, alignItems: 'center' },
-  navText: { fontSize: 11, color: '#71717A', fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
-  navTextActive: { color: '#FF1493', fontWeight: '900' },
+  navText: { fontSize: 11, color: '#886E7E', fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  navTextActive: { color: '#C87D8A', fontWeight: '900' },
+
+  // Segmented Control (Makyaj vs Cilt Bakımı)
+  segmentContainer: {
+    flexDirection: 'row',
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentButtonActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  segmentButtonText: {
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
 
   // Dashboard Styles
   dashboardScrollContent: { padding: 16, paddingBottom: 60 },
@@ -2475,15 +2562,22 @@ const styles = StyleSheet.create({
   trendingChipText: { fontSize: 11, fontWeight: '700' },
 
   categorySection: { marginBottom: 20 },
-  categorySectionTitle: { fontSize: 14, fontWeight: '800', marginBottom: 10, letterSpacing: 0.8, textTransform: 'uppercase' },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  categorySectionHeader: { marginBottom: 12 },
+  categorySectionTitle: { fontSize: 15, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
+  categorySectionSubtitle: { fontSize: 11.5, marginTop: 2, fontWeight: '500' },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
   categoryTile: {
     width: '31%',
-    height: 105,
-    borderRadius: 10,
+    height: 115,
+    borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
     position: 'relative',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 3,
   },
   categoryTileImage: { width: '100%', height: '100%' },
   categoryTileOverlay: {
@@ -2491,14 +2585,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    backgroundColor: 'rgba(28, 18, 25, 0.76)',
     paddingVertical: 6,
     paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#FF2E63',
   },
   categoryTileEmoji: { display: 'none' },
-  categoryTileName: { color: '#FFF', fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8, textAlign: 'center' },
+  categoryTileName: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textAlign: 'center' },
 });

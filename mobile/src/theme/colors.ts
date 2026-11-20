@@ -32,22 +32,22 @@ export interface ThemeColors {
   statusBar: 'light-content' | 'dark-content';
 }
 
-// Sephora-inspired Luxury Black & Pink Theme Palette
+// Powder Pink & White/Mauve-Rose Luxury Beauty Palette
 export const lightTheme: ThemeColors = {
-  background: '#F8F9FA',
-  cardBg: '#FFFFFF',
-  cardBgSecondary: '#FFF1F5',
-  textPrimary: '#0A0A0A',
-  textSecondary: '#4B5563',
-  textMuted: '#9CA3AF',
-  headerBg: '#000000',
+  background: '#FAF7F9',        // Soft pearlescent white
+  cardBg: '#FFFFFF',            // Crisp luxury white
+  cardBgSecondary: '#F8EEF2',   // Delicate powder pink wash
+  textPrimary: '#1F151C',       // Rich plum-noir espresso
+  textSecondary: '#6B5461',     // Soft rose-taupe
+  textMuted: '#9E8694',         // Muted mauve-dust
+  headerBg: '#21151D',          // Luxury deep plum-noir header
   headerText: '#FFFFFF',
-  accent: '#FF1493',       // Hot Luxury Pink
-  accentPink: '#FF2E63',
-  border: '#E5E7EB',
+  accent: '#C87D8A',            // Elegant Powder Pink (Non-neon, Rose Poudré)
+  accentPink: '#A65A76',        // Muted Plum-Rose Mauve blend
+  border: '#EADCE3',            // Soft powder hairline border
   inputBg: '#FFFFFF',
-  inputBorder: '#D1D5DB',
-  inputText: '#000000',
+  inputBorder: '#E0CDD6',
+  inputText: '#1F151C',
   proBg: '#F0FDF4',
   proBorder: '#BBF7D0',
   proText: '#15803D',
@@ -58,30 +58,30 @@ export const lightTheme: ThemeColors = {
   warningBorder: '#FDE68A',
   warningText: '#B45309',
   navBarBg: '#FFFFFF',
-  navBarBorder: '#E5E7EB',
-  navText: '#6B7280',
-  navTextActive: '#FF1493',
-  badgeBg: '#FFF1F5',
-  badgeText: '#FF1493',
-  divider: '#F3F4F6',
+  navBarBorder: '#EADCE3',
+  navText: '#886E7E',
+  navTextActive: '#C87D8A',
+  badgeBg: '#F8EEF2',
+  badgeText: '#A65A76',
+  divider: '#F1E5EC',
   statusBar: 'light-content',
 };
 
 export const darkTheme: ThemeColors = {
-  background: '#09090B',
-  cardBg: '#141416',
-  cardBgSecondary: '#1F181B',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#A1A1AA',
-  textMuted: '#71717A',
-  headerBg: '#000000',
-  headerText: '#FFFFFF',
-  accent: '#FF2E63',
-  accentPink: '#FF3B6E',
-  border: '#27272A',
-  inputBg: '#18181B',
-  inputBorder: '#3F3F46',
-  inputText: '#FFFFFF',
+  background: '#120E11',        // Deep velvet noir
+  cardBg: '#1A1418',            // Dark plum-charcoal card
+  cardBgSecondary: '#261C23',   // Muted dark powder wash
+  textPrimary: '#FAF5F8',       // Crisp porcelain
+  textSecondary: '#BAA2AF',     // Powder rose-gray
+  textMuted: '#826D7A',         // Soft muted plum
+  headerBg: '#140E13',          // Velvet noir header
+  headerText: '#FAF5F8',
+  accent: '#DE93A0',            // Luminous Powder Pink (Pudra)
+  accentPink: '#C4768F',        // Soft Plum-Pink
+  border: '#382832',            // Dark powder hairline border
+  inputBg: '#1F171D',
+  inputBorder: '#47333F',
+  inputText: '#FAF5F8',
   proBg: '#052E16',
   proBorder: '#14532D',
   proText: '#4ADE80',
@@ -91,12 +91,12 @@ export const darkTheme: ThemeColors = {
   warningBg: '#451A03',
   warningBorder: '#78350F',
   warningText: '#FCD34D',
-  navBarBg: '#09090B',
-  navBarBorder: '#27272A',
-  navText: '#71717A',
-  navTextActive: '#FF2E63',
-  badgeBg: '#2A141D',
-  badgeText: '#FF3B6E',
-  divider: '#27272A',
+  navBarBg: '#140E13',
+  navBarBorder: '#382832',
+  navText: '#826D7A',
+  navTextActive: '#DE93A0',
+  badgeBg: '#33202B',
+  badgeText: '#DE93A0',
+  divider: '#382832',
   statusBar: 'light-content',
 };

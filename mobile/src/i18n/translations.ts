@@ -96,6 +96,13 @@ export const translations = {
     skinNormal: 'Normal Cilt',
     skinNormalDesc: 'Dengeli sebum ve nem oranı',
     close: 'Kapat',
+    makeupTab: 'MAKYAJ',
+    skincareTab: 'CİLT BAKIMI',
+    makeupSectionTitle: 'Makyaj Koleksiyonu',
+    skincareSectionTitle: 'Cilt Bakımı Ritüeli',
+    makeupSubtitle: 'Dudak, göz ve ten makyajı ürünleri',
+    skincareSubtitle: 'Serumlar, nemlendiriciler ve güneş koruyucular',
+    trendingBrands: 'Popüler Markalar',
   },
   en: {
     // Header & Navigation
@@ -192,5 +199,12 @@ export const translations = {
     skinNormal: 'Normal Skin',
     skinNormalDesc: 'Well-balanced moisture and oil levels',
     close: 'Close',
+    makeupTab: 'MAKEUP',
+    skincareTab: 'SKINCARE',
+    makeupSectionTitle: 'Makeup Collection',
+    skincareSectionTitle: 'Skincare Ritual',
+    makeupSubtitle: 'Lip, eye and complexion essentials',
+    skincareSubtitle: 'Serums, moisturizers and sun protection',
+    trendingBrands: 'Trending Brands',
   }
 };
