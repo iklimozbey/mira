@@ -142,7 +142,7 @@ const getLocalizedSkinType = (skinType?: string, lang: Language = 'tr') => {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'search' | 'shelf' | 'history' | 'settings'>('search');
+  const [activeTab, setActiveTab] = useState<'explore' | 'clinical' | 'routine' | 'atelier' | 'search' | 'shelf' | 'history' | 'settings'>('explore');
 
   // Appearance & Language state
   const [language, setLanguage] = useState<Language>('tr');
@@ -155,6 +155,10 @@ export default function App() {
   // View state: 'search' | 'report_detail' | 'suggestions_list'
   const [currentScreen, setCurrentScreen] = useState<'search' | 'report_detail' | 'suggestions_list'>('search');
   const [beautySection, setBeautySection] = useState<'makeup' | 'skincare'>('makeup');
+  const [routineSubTab, setRoutineSubTab] = useState<'daily' | 'drawer'>('daily');
+  const [morningCompleted, setMorningCompleted] = useState<boolean>(true);
+  const [eveningCompleted, setEveningCompleted] = useState<boolean>(false);
+  const [drawerCategoryFilter, setDrawerCategoryFilter] = useState<'all' | 'makeup' | 'skincare'>('all');
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -287,6 +291,7 @@ export default function App() {
       if (report && report.mode === 'suggestions') {
         setCurrentScreen('suggestions_list');
       } else {
+        setActiveTab('clinical');
         setCurrentScreen('report_detail');
       }
     } catch (err: any) {
@@ -884,6 +889,7 @@ export default function App() {
         {renderTopHeader(t.reportTitle, true, () => {
           setCurrentReport(null);
           setCurrentScreen('search');
+          setActiveTab('explore');
         })}
 
         <ScrollView contentContainerStyle={styles.unifiedScrollContent}>
@@ -1189,18 +1195,18 @@ export default function App() {
 
       {/* Unified Rose/Dark Header */}
       {renderTopHeader(
-        activeTab === 'search'
-          ? t.appTitle
-          : activeTab === 'shelf'
-          ? t.tabShelf
-          : activeTab === 'history'
-          ? t.tabHistory
-          : t.tabSettings,
+        activeTab === 'explore' || activeTab === 'search'
+          ? (language === 'tr' ? 'MIRA • KEŞFET' : 'MIRA • EXPLORE')
+          : activeTab === 'clinical'
+          ? (language === 'tr' ? 'MIRA • KLİNİK DASHBOARD' : 'MIRA • CLINICAL DASHBOARD')
+          : activeTab === 'routine' || activeTab === 'shelf'
+          ? (language === 'tr' ? 'MIRA • KLİNİK ENVANTER & RUTİN' : 'MIRA • ROUTINE & SHELF')
+          : (language === 'tr' ? 'MIRA • ATELIER GİRİŞ & PROFİL' : 'MIRA • ATELIER PROFILE'),
         false
       )}
 
       {/* Main Tab Content: Dashboard-Style Beauty Intelligence Hub */}
-      {activeTab === 'search' && (
+      {(activeTab === 'explore' || activeTab === 'search') && (
         <ScrollView contentContainerStyle={styles.dashboardScrollContent} showsVerticalScrollIndicator={false}>
           {/* 1. Dashboard Welcome & Profile Banner */}
           <View style={[styles.dashboardBanner, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
@@ -1415,126 +1421,1045 @@ export default function App() {
               ))}
             </View>
           </View>
+
+          {/* 6. Curated Brand Packshot Podiums */}
+          <View style={{ marginBottom: 20 }}>
+            <View style={styles.categorySectionHeader}>
+              <Text style={[styles.categorySectionTitle, { color: theme.textPrimary }]}>
+                {beautySection === 'makeup'
+                  ? (language === 'tr' ? 'Öne Çıkan Makyaj Podumu' : 'Featured Makeup Podiums')
+                  : (language === 'tr' ? 'Klinik Formüllü Bakım Ürünleri' : 'Clinical Skincare Highlights')}
+              </Text>
+              <Text style={[styles.categorySectionSubtitle, { color: theme.textMuted }]}>
+                {language === 'tr' ? 'Dermatolojik güvenlik ve renk tonu analizi yapılmış ürünler' : 'Dermatologically evaluated formulas'}
+              </Text>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              {(beautySection === 'makeup'
+                ? [
+                    {
+                      name: 'Maybelline Super Stay Matte Ink',
+                      brand: 'Maybelline New York',
+                      category: 'Likit Mat Ruj',
+                      rating: 4.8,
+                      reviews: 14200,
+                      shadeHex: '#BA3847',
+                      shadeName: '05 Seductress',
+                      tag: '16 Saat Kalıcı Likit Mat',
+                      query: 'Maybelline Super Stay Matte Ink',
+                    },
+                    {
+                      name: 'Flormar Kiss Me More Lip Stain',
+                      brand: 'Flormar',
+                      category: 'Likit Dudak Boyası',
+                      rating: 4.6,
+                      reviews: 8900,
+                      shadeHex: '#A83248',
+                      shadeName: '08 Red Velvet',
+                      tag: 'Bulaşmayan Yoğun Pigment',
+                      query: 'Flormar Kiss Me More',
+                    },
+                    {
+                      name: 'MAC Retro Matte Lipstick',
+                      brand: 'M.A.C Cosmetics',
+                      category: 'Klasik Mat Ruj',
+                      rating: 4.9,
+                      reviews: 32000,
+                      shadeHex: '#D0143C',
+                      shadeName: 'Ruby Woo',
+                      tag: 'İkonik Canlı Kırmızı',
+                      query: 'MAC Ruby Woo',
+                    },
+                    {
+                      name: 'Maybelline Super Stay Vinyl Ink',
+                      brand: 'Maybelline New York',
+                      category: 'Parlak Likit Ruj',
+                      rating: 4.7,
+                      reviews: 11400,
+                      shadeHex: '#C0485A',
+                      shadeName: '35 Cheeky',
+                      tag: 'Parlak & Bulaşmayan',
+                      query: 'Maybelline Vinyl Ink',
+                    },
+                  ]
+                : [
+                    {
+                      name: 'CeraVe Nemlendirici Krem',
+                      brand: 'CeraVe',
+                      category: 'Kuru/Hassas Cilt Kremi',
+                      rating: 4.9,
+                      reviews: 28500,
+                      tag: '3 Temel Seramid [OK]',
+                      query: 'CeraVe Nemlendirici Krem',
+                    },
+                    {
+                      name: 'The Ordinary Niacinamide 10% + Zinc 1%',
+                      brand: 'The Ordinary',
+                      category: 'Gözenek & Sebum Serumu',
+                      rating: 4.8,
+                      reviews: 38200,
+                      tag: 'Bariyer Güçlendirici',
+                      query: 'The Ordinary Niacinamide',
+                    },
+                    {
+                      name: 'La Roche-Posay Anthelios SPF 50+',
+                      brand: 'La Roche-Posay',
+                      category: 'Görünmez Bitişli Güneş Kremi',
+                      rating: 4.9,
+                      reviews: 21900,
+                      tag: 'Geniş Spektrum UV',
+                      query: 'La Roche-Posay Anthelios SPF',
+                    },
+                  ]
+              ).map((item, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.compactProductBox,
+                    { backgroundColor: theme.cardBg, borderColor: theme.border },
+                  ]}
+                >
+                  <View style={styles.compactBoxHeader}>
+                    <ProductAvatar
+                      productName={item.name}
+                      category={item.category}
+                      size={58}
+                      theme={theme}
+                    />
+                    <View style={styles.compactTitleArea}>
+                      <View style={styles.compactRowBetween}>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: theme.accent, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                          {item.brand}
+                        </Text>
+                        <View style={styles.starRatingBadge}>
+                          <Text style={styles.starRatingText}>★ {item.rating}</Text>
+                          <Text style={[styles.starReviewCount, { color: theme.textMuted }]}>
+                            ({item.reviews.toLocaleString()})
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={[styles.compactProductName, { color: theme.textPrimary }]}>
+                        {item.name}
+                      </Text>
+                      {'shadeHex' in item && item.shadeHex ? (
+                        <View
+                          style={[
+                            styles.shadeSwatchRow,
+                            { backgroundColor: isDarkMode ? theme.inputBg : '#FAF7F9', borderColor: theme.border },
+                          ]}
+                        >
+                          <View style={[styles.shadeSwatchCircle, { backgroundColor: item.shadeHex }]} />
+                          <Text style={[styles.shadeSwatchText, { color: theme.textSecondary }]}>
+                            {item.shadeName}
+                          </Text>
+                        </View>
+                      ) : (
+                        <View style={[styles.compactBadgePill, { backgroundColor: theme.cardBgSecondary, alignSelf: 'flex-start', marginTop: 4 }]}>
+                          <Text style={[styles.compactBadgeText, { color: theme.accent }]}>{item.tag}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.inspectBtnCompact, { backgroundColor: theme.accent, marginTop: 8 }]}
+                    onPress={() => {
+                      setQuery(item.query);
+                      handleAnalyze(item.query);
+                    }}
+                  >
+                    <Text style={styles.inspectBtnTextCompact}>
+                      {language === 'tr' ? 'KLİNİK DASHBOARD\'DA İNCELE →' : 'INSPECT IN CLINICAL DASHBOARD →'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
         </ScrollView>
       )}
 
-      {activeTab === 'shelf' && (
-        <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>{t.addProduct}</Text>
-            <TextInput
+      {/* Screen 2: MIRA • KLİNİK DASHBOARD */}
+      {activeTab === 'clinical' && (
+        <ScrollView contentContainerStyle={styles.unifiedScrollContent} showsVerticalScrollIndicator={false}>
+          {currentReport ? (
+            <View
               style={[
-                styles.heroInput,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+                styles.unifiedProductBox,
+                { backgroundColor: theme.cardBg, borderColor: theme.border },
               ]}
-              placeholder={`${t.productName} (e.g. NARS Light Reflecting)`}
-              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
-              value={newProdName}
-              onChangeText={setNewProdName}
-            />
-            <TextInput
-              style={[
-                styles.heroInput,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
-              ]}
-              placeholder={t.brand}
-              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
-              value={newProdBrand}
-              onChangeText={setNewProdBrand}
-            />
-            <TextInput
-              style={[
-                styles.heroInput,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
-              ]}
-              placeholder={t.notes}
-              placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
-              value={newProdNotes}
-              onChangeText={setNewProdNotes}
-            />
-            <TouchableOpacity
-              style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
-              onPress={handleAddShelfItem}
             >
-              <Text style={styles.mainActionBtnText}>{t.saveToShelf}</Text>
+              <View style={styles.boxHeaderRow}>
+                <View style={styles.boxIconAndTitle}>
+                  <ProductAvatar
+                    productName={currentReport.product_name}
+                    category={currentReport.suggested_products?.[0]?.category}
+                    size={64}
+                    theme={theme}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.boxProductName, { color: theme.textPrimary }]}>
+                      {currentReport.product_name}
+                    </Text>
+                    {currentReport.reality_check_verdict ? (
+                      <View
+                        style={[
+                          styles.boxVerdictBadge,
+                          {
+                            backgroundColor: getVerdictColor(currentReport.reality_check_verdict).bg,
+                            borderColor: getVerdictColor(currentReport.reality_check_verdict).border,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.boxVerdictText,
+                            { color: getVerdictColor(currentReport.reality_check_verdict).text },
+                          ]}
+                        >
+                          {currentReport.reality_check_verdict}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+
+                {currentReport.suitability_score !== undefined &&
+                  currentReport.suitability_score !== null && (
+                    <View
+                      style={[
+                        styles.boxScoreBadge,
+                        { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+                      ]}
+                    >
+                      <Text style={[styles.boxScoreNumber, { color: theme.accent }]}>
+                        {currentReport.suitability_score}%
+                      </Text>
+                      <Text style={[styles.boxScoreLabel, { color: theme.textMuted }]}>{t.match}</Text>
+                    </View>
+                  )}
+              </View>
+
+              {currentReport.summary ? (
+                <Text style={[styles.boxSummaryText, { color: theme.textSecondary }]}>
+                  {translateText(currentReport.summary, language)}
+                </Text>
+              ) : null}
+
+              {/* Clean Clinical Certification Pill */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: isDarkMode ? '#052E16' : '#F0FDF4',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginTop: 10,
+                  borderWidth: 1,
+                  borderColor: isDarkMode ? '#14532D' : '#BBF7D0',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.8,
+                    color: isDarkMode ? '#4ADE80' : '#15803D',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {language === 'tr' ? 'KLİNİK ONAYLI' : 'CLINICALLY APPROVED'}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '800',
+                    color: isDarkMode ? '#4ADE80' : '#15803D',
+                  }}
+                >
+                  {language === 'tr' ? 'GÜVENLİ FORMÜL [OK]' : 'SAFE FORMULA [OK]'}
+                </Text>
+              </View>
+
+              <View style={[styles.boxDivider, { backgroundColor: theme.divider }]} />
+
+              {/* Skin Fit Analysis */}
+              {currentReport.suitability_reason ? (
+                <View
+                  style={[
+                    styles.boxSectionRow,
+                    {
+                      backgroundColor: isDarkMode ? theme.cardBgSecondary : '#FAF7F9',
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.boxSectionLabel, { color: theme.accent }]}>
+                    {t.skinAnalysisTitle}
+                  </Text>
+                  <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
+                    {translateText(currentReport.suitability_reason, language)}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Shelf & Reality Check */}
+              {currentReport.reality_check_reason ? (
+                <View
+                  style={[
+                    styles.boxSectionRow,
+                    {
+                      backgroundColor: isDarkMode ? theme.cardBgSecondary : '#FAF7F9',
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.boxSectionLabel, { color: theme.accent }]}>
+                    {t.shelfCheckTitle}
+                  </Text>
+                  <Text style={[styles.boxSectionBody, { color: theme.textPrimary }]}>
+                    {translateText(currentReport.reality_check_reason, language)}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Clinical Warnings */}
+              {currentReport.clinical_warnings && currentReport.clinical_warnings.length > 0 ? (
+                <View
+                  style={[
+                    styles.boxWarningRow,
+                    { backgroundColor: theme.warningBg, borderColor: theme.warningBorder },
+                  ]}
+                >
+                  <View style={{ backgroundColor: '#D97706', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginRight: 8, marginTop: 1 }}>
+                    <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>CAUTION</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    {currentReport.clinical_warnings.map((w, idx) => (
+                      <Text key={idx} style={[styles.boxWarningText, { color: theme.warningText }]}>
+                        {translateText(w, language)}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+
+              {/* Key Benefits (+) and Complaints (-) */}
+              <View style={styles.boxProsConsContainer}>
+                {currentReport.pros && currentReport.pros.length > 0 ? (
+                  <View style={{ gap: 6 }}>
+                    {currentReport.pros.slice(0, 3).map((p, idx) => (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.featureRowPro,
+                          { backgroundColor: theme.proBg, borderColor: theme.proBorder },
+                        ]}
+                      >
+                        <Text style={styles.featureIconPro}>[+]</Text>
+                        <Text style={[styles.featureTextPro, { color: theme.proText }]}>
+                          {translateText(p, language)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+
+                {currentReport.cons && currentReport.cons.length > 0 ? (
+                  <View style={{ gap: 6, marginTop: 4 }}>
+                    {currentReport.cons.slice(0, 2).map((c, idx) => (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.featureRowCon,
+                          { backgroundColor: theme.conBg, borderColor: theme.conBorder },
+                        ]}
+                      >
+                        <Text style={styles.featureIconCon}>[−]</Text>
+                        <Text style={[styles.featureTextCon, { color: theme.conText }]}>
+                          {translateText(c, language)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Quick Add to Shelf Action */}
+              <TouchableOpacity
+                style={[
+                  styles.boxAddToShelfBtn,
+                  { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
+                ]}
+                onPress={() => {
+                  if (currentReport.product_name) {
+                    apiClient
+                      .addInventoryItem({
+                        product_name: currentReport.product_name,
+                        category: 'cosmetics',
+                        status: 'wishlist',
+                      })
+                      .then(() => alert(t.addedToShelf))
+                      .catch((e) => alert(e.message));
+                  }
+                }}
+              >
+                <Text style={[styles.boxAddToShelfBtnText, { color: theme.accent }]}>
+                  {t.addToShelf}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Showcase Mode when no specific report is active */
+            <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+              <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                <View style={[styles.metricTagBadge, { backgroundColor: isDarkMode ? '#052E16' : '#DCFCE7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 }]}>
+                  <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '900', letterSpacing: 0.8 }}>
+                    {language === 'tr' ? 'KLİNİK DERMATOLOJİK MOTOR' : 'CLINICAL DERMATOLOGICAL ENGINE'}
+                  </Text>
+                </View>
+                <Text style={[styles.detailCardHeader, { color: theme.textPrimary, textAlign: 'center', marginTop: 10, fontSize: 18 }]}>
+                  {language === 'tr' ? 'MIRA Klinik Güvenlik Raporu' : 'MIRA Clinical Safety Report'}
+                </Text>
+                <Text style={[styles.dashboardProfileSub, { color: theme.textMuted, textAlign: 'center', maxWidth: 360, marginTop: 4 }]}>
+                  {language === 'tr'
+                    ? 'Kişisel cilt tipinize göre komedojenik yağlar, kontakt alerjenler ve gözenek tıkayıcı içerikler taranır.'
+                    : 'Analyzes comedogenic oils, allergens, and skin-barrier compatibility based on your profile.'}
+                </Text>
+              </View>
+
+              <Text style={[styles.formSectionLabel, { color: theme.textSecondary, marginBottom: 8 }]}>
+                {language === 'tr' ? 'Örnek Klinik İnceleme Seçin:' : 'Select a Clinical Sample:'}
+              </Text>
+              <View style={{ gap: 8, marginBottom: 18 }}>
+                {[
+                  { name: 'Maybelline Super Stay Matte Ink', type: 'Makyaj / Ruj', rating: '96/100' },
+                  { name: 'Flormar Kiss Me More Lip Stain', type: 'Makyaj / Dudak Boyası', rating: '94/100' },
+                  { name: 'CeraVe Nemlendirici Krem', type: 'Cilt Bakımı / Nemlendirici', rating: '99/100' },
+                  { name: 'The Ordinary Niacinamide 10% + Zinc 1%', type: 'Cilt Bakımı / Serum', rating: '97/100' },
+                ].map((sample, sIdx) => (
+                  <TouchableOpacity
+                    key={sIdx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 12,
+                      borderRadius: 10,
+                      backgroundColor: isDarkMode ? theme.inputBg : '#FAF7F9',
+                      borderWidth: 1,
+                      borderColor: theme.border,
+                    }}
+                    onPress={() => {
+                      setQuery(sample.name);
+                      handleAnalyze(sample.name);
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: theme.textPrimary }}>
+                        {sample.name}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: theme.accent, marginTop: 2, fontWeight: '600' }}>
+                        {sample.type} • {language === 'tr' ? 'Güvenlik:' : 'Safety:'} {sample.rating}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: '#10B981' }}>
+                      [KLİNİK ONAYLI] →
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View
+                style={{
+                  backgroundColor: isDarkMode ? '#221920' : '#F9F2F5',
+                  padding: 14,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '800', color: theme.textPrimary, marginBottom: 4 }}>
+                  {language === 'tr' ? '3 Aşamalı Klinik Güvenlik Standardı:' : '3-Step Clinical Standard:'}
+                </Text>
+                <Text style={{ fontSize: 11.5, color: theme.textSecondary, lineHeight: 18 }}>
+                  1. Komedojenik Skala Kontrolü (0-5 Aralığı){'\n'}
+                  2. Parfüm & Alkol Hassasiyeti Taraması{'\n'}
+                  3. Aktif İçerik Çakışması & Raf Tekrarı Denetimi
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Persistent Search Bar Directly Below */}
+          <View style={styles.bottomSearchContainer}>
+            <View
+              style={[
+                styles.bottomSearchInputWrap,
+                { backgroundColor: theme.cardBg, borderColor: theme.inputBorder },
+              ]}
+            >
+              <TextInput
+                style={[styles.bottomSearchInput, { color: theme.inputText }]}
+                placeholder={t.bottomSearchPlaceholder}
+                placeholderTextColor={isDarkMode ? '#7A6B74' : '#A89EAA'}
+                value={query}
+                onChangeText={setQuery}
+                onSubmitEditing={() => handleAnalyze()}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
+                  <Text style={styles.clearInputBtnText}>×</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.bottomSearchBtn,
+                { backgroundColor: theme.accent },
+                loading && { opacity: 0.7 },
+              ]}
+              onPress={() => handleAnalyze()}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text style={styles.bottomSearchBtnText}>{t.searchBtn}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+
+      {/* Screen 3: MIRA • KLİNİK ENVANTER & RUTİN */}
+      {(activeTab === 'routine' || activeTab === 'shelf') && (
+        <ScrollView contentContainerStyle={styles.tabScrollContent} showsVerticalScrollIndicator={false}>
+          {/* Sub-tab toggle: Rutin Protokolü vs Güzellik Çekmecesi */}
+          <View style={[styles.segmentContainer, { backgroundColor: isDarkMode ? '#221920' : '#F5EAEF', borderColor: theme.border, marginBottom: 14 }]}>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                routineSubTab === 'daily' && [
+                  styles.segmentButtonActive,
+                  { backgroundColor: theme.accent, borderColor: theme.accent },
+                ],
+              ]}
+              onPress={() => setRoutineSubTab('daily')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  { color: routineSubTab === 'daily' ? '#FFFFFF' : theme.textSecondary },
+                ]}
+              >
+                {language === 'tr' ? 'GÜNLÜK RUTİN' : 'DAILY PROTOCOL'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                routineSubTab === 'drawer' && [
+                  styles.segmentButtonActive,
+                  { backgroundColor: theme.accent, borderColor: theme.accent },
+                ],
+              ]}
+              onPress={() => {
+                setRoutineSubTab('drawer');
+                loadInventory();
+              }}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  { color: routineSubTab === 'drawer' ? '#FFFFFF' : theme.textSecondary },
+                ]}
+              >
+                {language === 'tr' ? 'GÜZELLİK ÇEKMECESİ' : 'BEAUTY DRAWER'}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ marginTop: 14 }}>
-            {inventory.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: theme.textMuted, marginTop: 20 }}>
-                {t.emptyShelf}
-              </Text>
-            ) : (
-              inventory.map((item) => (
-                <View
-                  key={item.id}
-                  style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={[styles.shelfCardTitle, { color: theme.textPrimary }]}>
-                      {item.product_name}
-                    </Text>
-                    <TouchableOpacity onPress={() => handleDeleteShelfItem(item.id)}>
-                      <Text style={styles.deleteLinkText}>{t.delete}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {item.experience_notes ? (
-                    <Text style={[styles.shelfCardNotes, { color: theme.textSecondary }]}>
-                      "{item.experience_notes}"
-                    </Text>
-                  ) : null}
-                </View>
-              ))
-            )}
-          </View>
-        </ScrollView>
-      )}
-
-      {activeTab === 'history' && (
-        <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          {history.length === 0 ? (
-            <Text style={{ textAlign: 'center', color: theme.textMuted, marginTop: 40 }}>
-              {t.emptyHistory}
-            </Text>
-          ) : (
-            history.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
-                onPress={() => {
-                  setCurrentReport(item);
-                  setCurrentScreen('report_detail');
+          {routineSubTab === 'daily' ? (
+            <View style={{ gap: 14 }}>
+              {/* Incompatibility Warning Banner */}
+              <View
+                style={{
+                  backgroundColor: isDarkMode ? '#3B1808' : '#FFF7ED',
+                  borderWidth: 1.5,
+                  borderColor: '#F97316',
+                  borderRadius: 12,
+                  padding: 14,
                 }}
               >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={[styles.shelfCardTitle, { color: theme.textPrimary }]}>
-                    {item.product_name}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                  <View style={{ backgroundColor: '#EA580C', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginRight: 8 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>[!] KLİNİK UYARI</Text>
+                  </View>
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: isDarkMode ? '#FDBA74' : '#C2410C' }}>
+                    {t.incompatibilityAlert}
                   </Text>
-                  <View
-                    style={[
-                      styles.historyMatchBadge,
-                      { backgroundColor: theme.cardBgSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.historyMatchBadgeText, { color: theme.accent }]}>
-                      {item.suitability_score}%
+                </View>
+                <Text style={{ fontSize: 12, lineHeight: 18, color: isDarkMode ? '#FED7AA' : '#9A3412' }}>
+                  {t.incompatibilityDesc}
+                </Text>
+              </View>
+
+              {/* Sabah Rutini (AM Ritual) Card */}
+              <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <View>
+                    <Text style={[styles.detailCardHeader, { color: theme.textPrimary, marginBottom: 2 }]}>
+                      {t.morningRoutine}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: theme.textMuted }}>
+                      {language === 'tr' ? 'Antioksidan & UV Kalkanı Odaklı' : 'Antioxidant & UV Defense'}
                     </Text>
                   </View>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 6,
+                      backgroundColor: morningCompleted ? '#10B981' : theme.inputBg,
+                      borderWidth: 1,
+                      borderColor: morningCompleted ? '#10B981' : theme.border,
+                    }}
+                    onPress={() => setMorningCompleted(!morningCompleted)}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: morningCompleted ? '#FFF' : theme.textSecondary }}>
+                      {morningCompleted ? '[✓] Tamamlandı' : 'Tamamla'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <Text numberOfLines={2} style={[styles.shelfCardNotes, { color: theme.textSecondary }]}>
-                  {item.summary}
-                </Text>
-              </TouchableOpacity>
-            ))
+
+                {/* Steps List */}
+                {[
+                  { step: '1', name: 'Nazik Köpük / Jel Temizleyici', desc: 'CeraVe Hydrating Cleanser', badge: 'Temizleme' },
+                  { step: '2', name: 'Antioksidan / Niacinamide Serum', desc: 'The Ordinary Niacinamide 10% + Zinc 1%', badge: 'Koruma' },
+                  { step: '3', name: 'Hafif Nem Kilitleyici Krem', desc: 'CeraVe Nemlendirici Losyon', badge: 'Nem' },
+                  { step: '4', name: 'Geniş Spektrumlu SPF 50+ Güneş Kremi', desc: 'La Roche-Posay Anthelios', badge: 'UV Kalkanı' },
+                ].map((s, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 9,
+                      borderBottomWidth: idx < 3 ? 1 : 0,
+                      borderBottomColor: theme.divider,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        backgroundColor: theme.cardBgSecondary,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 10,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: theme.accent }}>{s.step}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12.5, fontWeight: '700', color: theme.textPrimary }}>{s.name}</Text>
+                      <Text style={{ fontSize: 11, color: theme.textMuted }}>{s.desc}</Text>
+                    </View>
+                    <View style={[styles.compactBadgePill, { backgroundColor: theme.cardBgSecondary }]}>
+                      <Text style={[styles.compactBadgeText, { color: theme.accent, fontSize: 9.5 }]}>{s.badge}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {/* Akşam Rutini (PM Ritual) Card */}
+              <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <View>
+                    <Text style={[styles.detailCardHeader, { color: theme.textPrimary, marginBottom: 2 }]}>
+                      {t.eveningRoutine}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: theme.textMuted }}>
+                      {language === 'tr' ? 'Hücresel Onarım & Seramid Bariyeri' : 'Cellular Repair & Barrier Support'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 6,
+                      backgroundColor: eveningCompleted ? '#10B981' : theme.inputBg,
+                      borderWidth: 1,
+                      borderColor: eveningCompleted ? '#10B981' : theme.border,
+                    }}
+                    onPress={() => setEveningCompleted(!eveningCompleted)}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: eveningCompleted ? '#FFF' : theme.textSecondary }}>
+                      {eveningCompleted ? '[✓] Tamamlandı' : 'Tamamla'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Steps List */}
+                {[
+                  { step: '1', name: 'Çift Aşamalı Temizleme', desc: 'Misel Su veya Yağ Bazlı Temizleyici Balm', badge: 'Makyaj Arındırma' },
+                  { step: '2', name: 'Hücre Yenileyici Aktif Bakım', desc: 'Düşük Doz Retinoid veya Peptit Kompleksi', badge: 'Hücresel Yenilenme' },
+                  { step: '3', name: 'Yoğun Bariyer Onarıcı Gece Kremi', desc: '3 Temel Seramidli Yoğun Nemlendirici', badge: 'Bariyer Kilidi' },
+                ].map((s, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 9,
+                      borderBottomWidth: idx < 2 ? 1 : 0,
+                      borderBottomColor: theme.divider,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        backgroundColor: theme.cardBgSecondary,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 10,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: theme.accent }}>{s.step}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12.5, fontWeight: '700', color: theme.textPrimary }}>{s.name}</Text>
+                      <Text style={{ fontSize: 11, color: theme.textMuted }}>{s.desc}</Text>
+                    </View>
+                    <View style={[styles.compactBadgePill, { backgroundColor: theme.cardBgSecondary }]}>
+                      <Text style={[styles.compactBadgeText, { color: theme.accent, fontSize: 9.5 }]}>{s.badge}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : (
+            /* Subtab 2: Güzellik Çekmecesi */
+            <View>
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+                {[
+                  { key: 'all', label: language === 'tr' ? 'Tüm Ürünler' : 'All Items' },
+                  { key: 'makeup', label: language === 'tr' ? 'Makyaj' : 'Makeup' },
+                  { key: 'skincare', label: language === 'tr' ? 'Cilt Bakımı' : 'Skincare' },
+                ].map((f) => (
+                  <TouchableOpacity
+                    key={f.key}
+                    style={[
+                      styles.chipButton,
+                      { backgroundColor: theme.inputBg, borderColor: theme.border },
+                      drawerCategoryFilter === f.key && { backgroundColor: theme.accent, borderColor: theme.accent },
+                    ]}
+                    onPress={() => setDrawerCategoryFilter(f.key as any)}
+                  >
+                    <Text
+                      style={[
+                        styles.chipButtonText,
+                        { color: theme.textPrimary },
+                        drawerCategoryFilter === f.key && { color: '#FFF', fontWeight: '800' },
+                      ]}
+                    >
+                      {f.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Add Product Form */}
+              <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+                <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>{t.addProduct}</Text>
+                <TextInput
+                  style={[
+                    styles.heroInput,
+                    { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+                  ]}
+                  placeholder={`${t.productName} (örn. MAC Ruby Woo, CeraVe)`}
+                  placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
+                  value={newProdName}
+                  onChangeText={setNewProdName}
+                />
+                <TextInput
+                  style={[
+                    styles.heroInput,
+                    { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+                  ]}
+                  placeholder={`${t.brand} (örn. Maybelline, Flormar)`}
+                  placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
+                  value={newProdBrand}
+                  onChangeText={setNewProdBrand}
+                />
+                <TextInput
+                  style={[
+                    styles.heroInput,
+                    { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
+                  ]}
+                  placeholder={`${t.notes} (örn. Bitişi çok kalıcı, kurutmuyor)`}
+                  placeholderTextColor={isDarkMode ? '#7A6B74' : '#A098A3'}
+                  value={newProdNotes}
+                  onChangeText={setNewProdNotes}
+                />
+                <TouchableOpacity
+                  style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
+                  onPress={handleAddShelfItem}
+                >
+                  <Text style={styles.mainActionBtnText}>{t.saveToShelf}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Drawer Inventory List */}
+              <View style={{ marginTop: 14 }}>
+                {inventory.length === 0 ? (
+                  <View style={{ padding: 24, alignItems: 'center' }}>
+                    <Text style={{ textAlign: 'center', color: theme.textMuted }}>
+                      {t.emptyShelf}
+                    </Text>
+                  </View>
+                ) : (
+                  inventory.map((item) => (
+                    <View
+                      key={item.id}
+                      style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginBottom: 10 }]}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <ProductAvatar
+                          productName={item.product_name}
+                          size={52}
+                          theme={theme}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text style={[styles.shelfCardTitle, { color: theme.textPrimary, flex: 1 }]}>
+                              {item.product_name}
+                            </Text>
+                            <TouchableOpacity onPress={() => handleDeleteShelfItem(item.id)}>
+                              <Text style={styles.deleteLinkText}>{t.delete}</Text>
+                            </TouchableOpacity>
+                          </View>
+                          {item.brand ? (
+                            <Text style={{ fontSize: 11, color: theme.accent, fontWeight: '700', textTransform: 'uppercase' }}>
+                              {item.brand}
+                            </Text>
+                          ) : null}
+                          {item.experience_notes ? (
+                            <Text style={[styles.shelfCardNotes, { color: theme.textSecondary, marginTop: 4 }]}>
+                              "{item.experience_notes}"
+                            </Text>
+                          ) : null}
+
+                          {/* PAO Expiry Badge */}
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginTop: 6,
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                              borderRadius: 4,
+                              backgroundColor: isDarkMode ? '#1F171D' : '#FAF5F8',
+                              alignSelf: 'flex-start',
+                              borderWidth: 1,
+                              borderColor: theme.border,
+                            }}
+                          >
+                            <Text style={{ fontSize: 9.5, fontWeight: '700', color: theme.textSecondary }}>
+                              PAO: Açıldıktan sonra 12 ay • Kalan: 8 ay [OK]
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  ))
+                )}
+              </View>
+            </View>
           )}
         </ScrollView>
       )}
 
-      {activeTab === 'settings' && (
-        <ScrollView contentContainerStyle={styles.tabScrollContent}>
-          {/* 1. Appearance & Language Card */}
-          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+      {/* Screen 4: MIRA • ATELIER GİRİŞ & PROFİL */}
+      {(activeTab === 'atelier' || activeTab === 'settings') && (
+        <ScrollView contentContainerStyle={styles.tabScrollContent} showsVerticalScrollIndicator={false}>
+          {/* Atelier Brand Hero */}
+          <View
+            style={[
+              styles.detailCard,
+              {
+                backgroundColor: theme.cardBg,
+                borderColor: theme.border,
+                borderTopWidth: 3,
+                borderTopColor: theme.accent,
+                marginBottom: 14,
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '900', color: theme.accent, letterSpacing: 2, textTransform: 'uppercase', textAlign: 'center' }}>
+              MIRA ATELIER
+            </Text>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary, textAlign: 'center', fontSize: 18, marginTop: 4 }]}>
+              {language === 'tr' ? 'Kişisel Güzellik & Klinik Cilt Zekası' : 'Personal Beauty & Clinical Intelligence'}
+            </Text>
+
+            {/* VIP Status Pill */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: isDarkMode ? '#271D24' : '#F9F0F4',
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                borderRadius: 10,
+                marginTop: 12,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+            >
+              <View>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: theme.textPrimary }}>
+                  {email}
+                </Text>
+                <Text style={{ fontSize: 10.5, color: theme.accent, fontWeight: '700', textTransform: 'uppercase', marginTop: 1 }}>
+                  MIRA Atelier VIP • {quota.remaining_today} / {quota.daily_limit} Hak
+                </Text>
+              </View>
+              <View style={[styles.compactBadgePill, { backgroundColor: '#10B981' }]}>
+                <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>AKTİF</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Skin Attributes & Preferences (Interactive Calibrator) */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginBottom: 14 }]}>
+            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
+              {t.skinPrefsTitle}
+            </Text>
+            <Text style={{ fontSize: 11.5, color: theme.textMuted, marginBottom: 12 }}>
+              {language === 'tr'
+                ? 'Klinik uyum puanları ve formül tavsiyeleri buradaki tercihleriniz üzerinden hesaplanır.'
+                : 'Suitability scores and clinical guardrails are calibrated by these parameters.'}
+            </Text>
+
+            {/* Skin Type Chips */}
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.skinType}</Text>
+            <View style={styles.gridRow}>
+              {['combination', 'dry', 'oily', 'sensitive', 'normal'].map((st) => (
+                <TouchableOpacity
+                  key={st}
+                  style={[
+                    styles.chipButton,
+                    { backgroundColor: theme.inputBg, borderColor: theme.border },
+                    profile.skin_type === st && { backgroundColor: theme.accent, borderColor: theme.accent },
+                  ]}
+                  onPress={() => setProfile({ ...profile, skin_type: st })}
+                >
+                  <Text
+                    style={[
+                      styles.chipButtonText,
+                      { color: theme.textPrimary },
+                      profile.skin_type === st && { color: '#FFF', fontWeight: '800' },
+                    ]}
+                  >
+                    {getLocalizedSkinType(st, language)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Undertone Chips */}
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary, marginTop: 12 }]}>{t.undertone}</Text>
+            <View style={styles.gridRow}>
+              {['warm', 'cool', 'neutral'].map((ut) => (
+                <TouchableOpacity
+                  key={ut}
+                  style={[
+                    styles.chipButton,
+                    { backgroundColor: theme.inputBg, borderColor: theme.border },
+                    profile.skin_undertone === ut && { backgroundColor: theme.accent, borderColor: theme.accent },
+                  ]}
+                  onPress={() => setProfile({ ...profile, skin_undertone: ut })}
+                >
+                  <Text
+                    style={[
+                      styles.chipButtonText,
+                      { color: theme.textPrimary },
+                      profile.skin_undertone === ut && { color: '#FFF', fontWeight: '800' },
+                    ]}
+                  >
+                    {ut === 'warm' ? (language === 'tr' ? 'Sıcak (Warm)' : 'Warm') : ut === 'cool' ? (language === 'tr' ? 'Soğuk (Cool)' : 'Cool') : (language === 'tr' ? 'Nötr (Neutral)' : 'Neutral')}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Concerns */}
+            <Text style={[styles.formSectionLabel, { color: theme.textSecondary, marginTop: 12 }]}>{t.concerns}</Text>
+            <View style={styles.gridRow}>
+              {[
+                { key: 'rosacea', label: language === 'tr' ? 'Rozasea / Kızarıklık' : 'Rosacea / Redness' },
+                { key: 'acne', label: language === 'tr' ? 'Akneye Eğilimli' : 'Acne-Prone' },
+                { key: 'pores', label: language === 'tr' ? 'Geniş Gözenekler' : 'Visible Pores' },
+                { key: 'fungal_acne', label: language === 'tr' ? 'Fungal Akne Riski' : 'Fungal Acne' },
+                { key: 'eczema', label: language === 'tr' ? 'Egzama / Kuruluk' : 'Eczema' },
+              ].map((c) => {
+                const active = (profile.skin_concerns || []).includes(c.key);
+                return (
+                  <TouchableOpacity
+                    key={c.key}
+                    style={[
+                      styles.chipButton,
+                      { backgroundColor: theme.inputBg, borderColor: theme.border },
+                      active && { backgroundColor: theme.accent, borderColor: theme.accent },
+                    ]}
+                    onPress={() => {
+                      const cur = profile.skin_concerns || [];
+                      const updated = active ? cur.filter((i) => i !== c.key) : [...cur, c.key];
+                      setProfile({ ...profile, skin_concerns: updated });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.chipButtonText,
+                        { color: theme.textPrimary },
+                        active && { color: '#FFF', fontWeight: '800' },
+                      ]}
+                    >
+                      {c.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {profileSavedMsg ? <Text style={styles.successText}>{profileSavedMsg}</Text> : null}
+
+            <TouchableOpacity
+              style={[styles.mainActionBtn, { backgroundColor: theme.accent, marginTop: 16 }]}
+              onPress={handleSaveProfile}
+            >
+              <Text style={styles.mainActionBtnText}>{t.savePrefs}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Appearance & Language Card */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginBottom: 14 }]}>
             <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
               {t.appearanceAndLang}
             </Text>
@@ -1624,76 +2549,8 @@ export default function App() {
             </View>
           </View>
 
-          {/* 2. Skin Attributes & Preferences */}
-          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginTop: 14 }]}>
-            <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
-              {t.skinPrefsTitle}
-            </Text>
-
-            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.skinType}</Text>
-            <TextInput
-              style={[
-                styles.heroInput,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
-              ]}
-              value={profile.skin_type}
-              onChangeText={(v) => setProfile({ ...profile, skin_type: v })}
-            />
-
-            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.undertone}</Text>
-            <TextInput
-              style={[
-                styles.heroInput,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText },
-              ]}
-              value={profile.skin_undertone}
-              onChangeText={(v) => setProfile({ ...profile, skin_undertone: v })}
-            />
-
-            <Text style={[styles.formSectionLabel, { color: theme.textSecondary }]}>{t.concerns}</Text>
-            <View style={styles.gridRow}>
-              {['rosacea', 'acne', 'fungal_acne', 'redness', 'pores', 'eczema'].map((c) => {
-                const active = (profile.skin_concerns || []).includes(c);
-                return (
-                  <TouchableOpacity
-                    key={c}
-                    style={[
-                      styles.chipButton,
-                      { backgroundColor: theme.inputBg, borderColor: theme.border },
-                      active && { backgroundColor: theme.accent, borderColor: theme.accent },
-                    ]}
-                    onPress={() => {
-                      const cur = profile.skin_concerns || [];
-                      const updated = active ? cur.filter((i) => i !== c) : [...cur, c];
-                      setProfile({ ...profile, skin_concerns: updated });
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.chipButtonText,
-                        { color: theme.textPrimary },
-                        active && { color: '#FFF', fontWeight: '800' },
-                      ]}
-                    >
-                      {c === 'rosacea' ? 'Rosacea' : c === 'acne' ? 'Acne-Prone' : c}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {profileSavedMsg ? <Text style={styles.successText}>{profileSavedMsg}</Text> : null}
-
-            <TouchableOpacity
-              style={[styles.mainActionBtn, { backgroundColor: theme.accent }]}
-              onPress={handleSaveProfile}
-            >
-              <Text style={styles.mainActionBtnText}>{t.savePrefs}</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* 3. Account & Privacy */}
-          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginTop: 14 }]}>
+          {/* Account & Privacy */}
+          <View style={[styles.detailCard, { backgroundColor: theme.cardBg, borderColor: theme.border, marginBottom: 14 }]}>
             <Text style={[styles.detailCardHeader, { color: theme.textPrimary }]}>
               {t.accountPrivacy}
             </Text>
@@ -1708,7 +2565,7 @@ export default function App() {
             </TouchableOpacity>
 
             {exportedDataJson ? (
-              <View style={[styles.jsonPreviewBox, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
+              <View style={[styles.jsonPreviewBox, { backgroundColor: theme.inputBg, borderColor: theme.border, marginTop: 10 }]}>
                 <Text style={[styles.jsonPreviewText, { color: theme.textPrimary }]}>{exportedDataJson}</Text>
               </View>
             ) : null}
@@ -1725,69 +2582,122 @@ export default function App() {
         </ScrollView>
       )}
 
-      {/* Clean Bottom Navigation Bar */}
+      {/* History View */}
+      {activeTab === 'history' && (
+        <ScrollView contentContainerStyle={styles.tabScrollContent}>
+          {history.length === 0 ? (
+            <Text style={{ textAlign: 'center', color: theme.textMuted, marginTop: 40 }}>
+              {t.emptyHistory}
+            </Text>
+          ) : (
+            history.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.shelfCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
+                onPress={() => {
+                  setCurrentReport(item);
+                  setActiveTab('clinical');
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={[styles.shelfCardTitle, { color: theme.textPrimary }]}>
+                    {item.product_name}
+                  </Text>
+                  <View
+                    style={[
+                      styles.historyMatchBadge,
+                      { backgroundColor: theme.cardBgSecondary },
+                    ]}
+                  >
+                    <Text style={[styles.historyMatchBadgeText, { color: theme.accent }]}>
+                      {item.suitability_score}%
+                    </Text>
+                  </View>
+                </View>
+                <Text numberOfLines={2} style={[styles.shelfCardNotes, { color: theme.textSecondary }]}>
+                  {item.summary}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      )}
+
+      {/* Clean 4-Pill Bottom Navigation Bar (Google Stitch 4 Screens) */}
       <View
         style={[
           styles.bottomNavBar,
           { backgroundColor: theme.navBarBg, borderColor: theme.navBarBorder },
         ]}
       >
+        {/* 1. MIRA • Keşfet */}
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => {
-            setActiveTab('search');
+            setActiveTab('explore');
             setCurrentScreen('search');
           }}
         >
           <Text
             style={[
               styles.navText,
-              { color: activeTab === 'search' ? theme.navTextActive : theme.navText },
+              { color: (activeTab === 'explore' || activeTab === 'search') ? theme.navTextActive : theme.navText },
             ]}
           >
-            {t.tabSearch}
+            {t.tabExplore || 'KEŞFET'}
           </Text>
         </TouchableOpacity>
+
+        {/* 2. MIRA • Klinik Dashboard */}
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => {
-            setActiveTab('shelf');
+            setActiveTab('clinical');
+            setCurrentScreen('search');
+          }}
+        >
+          <Text
+            style={[
+              styles.navText,
+              { color: activeTab === 'clinical' ? theme.navTextActive : theme.navText },
+            ]}
+          >
+            {t.tabClinical || 'KLİNİK'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* 3. MIRA • Klinik Envanter & Rutin */}
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => {
+            setActiveTab('routine');
             loadInventory();
           }}
         >
           <Text
             style={[
               styles.navText,
-              { color: activeTab === 'shelf' ? theme.navTextActive : theme.navText },
+              { color: (activeTab === 'routine' || activeTab === 'shelf') ? theme.navTextActive : theme.navText },
             ]}
           >
-            {t.tabShelf}
+            {t.tabRoutine || 'RUTİN'}
           </Text>
         </TouchableOpacity>
+
+        {/* 4. MIRA • Atelier Giriş & Profil */}
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => {
-            setActiveTab('history');
-            loadHistory();
+            setActiveTab('atelier');
           }}
         >
           <Text
             style={[
               styles.navText,
-              { color: activeTab === 'history' ? theme.navTextActive : theme.navText },
+              { color: (activeTab === 'atelier' || activeTab === 'settings') ? theme.navTextActive : theme.navText },
             ]}
           >
-            {t.tabHistory}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('settings')}>
-          <Text
-            style={[
-              styles.navText,
-              { color: activeTab === 'settings' ? theme.navTextActive : theme.navText },
-            ]}
-          >
-            {t.tabSettings}
+            {t.tabAtelier || 'ATELIER'}
           </Text>
         </TouchableOpacity>
       </View>
