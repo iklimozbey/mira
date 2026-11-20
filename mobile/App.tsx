@@ -13,6 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { apiClient, STATIC_ASSETS_URL } from './src/api/client';
+import { BEAUTY_IMAGES } from './src/assets/productImages';
 import { ResearchReport, UserProfile, InventoryItem, QuotaInfo } from './src/types';
 import { lightTheme, darkTheme, ThemeColors } from './src/theme/colors';
 import { translations, Language } from './src/i18n/translations';
@@ -30,29 +31,26 @@ const getCategoryIcon = (categoryOrName?: string) => {
 };
 
 const getProductImage = (productName?: string, category?: string, imageUrl?: string): string => {
-  if (imageUrl && !imageUrl.includes('flaticon.com') && !imageUrl.includes('unsplash.com')) {
-    return imageUrl;
-  }
   const lower = ((productName || '') + ' ' + (category || '')).toLowerCase();
   if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel') || lower.includes('lash') || lower.includes('curl')) {
-    return `${STATIC_ASSETS_URL}/mascara.jpg`;
+    return BEAUTY_IMAGES.mascara;
   }
   if (lower.includes('lip') || lower.includes('ruj') || lower.includes('gloss') || lower.includes('stain') || lower.includes('tattoo')) {
-    return `${STATIC_ASSETS_URL}/lipstick.jpg`;
+    return BEAUTY_IMAGES.lipstick;
   }
   if (lower.includes('foundation') || lower.includes('fondöten') || lower.includes('fit me') || lower.includes('coverage') || lower.includes('infallible')) {
-    return `${STATIC_ASSETS_URL}/foundation.jpg`;
+    return BEAUTY_IMAGES.foundation;
   }
   if (lower.includes('serum') || lower.includes('niacinamide') || lower.includes('hyaluronic') || lower.includes('acid') || lower.includes('asit')) {
-    return `${STATIC_ASSETS_URL}/serum.jpg`;
+    return BEAUTY_IMAGES.serum;
   }
   if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf') || lower.includes('anthelios')) {
-    return `${STATIC_ASSETS_URL}/sunscreen.jpg`;
+    return BEAUTY_IMAGES.sunscreen;
   }
   if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('cerave') || lower.includes('cicaplast')) {
-    return `${STATIC_ASSETS_URL}/moisturizer.jpg`;
+    return BEAUTY_IMAGES.moisturizer;
   }
-  return `${STATIC_ASSETS_URL}/foundation.jpg`;
+  return BEAUTY_IMAGES.foundation;
 };
 
 const ProductAvatar = ({
@@ -68,9 +66,7 @@ const ProductAvatar = ({
   size?: number;
   theme: ThemeColors;
 }) => {
-  const [hasError, setHasError] = useState(false);
   const uri = getProductImage(productName, category, imageUrl);
-  const emoji = getCategoryIcon(productName || category);
 
   return (
     <View
@@ -87,16 +83,11 @@ const ProductAvatar = ({
         justifyContent: 'center',
       }}
     >
-      {!hasError && uri ? (
-        <Image
-          source={{ uri }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-          onError={() => setHasError(true)}
-        />
-      ) : (
-        <Text style={{ fontSize: size * 0.45 }}>{emoji}</Text>
-      )}
+      <Image
+        source={{ uri }}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode="cover"
+      />
     </View>
   );
 };
@@ -1174,34 +1165,94 @@ export default function App() {
         false
       )}
 
-      {/* Main Tab Content */}
+      {/* Main Tab Content: Dashboard-Style Beauty Intelligence Hub */}
       {activeTab === 'search' && (
-        <View style={styles.centerSearchLayout}>
-          <View style={styles.searchHeroBox}>
-            <Text style={[styles.searchPromptBig, { color: theme.textPrimary }]}>
-              {t.searchPrompt}
-            </Text>
+        <ScrollView contentContainerStyle={styles.dashboardScrollContent} showsVerticalScrollIndicator={false}>
+          {/* 1. Dashboard Welcome & Profile Banner */}
+          <View style={[styles.dashboardBanner, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.dashboardGreeting, { color: theme.textSecondary }]}>
+                {language === 'tr' ? 'MIRA AI Güzellik Asistanı' : 'MIRA AI Beauty Assistant'}
+              </Text>
+              <Text style={[styles.dashboardProfileTitle, { color: theme.textPrimary }]}>
+                {getLocalizedSkinType(profile.skin_type, language)} {language === 'tr' ? 'Cilt Profili' : 'Skin Profile'}
+              </Text>
+              <Text style={[styles.dashboardProfileSub, { color: theme.textMuted }]}>
+                {profile.skin_concerns && profile.skin_concerns.length > 0
+                  ? profile.skin_concerns.map((c) => c.toUpperCase()).join(' • ')
+                  : (language === 'tr' ? 'Hassasiyet tanımlı değil' : 'No sensitivities')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.dashboardQuizBtn, { backgroundColor: theme.accent }]}
+              onPress={() => setIsOnboardingCompleted(false)}
+            >
+              <Text style={styles.dashboardQuizBtnText}>{language === 'tr' ? '📝 Testi Aç' : '📝 Quiz'}</Text>
+            </TouchableOpacity>
+          </View>
 
-            {/* Big Centered Rounded Search Box */}
+          {/* 2. Key Metrics Trio (Laya Karar Motoru, Guardrail Güvenliği, Dolap) */}
+          <View style={styles.metricsRow}>
+            <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+              <Text style={styles.metricIcon}>⚡</Text>
+              <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
+                {language === 'tr' ? 'Laya Motoru' : 'Laya Engine'}
+              </Text>
+              <Text style={[styles.metricValue, { color: '#0284C7' }]}>
+                {language === 'tr' ? 'Sistem 1 (CPU)' : 'System 1 (CPU)'}
+              </Text>
+            </View>
+
+            <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+              <Text style={styles.metricIcon}>🛡️</Text>
+              <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
+                {language === 'tr' ? 'Guardrails' : 'Guardrails'}
+              </Text>
+              <Text style={[styles.metricValue, { color: '#10B981' }]}>
+                {language === 'tr' ? 'Klinik Güvenli' : 'Clinical Safe'}
+              </Text>
+            </View>
+
+            <View style={[styles.metricCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+              <Text style={styles.metricIcon}>🧴</Text>
+              <Text style={[styles.metricTitle, { color: theme.textPrimary }]}>
+                {language === 'tr' ? 'Dolabım' : 'My Shelf'}
+              </Text>
+              <Text style={[styles.metricValue, { color: theme.accent }]}>
+                {inventory.length} {language === 'tr' ? 'Ürün' : 'Items'}
+              </Text>
+            </View>
+          </View>
+
+          {/* 3. Dashboard Elevated Search Card */}
+          <View style={[styles.dashboardSearchCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <Text style={[styles.dashboardSearchTitle, { color: theme.textPrimary }]}>
+              {language === 'tr' ? 'Ürün veya Marka Analizi' : 'Product & Brand Analysis'}
+            </Text>
             <View
               style={[
-                styles.bigSearchInputContainer,
-                { backgroundColor: theme.cardBg, borderColor: theme.inputBorder },
+                styles.dashboardInputWrap,
+                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder },
               ]}
             >
               <TextInput
-                style={[styles.bigSearchInput, { color: theme.inputText }]}
+                style={[styles.dashboardInput, { color: theme.inputText }]}
                 placeholder={t.searchPlaceholder}
                 placeholderTextColor={isDarkMode ? '#7A6B74' : '#A89EAA'}
                 value={query}
                 onChangeText={setQuery}
                 onSubmitEditing={() => handleAnalyze()}
               />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => setQuery('')} style={styles.clearInputBtn}>
+                  <Text style={styles.clearInputBtnText}>✕</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <TouchableOpacity
               style={[
-                styles.bigSearchActionBtn,
+                styles.dashboardActionBtn,
                 { backgroundColor: theme.accent },
                 loading && { opacity: 0.7 },
               ]}
@@ -1211,15 +1262,62 @@ export default function App() {
               {loading ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.bigSearchActionBtnText}>{t.analyzeBtn}</Text>
+                <Text style={styles.dashboardActionBtnText}>{t.analyzeBtn}</Text>
               )}
             </TouchableOpacity>
 
-            <Text style={[styles.searchMicroHint, { color: theme.textMuted }]}>
-              {t.searchMicroHint}
-            </Text>
+            {/* Trending Quick Search Chips */}
+            <View style={styles.trendingChipsWrap}>
+              <Text style={[styles.trendingLabel, { color: theme.textMuted }]}>
+                {language === 'tr' ? 'Trendler:' : 'Trending:'}
+              </Text>
+              {['Flormar', 'Maybelline', 'CeraVe', 'The Ordinary', "L'Oreal"].map((brandTag) => (
+                <TouchableOpacity
+                  key={brandTag}
+                  style={[styles.trendingChip, { backgroundColor: theme.cardBgSecondary, borderColor: theme.border }]}
+                  onPress={() => {
+                    setQuery(brandTag);
+                    handleAnalyze(brandTag);
+                  }}
+                >
+                  <Text style={[styles.trendingChipText, { color: theme.accent }]}>{brandTag}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
+
+          {/* 4. Quick Category Tiles Grid with Real Images */}
+          <View style={styles.categorySection}>
+            <Text style={[styles.categorySectionTitle, { color: theme.textPrimary }]}>
+              {language === 'tr' ? 'Kategorilere Göre Keşfet' : 'Explore by Category'}
+            </Text>
+            <View style={styles.categoryGrid}>
+              {[
+                { name: language === 'tr' ? 'Rujlar' : 'Lipsticks', query: 'ruj', icon: '💄', img: BEAUTY_IMAGES.lipstick },
+                { name: language === 'tr' ? 'Maskaralar' : 'Mascaras', query: 'maskara', icon: '👁️', img: BEAUTY_IMAGES.mascara },
+                { name: language === 'tr' ? 'Fondötenler' : 'Foundations', query: 'fondöten', icon: '✨', img: BEAUTY_IMAGES.foundation },
+                { name: language === 'tr' ? 'Serumlar' : 'Serums', query: 'serum', icon: '💧', img: BEAUTY_IMAGES.serum },
+                { name: language === 'tr' ? 'Güneş Kremleri' : 'Sunscreens', query: 'güneş kremi', icon: '☀️', img: BEAUTY_IMAGES.sunscreen },
+                { name: language === 'tr' ? 'Nemlendiriciler' : 'Moisturizers', query: 'nemlendirici', icon: '🧴', img: BEAUTY_IMAGES.moisturizer },
+              ].map((cat) => (
+                <TouchableOpacity
+                  key={cat.query}
+                  style={[styles.categoryTile, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
+                  onPress={() => {
+                    setQuery(cat.query);
+                    handleAnalyze(cat.query);
+                  }}
+                >
+                  <Image source={{ uri: cat.img }} style={styles.categoryTileImage} resizeMode="cover" />
+                  <View style={styles.categoryTileOverlay}>
+                    <Text style={styles.categoryTileEmoji}>{cat.icon}</Text>
+                    <Text style={styles.categoryTileName}>{cat.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
       )}
 
       {activeTab === 'shelf' && (
@@ -2299,4 +2397,70 @@ const styles = StyleSheet.create({
   navItem: { flex: 1, alignItems: 'center' },
   navText: { fontSize: 12, color: '#9E8D96', fontWeight: '500' },
   navTextActive: { color: '#6D4658', fontWeight: '800' },
+
+  // Dashboard Styles
+  dashboardScrollContent: { padding: 16, paddingBottom: 60 },
+  dashboardBanner: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dashboardGreeting: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
+  dashboardProfileTitle: { fontSize: 16, fontWeight: '800' },
+  dashboardProfileSub: { fontSize: 11, marginTop: 4 },
+  dashboardQuizBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+  dashboardQuizBtnText: { color: '#FFF', fontSize: 12, fontWeight: '700' },
+
+  metricsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  metricCard: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  metricIcon: { fontSize: 16, marginBottom: 4 },
+  metricTitle: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
+  metricValue: { fontSize: 10.5, fontWeight: '800', marginTop: 2, textAlign: 'center' },
+
+  dashboardSearchCard: { borderRadius: 16, padding: 16, borderWidth: 1, marginBottom: 16 },
+  dashboardSearchTitle: { fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  dashboardInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    height: 46,
+  },
+  dashboardInput: { flex: 1, fontSize: 14 },
+  dashboardActionBtn: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
+  dashboardActionBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  trendingChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 12 },
+  trendingLabel: { fontSize: 11, fontWeight: '600' },
+  trendingChip: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1 },
+  trendingChipText: { fontSize: 11, fontWeight: '600' },
+
+  categorySection: { marginBottom: 20 },
+  categorySectionTitle: { fontSize: 15, fontWeight: '800', marginBottom: 10 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  categoryTile: { width: '31%', height: 95, borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
+  categoryTileImage: { width: '100%', height: '100%' },
+  categoryTileOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  categoryTileEmoji: { fontSize: 18, marginBottom: 2 },
+  categoryTileName: { color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'center' },
 });

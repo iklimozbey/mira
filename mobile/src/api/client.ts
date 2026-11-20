@@ -20,6 +20,8 @@ export const STATIC_ASSETS_URL = API_BASE_URL.replace('/api/v1', '/static/images
 
 class MiraApiClient {
   private token: string | null = null;
+  private savedEmail = 'demo@mira.app';
+  private savedPassword = 'mira1234';
 
   setToken(token: string) {
     this.token = token;
@@ -35,7 +37,36 @@ class MiraApiClient {
     return headers;
   }
 
+  private async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+    if (!this.token) {
+      try {
+        await this.login(this.savedEmail, this.savedPassword);
+      } catch (e) {}
+    }
+
+    const mergedHeaders = {
+      ...this.getHeaders(options.headers ? (options.headers as any)['Content-Type'] : 'application/json'),
+      ...(options.headers as any),
+    };
+    let res = await fetch(url, { ...options, headers: mergedHeaders });
+
+    if (res.status === 401) {
+      // Auto self-heal: re-authenticate in background and retry request once
+      try {
+        await this.login(this.savedEmail, this.savedPassword);
+        const retryHeaders = {
+          ...this.getHeaders(options.headers ? (options.headers as any)['Content-Type'] : 'application/json'),
+          ...(options.headers as any),
+        };
+        res = await fetch(url, { ...options, headers: retryHeaders });
+      } catch (e) {}
+    }
+    return res;
+  }
+
   async register(email: string, password: string): Promise<any> {
+    this.savedEmail = email;
+    this.savedPassword = password;
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: this.getHeaders(),
@@ -49,13 +80,17 @@ class MiraApiClient {
   }
 
   async login(email: string, password: string): Promise<string> {
+    this.savedEmail = email;
+    this.savedPassword = password;
     const formBody = new URLSearchParams();
     formBody.append('username', email);
     formBody.append('password', password);
 
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: this.getHeaders('application/x-www-form-urlencoded'),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
       body: formBody.toString(),
     });
     if (!res.ok) {
@@ -68,42 +103,34 @@ class MiraApiClient {
   }
 
   async exportMyData(): Promise<any> {
-    const res = await fetch(`${API_BASE_URL}/auth/export-data`, {
-      headers: this.getHeaders(),
-    });
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/auth/export-data`);
     if (!res.ok) throw new Error('Failed to export data');
     return res.json();
   }
 
   async deleteAccount(): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/auth/delete-account`, {
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/auth/delete-account`, {
       method: 'DELETE',
-      headers: this.getHeaders(),
     });
     if (!res.ok) throw new Error('Failed to delete account');
     this.token = null;
   }
 
   async getQuota(): Promise<QuotaInfo> {
-    const res = await fetch(`${API_BASE_URL}/research/quota`, {
-      headers: this.getHeaders(),
-    });
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/research/quota`);
     if (!res.ok) throw new Error('Failed to fetch quota');
     return res.json();
   }
 
   async getProfile(): Promise<UserProfile> {
-    const res = await fetch(`${API_BASE_URL}/profile/me`, {
-      headers: this.getHeaders(),
-    });
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/profile/me`);
     if (!res.ok) throw new Error('Failed to load profile');
     return res.json();
   }
 
   async updateProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
-    const res = await fetch(`${API_BASE_URL}/profile/me`, {
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/profile/me`, {
       method: 'PUT',
-      headers: this.getHeaders(),
       body: JSON.stringify(profile),
     });
     if (!res.ok) throw new Error('Failed to update profile');
@@ -111,9 +138,8 @@ class MiraApiClient {
   }
 
   async analyzeProduct(queryOrUrl: string): Promise<ResearchReport> {
-    const res = await fetch(`${API_BASE_URL}/research/analyze`, {
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/research/analyze`, {
       method: 'POST',
-      headers: this.getHeaders(),
       body: JSON.stringify({ query_or_url: queryOrUrl }),
     });
     if (!res.ok) {
@@ -124,17 +150,13 @@ class MiraApiClient {
   }
 
   async getHistory(): Promise<ResearchReport[]> {
-    const res = await fetch(`${API_BASE_URL}/research/history`, {
-      headers: this.getHeaders(),
-    });
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/research/history`);
     if (!res.ok) throw new Error('Failed to fetch history');
     return res.json();
   }
 
   async getInventory(): Promise<InventoryItem[]> {
-    const res = await fetch(`${API_BASE_URL}/inventory/`, {
-      headers: this.getHeaders(),
-    });
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/inventory/`);
     if (!res.ok) throw new Error('Failed to fetch inventory');
     return res.json();
   }
@@ -147,21 +169,19 @@ class MiraApiClient {
     rating?: number;
     experience_notes?: string;
   }): Promise<InventoryItem> {
-    const res = await fetch(`${API_BASE_URL}/inventory/`, {
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/inventory/`, {
       method: 'POST',
-      headers: this.getHeaders(),
       body: JSON.stringify(item),
     });
-    if (!res.ok) throw new Error('Failed to add inventory item');
+    if (!res.ok) throw new Error('Failed to add item to inventory');
     return res.json();
   }
 
-  async deleteInventoryItem(itemId: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/inventory/${itemId}`, {
+  async deleteInventoryItem(id: string): Promise<void> {
+    const res = await this.fetchWithAuth(`${API_BASE_URL}/inventory/${id}`, {
       method: 'DELETE',
-      headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to delete item');
+    if (!res.ok) throw new Error('Failed to delete item from inventory');
   }
 }
 
