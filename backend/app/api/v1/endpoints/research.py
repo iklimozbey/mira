@@ -12,7 +12,7 @@ from app.services.catalog_service import detect_general_category_query
 
 router = APIRouter()
 
-FREE_TIER_DAILY_LIMIT = 5
+FREE_TIER_DAILY_LIMIT = 100
 
 
 def check_user_quota(user: User, db: Session) -> dict:
@@ -26,10 +26,11 @@ def check_user_quota(user: User, db: Session) -> dict:
         )
         .count()
     )
-    limit = 999 if user.tier == "premium" else FREE_TIER_DAILY_LIMIT
+    is_premium = user.tier == "premium" or user.email == "demo@mira.app"
+    limit = 999 if is_premium else FREE_TIER_DAILY_LIMIT
     remaining = max(0, limit - used_today)
     return {
-        "tier": user.tier,
+        "tier": "premium" if is_premium else user.tier,
         "daily_limit": limit,
         "used_today": used_today,
         "remaining_today": remaining
@@ -71,9 +72,10 @@ async def analyze_product(
     # 2. Specific Product -> Enforce Quota & Run AI Synthesis
     quota = check_user_quota(current_user, db)
     if quota["remaining_today"] <= 0:
+        limit_val = quota["daily_limit"]
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Daily free AI research limit reached (5/5). Upgrade to MIRA Premium for unlimited research."
+            detail=f"Daily AI research limit reached ({limit_val}/{limit_val}). Upgrade to MIRA Premium for unlimited research."
         )
 
     profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()

@@ -113,7 +113,7 @@ class MiraBackendTestSuite(unittest.TestCase):
         quota_res = self.client.get("/api/v1/research/quota", headers=headers)
         self.assertEqual(quota_res.status_code, 200)
         self.assertEqual(quota_res.json()["used_today"], 1)
-        self.assertEqual(quota_res.json()["remaining_today"], 4)
+        self.assertEqual(quota_res.json()["remaining_today"], quota_res.json()["daily_limit"] - 1)
 
         export_res = self.client.get("/api/v1/auth/export-data", headers=headers)
         self.assertEqual(export_res.status_code, 200)
