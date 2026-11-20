@@ -29,6 +29,32 @@ const getCategoryIcon = (categoryOrName?: string) => {
   return '✨';
 };
 
+const getProductImage = (productName?: string, category?: string, imageUrl?: string): string => {
+  if (imageUrl && !imageUrl.includes('flaticon.com')) {
+    return imageUrl;
+  }
+  const lower = ((productName || '') + ' ' + (category || '')).toLowerCase();
+  if (lower.includes('mascara') || lower.includes('maskara') || lower.includes('rimel') || lower.includes('lash') || lower.includes('curl')) {
+    return 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80';
+  }
+  if (lower.includes('lip') || lower.includes('ruj') || lower.includes('gloss') || lower.includes('stain') || lower.includes('tattoo')) {
+    return 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80';
+  }
+  if (lower.includes('foundation') || lower.includes('fondöten') || lower.includes('fit me') || lower.includes('coverage') || lower.includes('infallible')) {
+    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80';
+  }
+  if (lower.includes('serum') || lower.includes('niacinamide') || lower.includes('hyaluronic') || lower.includes('acid') || lower.includes('asit')) {
+    return 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80';
+  }
+  if (lower.includes('sun') || lower.includes('güneş') || lower.includes('spf') || lower.includes('anthelios')) {
+    return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80';
+  }
+  if (lower.includes('cream') || lower.includes('krem') || lower.includes('moisturizer') || lower.includes('cerave') || lower.includes('cicaplast')) {
+    return 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=80';
+  }
+  return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80';
+};
+
 const getVerdictColor = (verdict?: string) => {
   switch (verdict?.toUpperCase()) {
     case 'BUY':
@@ -656,16 +682,21 @@ export default function App() {
                 { backgroundColor: theme.cardBg, borderColor: theme.border },
               ]}
             >
-              {/* Header: Icon + Product Name + Star Rating */}
+              {/* Header: Product Photo + Product Name + Star Rating */}
               <View style={styles.compactBoxHeader}>
-                <View
-                  style={[
-                    styles.productIconCircle,
-                    { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
-                  ]}
-                >
-                  <Text style={styles.productIconEmoji}>{getCategoryIcon(item.category)}</Text>
-                </View>
+                <Image
+                  source={{ uri: getProductImage(item.product_name, item.category, item.image_url) }}
+                  style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: 10,
+                    marginRight: 12,
+                    backgroundColor: theme.cardBgSecondary,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  }}
+                  resizeMode="cover"
+                />
                 <View style={styles.compactTitleArea}>
                   <View style={styles.compactRowBetween}>
                     <Text
@@ -815,19 +846,22 @@ export default function App() {
               </View>
             )}
 
-            {/* Header: Category Icon + Product Name + Match Score Badge */}
+            {/* Header: Product Photo + Product Name + Match Score Badge */}
             <View style={styles.boxHeaderRow}>
               <View style={styles.boxIconAndTitle}>
-                <View
-                  style={[
-                    styles.boxCategoryBadge,
-                    { backgroundColor: theme.cardBgSecondary, borderColor: theme.border },
-                  ]}
-                >
-                  <Text style={styles.boxCategoryEmoji}>
-                    {getCategoryIcon(currentReport.product_name)}
-                  </Text>
-                </View>
+                <Image
+                  source={{ uri: getProductImage(currentReport.product_name) }}
+                  style={{
+                    width: 58,
+                    height: 58,
+                    borderRadius: 12,
+                    marginRight: 12,
+                    backgroundColor: theme.cardBgSecondary,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  }}
+                  resizeMode="cover"
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.boxProductName, { color: theme.textPrimary }]}>
                     {currentReport.product_name}

@@ -9,7 +9,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Flormar Kiss Me More Lip Tattoo",
         "rating": 4.7,
         "review_count": 9200,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "Kalıcı Likit Mat",
         "key_pro": "Sıfır bulaşma, yemek ve içeceğe 8 saat tam direnç",
         "key_con": "Kuru dudaklarda çizgi yapabilir, altına balm şart"
@@ -20,7 +20,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Flormar Precious Curl Mascara",
         "rating": 4.6,
         "review_count": 8100,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
         "badge": "Kıvırıcı Kavisli Fırça",
         "key_pro": "Düz kirpikleri kıvırarak gün boyu dik tutar",
         "key_con": "2 kattan sonra hafif topaklanma yapabilir"
@@ -31,7 +31,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Flormar Perfect Coverage Foundation",
         "rating": 4.5,
         "review_count": 6700,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
         "badge": "12 Saat Tam Kapatıcı",
         "key_pro": "Tüm lekeleri ve kızarıklıkları tek katta tamamen örter",
         "key_con": "Yoğun yapılıdır, kuru ciltlerde maske gibi durabilir"
@@ -42,7 +42,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Flormar Hero Volume & Curl Mascara",
         "rating": 4.7,
         "review_count": 5400,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
         "badge": "Ekstra Hacim & Yoğunluk",
         "key_pro": "Kum saati fırçasıyla kirpikleri tek tek ayırıp dolgunlaştırır",
         "key_con": "Çift aşamalı yağ bazlı temizleyici ile çıkarılmalıdır"
@@ -53,7 +53,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Flormar Water Lip Stain",
         "rating": 4.4,
         "review_count": 4100,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "Su Bazlı Dudak Tinti",
         "key_pro": "Ağırlık yapmayan tüy gibi doğal renk ve kalıcılık",
         "key_con": "Hızlı sabitlenir, sürerken anında dağıtılmalıdır"
@@ -66,7 +66,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline SuperStay Vinyl Ink",
         "rating": 4.8,
         "review_count": 8420,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "16 Saat Kalıcı Parlak",
         "key_pro": "Bulaşmayan, 16 saat kalıcı parlak vinyl bitiş",
         "key_con": "Çıkarmak için çift aşamalı yağ bazlı temizleyici şart"
@@ -77,7 +77,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline Lifter Gloss",
         "rating": 4.7,
         "review_count": 6150,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "Hyaluronik Asitli Parlatıcı",
         "key_pro": "Dudakları yakmadan anında dolgunlaştırır ve nemlendirir",
         "key_con": "Yapışkan hissi az ama yemek sonrası tazeleme ister"
@@ -88,7 +88,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline SuperStay Matte Ink",
         "rating": 4.6,
         "review_count": 12890,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "Ultra Mat Likit",
         "key_pro": "Yemeğe, içeceğe ve maskeye tam dayanıklı sıfır transfer",
         "key_con": "Dudağı kurutabilir, öncesinde nemlendirici balm şart"
@@ -99,7 +99,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline Sky High Mascara",
         "rating": 4.8,
         "review_count": 15400,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
         "badge": "Sonsuz Uzunluk",
         "key_pro": "Esnek fırçasıyla en kısa kirpikleri bile tel tel uzatır",
         "key_con": "İki kattan fazla sürülürse hafif topaklanma yapabilir"
@@ -110,7 +110,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline Lash Sensational Fan",
         "rating": 4.6,
         "review_count": 9800,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
         "badge": "Yelpaze Hacim",
         "key_pro": "Kıvrık fırçasıyla kirpikleri dipten kaldırır ve hacim verir",
         "key_con": "Göz kapağı çok yağlıysa gün sonuna doğru hafif akma yapabilir"
@@ -121,7 +121,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Maybelline Fit Me Matte + Poreless",
         "rating": 4.6,
         "review_count": 14200,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3200.png",
+        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
         "badge": "Gözenek Gizleyici Mat",
         "key_pro": "T bölgesindeki parlamayı alır ve gözenekleri pürüzsüzleştirir",
         "key_con": "Kuru bölgelere tutunur, yarım ton oksitlenme yapabilir"
@@ -134,7 +134,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "L'Oreal Infallible 24H Fresh Wear",
         "rating": 4.7,
         "review_count": 11200,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163200.png",
+        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
         "badge": "Nefes Alan Saten",
         "key_pro": "Terlemeye dayanıklı, cildi boğmayan doğal saten bitiş",
         "key_con": "Oksitlenmemesi için bir ton açık renk seçilmeli"
@@ -145,7 +145,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "L'Oreal Telescopic Mascara",
         "rating": 4.8,
         "review_count": 13900,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2553/2553691.png",
+        "image_url": "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?auto=format&fit=crop&w=400&q=80",
         "badge": "Taraklı Ekstra Uzunluk",
         "key_pro": "Düz tarak uçlu fırçasıyla kirpikleri yapıştırmadan uzatır",
         "key_con": "Hacimden ziyade sadece uzunluk odaklı bir üründür"
@@ -158,7 +158,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "La Roche-Posay Anthelios UVMune 400",
         "rating": 4.9,
         "review_count": 18200,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "image_url": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80",
         "badge": "Görünmez Akışkan SPF 50+",
         "key_pro": "Beyazlık bırakmaz, göz yakmaz, makyaj altında soyulmaz",
         "key_con": "Çok yağlı ciltlerde gün ortasında hafif parlama yapabilir"
@@ -169,7 +169,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "La Roche-Posay Cicaplast Baume B5+",
         "rating": 4.9,
         "review_count": 21000,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "image_url": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=80",
         "badge": "Yoğun Bariyer Onarıcı",
         "key_pro": "Rozasea kızarıklığını ve tahriş olmuş bariyeri anında yatıştırır",
         "key_con": "Ağır yapılıdır, akneli yağlı ciltler sadece ince tabaka sürmeli"
@@ -180,7 +180,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "CeraVe Nemlendirici Krem",
         "rating": 4.8,
         "review_count": 24000,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "image_url": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=80",
         "badge": "3 Temel Seramid",
         "key_pro": "Kuru ve tahriş olmuş bariyeri 24 saat derinlemesine nemlendirir",
         "key_con": "Çok yağlı ciltlerde gün içinde ağır hissedilebilir"
@@ -193,7 +193,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "The Ordinary Niacinamide 10% + Zinc 1%",
         "rating": 4.6,
         "review_count": 28000,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "image_url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
         "badge": "Sebum & Gözenek Kontrolü",
         "key_pro": "T bölgesindeki fazla yağı keser ve gözenek görünümünü sıkılaştırır",
         "key_con": "Çok sürülürse beyaz köpürme veya pütürlenme yapabilir"
@@ -204,7 +204,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "The Ordinary Hyaluronic Acid 2% + B5",
         "rating": 4.7,
         "review_count": 19500,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+        "image_url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
         "badge": "Çoklu Moleküler Nem",
         "key_pro": "Cildi neme doyurur ve anında dolgun, canlı görünüm sağlar",
         "key_con": "Kuru havada nemli cilde uygulanmazsa gerginlik hissi verebilir"
@@ -217,7 +217,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Kiko 3D Hydra Lipgloss",
         "rating": 4.8,
         "review_count": 11500,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "3D Cam Parlaklık",
         "key_pro": "Yapışkanlık yapmayan pürüzsüz cam ayna ışıltısı",
         "key_con": "Yemek sonrası tazeleme gerektirir"
@@ -228,7 +228,7 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "product_name": "Golden Rose Velvet Matte Lipstick",
         "rating": 4.5,
         "review_count": 8900,
-        "image_url": "https://cdn-icons-png.flaticon.com/512/3163/3163195.png",
+        "image_url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
         "badge": "Kadife Matlık",
         "key_pro": "Tek sürüşte yüksek pigment ve yumuşak kadifemsi his",
         "key_con": "Kalıcılığı likit mat rujlar kadar yüksek değildir"
