@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.database import Base
 from app.models.entities import CatalogProductModel
-from app.services.feed_importer import parse_csv_feed, parse_google_merchant_xml, upsert_feed_items
+from app.services.feed_importer import import_feed_from_file, parse_csv_feed, parse_google_merchant_xml, upsert_feed_items
 
 
 SAMPLE_MERCHANT_XML = """<?xml version="1.0" encoding="UTF-8"?>
@@ -87,6 +87,21 @@ class FeedImporterTests(unittest.TestCase):
         csv_items = parse_csv_feed(csv_data, merchant_name="Trendyol")
         self.assertEqual(len(csv_items), 1)
         self.assertEqual(csv_items[0]["product_name"], "Pastel Profashion Matte Lipstick")
+
+
+    def test_import_from_local_csv_file(self):
+        import os, tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8") as f:
+            f.write("name,brand,price,picture,url,category\nCeraVe Foaming Cleanser,CeraVe,389,https://img.example/c.jpg,https://shop.example/c,Temizleyici\n")
+            path = f.name
+        try:
+            res = import_feed_from_file(self.db, path, merchant_name="Trendyol")
+            self.assertEqual(res["created"], 1)
+            row = self.db.query(CatalogProductModel).filter_by(brand="cerave").first()
+            self.assertEqual(row.price, 389)
+            self.assertEqual(row.merchant_url, "https://shop.example/c")
+        finally:
+            os.unlink(path)
 
 
 if __name__ == "__main__":

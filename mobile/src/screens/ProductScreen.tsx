@@ -68,8 +68,9 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
     ? [{ label: meta.merchant_name || t('buyNow'), url: meta.merchant_url }]
     : [
         { label: 'Trendyol', url: `https://www.trendyol.com/sr?q=${encoded}` },
-        { label: 'Sephora', url: `https://www.sephora.com.tr/search?q=${encoded}` },
-        { label: 'Watsons', url: `https://www.watsons.com.tr/search?text=${encoded}` },
+        { label: 'Hepsiburada', url: `https://www.hepsiburada.com/ara?q=${encoded}` },
+        { label: 'Gratis', url: `https://www.gratis.com/search?text=${encoded}` },
+        { label: 'Sephora', url: `https://www.sephora.com.tr/search/?q=${encoded}` },
       ];
 
   const verdict = report?.reality_check_verdict || '';

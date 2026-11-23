@@ -1,6 +1,9 @@
 """CLI script to sync Trendyol / GelirOrtaklari / Admitad affiliate product feed into MIRA DB.
 
-Usage:
+Usage (URL or local file path):
+    ./venv/bin/python sync_affiliate_feed.py /path/to/feed.csv Trendyol
+
+    Or:
     1. Set AFFILIATE_FEED_URL and AFFILIATE_MERCHANT_NAME in backend/.env
     2. Run: ./venv/bin/python sync_affiliate_feed.py
 """
@@ -8,7 +11,8 @@ import asyncio
 import sys
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.services.feed_importer import import_feed_from_url
+import os
+from app.services.feed_importer import import_feed_from_file, import_feed_from_url
 
 
 async def main():
@@ -21,7 +25,10 @@ async def main():
     db = SessionLocal()
     try:
         print(f"Syncing {merchant} affiliate feed from {url} ...")
-        result = await import_feed_from_url(db, url, merchant_name=merchant)
+        if os.path.isfile(url):
+            result = import_feed_from_file(db, url, merchant_name=merchant)  # local xml/yml/csv/json file
+        else:
+            result = await import_feed_from_url(db, url, merchant_name=merchant)
         print(f"Done: created={result['created']} updated={result['updated']} total={result['total_processed']}")
     finally:
         db.close()

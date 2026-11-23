@@ -201,19 +201,29 @@ def upsert_feed_items(db: Session, items: List[Dict[str, Any]], default_merchant
     return {"created": created, "updated": updated, "total_processed": created + updated}
 
 
+def parse_feed_text(body: str, merchant_name: str = "Trendyol", content_type: str = "") -> List[Dict[str, Any]]:
+    """Detect JSON / XML (Google Merchant, Admitad YML) / CSV and normalize to product dicts."""
+    body = body.strip()
+    if "json" in content_type.lower() or body.startswith("[") or body.startswith("{"):
+        parsed = json.loads(body)
+        return parsed if isinstance(parsed, list) else parsed.get("products") or parsed.get("items") or []
+    if body.startswith("<"):
+        return parse_google_merchant_xml(body, merchant_name=merchant_name)
+    return parse_csv_feed(body, merchant_name=merchant_name)
+
+
+def import_feed_from_file(db: Session, path: str, merchant_name: str = "Trendyol") -> Dict[str, int]:
+    """Import a feed that was downloaded / exported to a local file (xml, yml, csv, json)."""
+    with open(path, "r", encoding="utf-8-sig") as f:
+        body = f.read()
+    return upsert_feed_items(db, parse_feed_text(body, merchant_name), default_merchant=merchant_name)
+
+
 async def import_feed_from_url(db: Session, feed_url: str, merchant_name: str = "Trendyol") -> Dict[str, int]:
     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True, headers={"User-Agent": "MIRA-FeedImporter/1.0"}) as client:
         resp = await client.get(feed_url)
         resp.raise_for_status()
-        content_type = resp.headers.get("content-type", "").lower()
-        body = resp.text.strip()
+        content_type = resp.headers.get("content-type", "")
+        body = resp.text
 
-    if "json" in content_type or body.startswith("[") or body.startswith("{"):
-        parsed = json.loads(body)
-        items = parsed if isinstance(parsed, list) else parsed.get("products") or parsed.get("items") or []
-    elif body.startswith("<"):
-        items = parse_google_merchant_xml(body, merchant_name=merchant_name)
-    else:
-        items = parse_csv_feed(body, merchant_name=merchant_name)
-
-    return upsert_feed_items(db, items, default_merchant=merchant_name)
+    return upsert_feed_items(db, parse_feed_text(body, merchant_name, content_type), default_merchant=merchant_name)

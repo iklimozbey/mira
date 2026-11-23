@@ -73,6 +73,11 @@ Report fields used by the app: `product_name, suitability_score (0-100), suitabi
 
 Adding report text: write it in `ai_agent.py`/`laya_engine.py`, then add its English/Turkish counterpart to `services/report_i18n.py` (`TR_TO_EN`, `_EN_TO_TR_RAW` or `_DYNAMIC`), otherwise the other language will show the original sentence.
 
+## Catalog data reality (important)
+- Only a feed can give "all products with correct photos and links". Open Beauty Facts / Makeup API have poor Turkey coverage and amateur / tiny photos; AI-generated packshots do NOT match real packaging (some showed wrong brand text) and must not be used as product photos; Trendyol / Hepsiburada / Sephora block bots (HTTP 403) and scraping violates their terms.
+- Real route: affiliate feed (GelirOrtaklari / Admitad) or a CSV you maintain. Import: `./venv/bin/python sync_affiliate_feed.py <url-or-local-file> Trendyol`. CSV columns: `backend/data/feed_template.csv`.
+- Store buttons on the product screen are search links (Trendyol, Hepsiburada, Gratis, Sephora). Gratis verified; Sephora path inferred; others are bot-blocked to curl, so unverified.
+
 ## Known gaps / ideas
 - Catalog product text (pros/cons) exists only in Turkish and is not shown in the UI; cards show brand, name, rating, shade swatch.
 - Catalog images: 6 real packshots are local; other products use remote stock photos.

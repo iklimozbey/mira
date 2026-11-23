@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { apiClient, imageUrl } from '../api/client';
 import { CatalogProduct, RecommendResponse } from '../types';
@@ -8,13 +8,7 @@ import type { TKey } from '../i18n/translations';
 
 const CATEGORIES = ['lip', 'foundation', 'mascara', 'sunscreen', 'moisturizer', 'serum'];
 
-function CompactProductRow({
-  product,
-  onPress,
-}: {
-  product: CatalogProduct;
-  onPress: () => void;
-}) {
+function CompactProductRow({ product, onPress }: { product: CatalogProduct; onPress: () => void }) {
   const { c, t } = useApp();
   return (
     <TouchableOpacity
@@ -35,9 +29,7 @@ function CompactProductRow({
       <View style={{ flex: 1, gap: 2 }}>
         <View style={styles.between}>
           <Text style={{ color: c.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>{product.brand}</Text>
-          {product.price ? (
-            <Text style={{ color: c.accent, fontSize: 13, fontWeight: '800' }}>{product.price} TL</Text>
-          ) : null}
+          {product.price ? <Text style={{ color: c.accent, fontSize: 13, fontWeight: '800' }}>{product.price} TL</Text> : null}
         </View>
         <Text numberOfLines={1} style={{ color: c.text, fontSize: 14, fontWeight: '700' }}>{product.product_name}</Text>
         <View style={styles.between}>
@@ -55,18 +47,67 @@ function CompactProductRow({
   );
 }
 
+/** Chat answer card. The #1 pick gets a large photo, the others a medium one. */
+function ChatPickCard({ product, large, onPress }: { product: CatalogProduct; large?: boolean; onPress: () => void }) {
+  const { c, t } = useApp();
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={{
+        width: large ? '100%' : '48.5%',
+        backgroundColor: c.surface,
+        borderColor: large ? c.accent : c.border,
+        borderWidth: 1,
+        borderRadius: 16,
+        overflow: 'hidden',
+      }}
+    >
+      <ProductImage uri={imageUrl(product.image_url)} style={{ width: '100%', aspectRatio: large ? 1.15 : 1 }} />
+      {product.fit_score ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            backgroundColor: c.accent,
+            borderRadius: 12,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+          }}
+        >
+          <Text style={{ color: c.onAccent, fontSize: 12, fontWeight: '800' }}>
+            {product.fit_score}% {t('match')}
+          </Text>
+        </View>
+      ) : null}
+      <View style={{ padding: large ? 16 : 12, gap: 4 }}>
+        <Text style={{ color: c.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>{product.brand}</Text>
+        <Text numberOfLines={large ? 3 : 2} style={{ color: c.text, fontSize: large ? 18 : 14, fontWeight: '700' }}>
+          {product.product_name}
+        </Text>
+        {product.match_reason ? (
+          <Text numberOfLines={2} style={{ color: c.muted, fontSize: large ? 13 : 12 }}>{product.match_reason}</Text>
+        ) : null}
+        {product.price ? (
+          <Text style={{ color: c.accent, fontSize: large ? 20 : 15, fontWeight: '800', marginTop: 2 }}>{product.price} TL</Text>
+        ) : null}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) {
   const { c, t, lang, errorText } = useApp();
+  const { height } = useWindowDimensions();
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Dashboard Daily Top 3
   const [daily, setDaily] = useState<RecommendResponse | null>(null);
 
-  // Home Chatbot
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatResult, setChatResult] = useState<RecommendResponse | null>(null);
@@ -86,15 +127,18 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
 
   useEffect(() => {
     let active = true;
-    const timer = setTimeout(() => {
-      setLoading(true);
-      setError('');
-      apiClient
-        .getCatalog(category === 'all' ? undefined : category, query.trim() || undefined)
-        .then((items) => active && setProducts(items))
-        .catch((e) => active && setError(errorText(e)))
-        .finally(() => active && setLoading(false));
-    }, query.trim() ? 350 : 0);
+    const timer = setTimeout(
+      () => {
+        setLoading(true);
+        setError('');
+        apiClient
+          .getCatalog(category === 'all' ? undefined : category, query.trim() || undefined)
+          .then((items) => active && setProducts(items))
+          .catch((e) => active && setError(errorText(e)))
+          .finally(() => active && setLoading(false));
+      },
+      query.trim() ? 350 : 0,
+    );
     return () => {
       active = false;
       clearTimeout(timer);
@@ -119,21 +163,62 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
     }
   };
 
-  const needle = query.trim().toLowerCase();
-  const visible = needle
-    ? products.filter((p) => p.product_name.toLowerCase().includes(needle) || p.brand.toLowerCase().includes(needle))
-    : products;
-
   const options = [{ value: 'all', label: t('all') }, ...CATEGORIES.map((k) => ({ value: k, label: t(k as TKey) }))];
   const quickPrompts = [t('quickPrompt1'), t('quickPrompt2'), t('quickPrompt3')];
+  const picks = chatResult?.products ?? [];
 
   return (
     <Screen>
-      {/* 1. HOME CHATBOT CARD */}
-      <Card>
+      {/* CHATBOT HERO: fills most of the first screen */}
+      <Card style={{ minHeight: Math.max(460, height * 0.68), padding: 18, gap: 16 }}>
         <Label>{t('chatTitle')}</Label>
-        <Body>{chatResult ? chatResult.reply : t('chatGreeting')}</Body>
 
+        <Text
+          style={{
+            color: c.text,
+            fontSize: chatResult ? 16 : 24,
+            lineHeight: chatResult ? 22 : 32,
+            fontWeight: chatResult ? '600' : '700',
+          }}
+        >
+          {chatResult ? chatResult.reply : t('chatGreeting')}
+        </Text>
+
+        {chatLoading && <ActivityIndicator color={c.accent} style={{ marginVertical: 24 }} />}
+
+        {picks.length > 0 && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            <ChatPickCard product={picks[0]} large onPress={() => onOpen(picks[0].product_name)} />
+            {picks.slice(1).map((p) => (
+              <ChatPickCard key={p.product_name} product={p} onPress={() => onOpen(p.product_name)} />
+            ))}
+          </View>
+        )}
+
+        <View style={{ flex: 1 }} />
+
+        {!chatResult && !chatLoading && (
+          <View style={{ gap: 8 }}>
+            {quickPrompts.map((qp) => (
+              <TouchableOpacity
+                key={qp}
+                onPress={() => sendChat(qp)}
+                style={{
+                  backgroundColor: c.surface2,
+                  borderColor: c.border,
+                  borderWidth: 1,
+                  borderRadius: 14,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                }}
+              >
+                <Text style={{ color: c.text, fontSize: 14 }}>{qp}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        <ErrorText message={chatError} />
         <Field
           label=""
           placeholder={t('chatPlaceholder')}
@@ -142,39 +227,9 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
           onSubmitEditing={() => sendChat()}
           returnKeyType="send"
         />
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {quickPrompts.map((qp) => (
-            <TouchableOpacity
-              key={qp}
-              onPress={() => sendChat(qp)}
-              style={{
-                backgroundColor: c.surface2,
-                borderColor: c.border,
-                borderWidth: 1,
-                borderRadius: 16,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-              }}
-            >
-              <Text style={{ color: c.muted, fontSize: 12 }}>{qp}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <ErrorText message={chatError} />
         <Button title={t('send')} onPress={() => sendChat()} loading={chatLoading} />
-
-        {chatResult && chatResult.products.length > 0 && (
-          <View style={{ gap: 8, paddingTop: 4 }}>
-            {chatResult.products.map((p) => (
-              <CompactProductRow key={p.product_name} product={p} onPress={() => onOpen(p.product_name)} />
-            ))}
-          </View>
-        )}
       </Card>
 
-      {/* 2. DASHBOARD: TODAY'S TOP 3 PICKS */}
       {daily && daily.products.length > 0 && (
         <Card>
           <Label>{t('dailyTop3')}</Label>
@@ -186,7 +241,6 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
         </Card>
       )}
 
-      {/* 3. CATALOG SEARCH & GRID WITH PRICES */}
       <Title>{t('catalogTitle')}</Title>
 
       <Field
@@ -203,11 +257,11 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
 
       {loading ? (
         <ActivityIndicator color={c.accent} style={{ marginTop: 24 }} />
-      ) : visible.length === 0 ? (
+      ) : products.length === 0 ? (
         <Body muted>{t('noProducts')}</Body>
       ) : (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-          {visible.map((p) => (
+          {products.map((p) => (
             <TouchableOpacity
               key={p.product_name}
               activeOpacity={0.85}
