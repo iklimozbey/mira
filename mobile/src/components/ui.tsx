@@ -171,7 +171,7 @@ export function ProductImage({ uri, style }: { uri?: string; style?: StyleProp<V
     return <View style={[{ backgroundColor: c.surface2 }, style]} />;
   }
   return (
-    <View style={[{ backgroundColor: '#F5F2F3', overflow: 'hidden', padding: 4 }, style]}>
+    <View style={[{ backgroundColor: '#FFFFFF', overflow: 'hidden', padding: 6 }, style]}>
       <Image
         source={{ uri }}
         onError={() => setFailed(true)}
