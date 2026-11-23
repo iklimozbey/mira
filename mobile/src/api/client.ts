@@ -5,6 +5,8 @@ import { storage } from '../storage';
 
 declare const process: { env: Record<string, string | undefined> };
 
+const DEFAULT_PROD_API_URL = 'https://mira-af20.onrender.com';
+
 const getOrigin = (): string => {
   const envUrl = (process.env.EXPO_PUBLIC_API_URL || '').trim();
   if (envUrl) {
@@ -12,7 +14,8 @@ const getOrigin = (): string => {
   }
   if (Platform.OS === 'web') {
     const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return `http://${host}:8000`;
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+    return isLocal ? `http://${host}:8000` : DEFAULT_PROD_API_URL;
   }
   const hostUri =
     Constants.expoConfig?.hostUri ||
