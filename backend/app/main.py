@@ -20,6 +20,10 @@ def ensure_profile_columns():
         for stmt in (
             "ALTER TABLE user_profiles ADD COLUMN budget_max INTEGER",
             "ALTER TABLE user_profiles ADD COLUMN onboarding_completed BOOLEAN DEFAULT 0",
+            "ALTER TABLE catalog_products ADD COLUMN merchant_name VARCHAR(100)",
+            "ALTER TABLE catalog_products ADD COLUMN merchant_url VARCHAR(1024)",
+            "ALTER TABLE catalog_products ADD COLUMN in_stock BOOLEAN DEFAULT 1",
+            "ALTER TABLE catalog_products ADD COLUMN last_synced_at DATETIME",
         ):
             try:
                 conn.execute(text(stmt))

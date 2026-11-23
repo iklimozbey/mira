@@ -38,6 +38,9 @@ export interface CatalogProduct {
   shade_name?: string;
   fit_score?: number;
   match_reason?: string;
+  merchant_name?: string | null;
+  merchant_url?: string | null;
+  in_stock?: boolean;
 }
 
 export interface RecommendResponse {

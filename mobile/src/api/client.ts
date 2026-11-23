@@ -96,6 +96,10 @@ class MiraApiClient {
     return this.request<CatalogProduct[]>(`/catalog/${qs ? `?${qs}` : ''}`, {}, false);
   }
 
+  lookupProduct(name: string) {
+    return this.request<CatalogProduct | null>(`/catalog/lookup?name=${encodeURIComponent(name)}`, {}, false);
+  }
+
   getDailyTop3(lang: string) {
     return this.request<RecommendResponse>(`/catalog/daily-top3?lang=${lang}`);
   }

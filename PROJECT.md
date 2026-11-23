@@ -56,11 +56,12 @@ main.py                       App, CORS, static mount (/static), demo-user seede
 api/v1/router.py              Mounts routers under /api/v1
 api/v1/endpoints/auth.py      POST /auth/register, /auth/login (form), GET /auth/export-data, DELETE /auth/delete-account
 api/v1/endpoints/profile.py   GET/PUT /profile/me
-api/v1/endpoints/catalog.py   GET /catalog/, GET /catalog/daily-top3, POST /catalog/chat {prompt, lang}
+api/v1/endpoints/catalog.py   GET /catalog/, GET /catalog/lookup, GET /catalog/daily-top3, POST /catalog/chat, POST /catalog/import-feed
 api/v1/endpoints/research.py  POST /research/analyze {query_or_url, lang}, GET /research/quota, /research/history
 api/v1/endpoints/inventory.py GET/POST /inventory/, DELETE /inventory/{id}
 services/catalog_service.py   Curated seed catalog + broad-query detection
 services/obf_sync.py          Open Beauty Facts official JSON API sync + SQLite `catalog_products` table (160+ products + live search cache)
+services/feed_importer.py     Google Merchant XML & JSON affiliate feed importer (upserts price, stock, studio image, merchant link)
 services/recommender_service.py Hard-constraint + semantic Top-3 recommender (budget/finish/category/shelf-similarity) + optional Gemini/OpenAI/Ollama
 services/ai_agent.py          Report generation pipeline (classify -> formulation -> triggers -> skin match -> reality check)
 services/laya_engine.py       Verdict / safety rules

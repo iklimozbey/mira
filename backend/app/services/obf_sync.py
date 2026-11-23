@@ -135,6 +135,9 @@ def model_to_dict(row: CatalogProductModel) -> Dict[str, Any]:
         "benefits": row.benefits or [],
         "ingredients_text": row.ingredients_text,
         "source": row.source,
+        "merchant_name": row.merchant_name,
+        "merchant_url": row.merchant_url,
+        "in_stock": True if row.in_stock is None else bool(row.in_stock),
     }
 
 

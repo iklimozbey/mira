@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.entities import CatalogProductModel, InventoryItem, User, UserProfile
+from app.services.feed_importer import import_feed_from_url, parse_google_merchant_xml, upsert_feed_items
 from app.services.obf_sync import fetch_and_cache_obf, model_to_dict, seed_curated_products
 from app.services.recommender_service import recommend_top3
 
@@ -18,6 +19,13 @@ class ChatPromptRequest(BaseModel):
     prompt: str = Field(..., min_length=2)
     lang: str = Field("en")
     history: list = Field(default_factory=list)
+
+
+class FeedImportRequest(BaseModel):
+    merchant_name: str = Field("partner", min_length=2)
+    feed_url: Optional[str] = None
+    xml_content: Optional[str] = None
+    items: Optional[List[Dict[str, Any]]] = None
 
 
 def _load_catalog(db: Session) -> list:
@@ -123,3 +131,32 @@ async def chat_recommend(
             )
 
     return result
+
+
+@router.get("/lookup")
+def lookup_product(name: str, db: Session = Depends(get_db)):
+    """Look up catalog metadata (image, price, shade, merchant link) for a product name."""
+    cleaned = name.strip()
+    if not cleaned:
+        return None
+    row = db.query(CatalogProductModel).filter(CatalogProductModel.product_name.ilike(cleaned)).first()
+    if not row:
+        row = db.query(CatalogProductModel).filter(CatalogProductModel.product_name.ilike(f"%{cleaned}%")).first()
+    return model_to_dict(row) if row else None
+
+
+@router.post("/import-feed")
+async def import_merchant_feed(
+    req: FeedImportRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Import products from a standard Google Merchant XML/JSON affiliate feed (URL, XML body, or JSON list)."""
+    if req.feed_url:
+        return await import_feed_from_url(db, req.feed_url, merchant_name=req.merchant_name)
+    if req.xml_content:
+        items = parse_google_merchant_xml(req.xml_content, merchant_name=req.merchant_name)
+        return upsert_feed_items(db, items, default_merchant=req.merchant_name)
+    if req.items is not None:
+        return upsert_feed_items(db, req.items, default_merchant=req.merchant_name)
+    raise HTTPException(status_code=400, detail="Provide feed_url, xml_content, or items.")

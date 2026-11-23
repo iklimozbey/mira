@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { apiClient } from '../api/client';
-import { ResearchReport } from '../types';
-import { Body, Button, Card, ErrorText, Label, Screen, Title } from '../components/ui';
+import { apiClient, imageUrl } from '../api/client';
+import { CatalogProduct, ResearchReport } from '../types';
+import { Body, Button, Card, ErrorText, Label, ProductImage, Screen, Title, styles } from '../components/ui';
 import type { TKey } from '../i18n/translations';
 
 function BulletList({ items, color }: { items: string[]; color: string }) {
@@ -23,6 +23,7 @@ function BulletList({ items, color }: { items: string[]; color: string }) {
 export function ProductScreen({ query, onBack, onQuery }: { query: string; onBack: () => void; onQuery: (q: string) => void }) {
   const { c, t, lang, errorText } = useApp();
   const [report, setReport] = useState<ResearchReport | null>(null);
+  const [meta, setMeta] = useState<CatalogProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [added, setAdded] = useState(false);
@@ -32,12 +33,16 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
     setLoading(true);
     setError('');
     setReport(null);
+    setMeta(null);
     setAdded(false);
+
+    apiClient.lookupProduct(query).then((m) => active && setMeta(m)).catch(() => {});
     apiClient
       .analyze(query, lang)
       .then((r) => active && setReport(r))
       .catch((e) => active && setError(errorText(e)))
       .finally(() => active && setLoading(false));
+
     return () => {
       active = false;
     };
@@ -45,11 +50,22 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
 
   const addToShelf = async () => {
     try {
-      await apiClient.addInventoryItem({ product_name: report?.product_name || query, status: 'wishlist' });
+      await apiClient.addInventoryItem({
+        product_name: report?.product_name || query,
+        brand: meta?.brand || undefined,
+        category: meta?.category || undefined,
+        status: 'wishlist',
+      });
       setAdded(true);
     } catch (e) {
       setError(errorText(e));
     }
+  };
+
+  const openStore = () => {
+    const productName = report?.product_name || meta?.product_name || query;
+    const url = meta?.merchant_url || `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(productName)}`;
+    Linking.openURL(url);
   };
 
   const verdict = report?.reality_check_verdict || '';
@@ -62,8 +78,37 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
         <Text style={{ color: c.accent, fontWeight: '700', fontSize: 14 }}>{t('back')}</Text>
       </TouchableOpacity>
 
+      {meta && (
+        <Card style={{ padding: 14 }}>
+          <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+            <ProductImage uri={imageUrl(meta.image_url)} style={{ width: 92, height: 92, borderRadius: 12 }} />
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={{ color: c.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>{meta.brand}</Text>
+              <Text style={{ color: c.text, fontSize: 16, fontWeight: '700' }}>{meta.product_name}</Text>
+              <View style={styles.between}>
+                {meta.price ? <Text style={{ color: c.accent, fontSize: 16, fontWeight: '800' }}>{meta.price} TL</Text> : null}
+                <Text style={{ color: meta.in_stock === false ? c.danger : c.success, fontSize: 12, fontWeight: '600' }}>
+                  {meta.in_stock === false ? t('outOfStock') : t('inStock')}
+                </Text>
+              </View>
+              {meta.shade_hex ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: meta.shade_hex }} />
+                  {meta.shade_name ? <Text style={{ color: c.muted, fontSize: 12 }}>{meta.shade_name}</Text> : null}
+                </View>
+              ) : null}
+            </View>
+          </View>
+          <Button
+            title={meta.merchant_name ? `${t('viewInStore')} (${meta.merchant_name})` : t('viewInStore')}
+            variant="ghost"
+            onPress={openStore}
+          />
+        </Card>
+      )}
+
       {loading && (
-        <View style={{ alignItems: 'center', gap: 12, paddingTop: 40 }}>
+        <View style={{ alignItems: 'center', gap: 12, paddingTop: 28 }}>
           <ActivityIndicator color={c.accent} />
           <Body muted>{t('analyzing')}</Body>
         </View>
@@ -85,7 +130,7 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
 
       {report && report.mode !== 'suggestions' && (
         <>
-          <Title>{report.product_name || query}</Title>
+          {!meta && <Title>{report.product_name || query}</Title>}
 
           <Card>
             <Label>{t('fitScore')}</Label>

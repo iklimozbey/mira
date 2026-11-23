@@ -121,4 +121,8 @@ class CatalogProductModel(Base):
     benefits = Column(JSON, default=list)
     ingredients_text = Column(Text, nullable=True)
     source = Column(String(30), nullable=False, default="curated")
+    merchant_name = Column(String(100), nullable=True)
+    merchant_url = Column(String(1024), nullable=True)
+    in_stock = Column(Boolean, nullable=False, default=True)
+    last_synced_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
