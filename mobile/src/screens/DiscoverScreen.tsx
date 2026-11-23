@@ -70,6 +70,7 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatResult, setChatResult] = useState<RecommendResponse | null>(null);
+  const [chatHistory, setChatHistory] = useState<{ role: string; text: string }[]>([]);
   const [chatError, setChatError] = useState('');
 
   useEffect(() => {
@@ -104,8 +105,9 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
     setChatLoading(true);
     setChatError('');
     try {
-      const res = await apiClient.chatRecommend(prompt, lang);
+      const res = await apiClient.chatRecommend(prompt, lang, chatHistory);
       setChatResult(res);
+      setChatHistory((prev) => [...prev.slice(-4), { role: 'user', text: prompt }, { role: 'assistant', text: res.reply }]);
     } catch (e) {
       setChatError(errorText(e));
     } finally {

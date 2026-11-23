@@ -16,6 +16,7 @@ router = APIRouter()
 class ChatPromptRequest(BaseModel):
     prompt: str = Field(..., min_length=2)
     lang: str = Field("en")
+    history: list = Field(default_factory=list)
 
 
 @router.get("/")
@@ -51,4 +52,4 @@ async def chat_recommend(
     """Home chatbot endpoint: takes a natural-language need and returns a reply + top 3 matching products."""
     profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
     inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
-    return await recommend_top3(prompt=req.prompt, profile=profile, inventory=inventory, lang=req.lang)
+    return await recommend_top3(prompt=req.prompt, profile=profile, inventory=inventory, lang=req.lang, history=req.history)

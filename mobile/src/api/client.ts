@@ -96,10 +96,10 @@ class MiraApiClient {
     return this.request<RecommendResponse>(`/catalog/daily-top3?lang=${lang}`);
   }
 
-  chatRecommend(prompt: string, lang: string) {
+  chatRecommend(prompt: string, lang: string, history: { role: string; text: string }[] = []) {
     return this.request<RecommendResponse>('/catalog/chat', {
       method: 'POST',
-      body: JSON.stringify({ prompt, lang }),
+      body: JSON.stringify({ prompt, lang, history }),
     });
   }
 
