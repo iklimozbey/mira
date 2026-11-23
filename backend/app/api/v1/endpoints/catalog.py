@@ -40,13 +40,23 @@ async def list_catalog(
     if category and category != "all":
         query = query.filter(CatalogProductModel.category == category)
     if q and q.strip():
-        like = f"%{q.strip()}%"
-        query = query.filter(
-            or_(
-                CatalogProductModel.product_name.ilike(like),
-                CatalogProductModel.brand.ilike(like),
+        import re
+        q_clean = q.strip()
+        m_budget = re.search(r"(\d{2,5})\s*(?:tl|try|lira|₺)?\s*(?:altı|alti|under|max)", q_clean.lower())
+        if m_budget:
+            max_p = int(m_budget.group(1))
+            query = query.filter(CatalogProductModel.price <= max_p)
+            q_clean = re.sub(r"(\d{2,5})\s*(?:tl|try|lira|₺)?\s*(?:altı|alti|under|max)", "", q_clean, flags=re.IGNORECASE).strip()
+        if q_clean:
+            like = f"%{q_clean}%"
+            query = query.filter(
+                or_(
+                    CatalogProductModel.product_name.ilike(like),
+                    CatalogProductModel.brand.ilike(like),
+                )
             )
-        )
+    else:
+        q_clean = ""
 
     rows = (
         query.order_by(CatalogProductModel.rating.desc(), CatalogProductModel.review_count.desc())
@@ -54,9 +64,9 @@ async def list_catalog(
         .all()
     )
 
-    # If user searched for something not yet in local DB, fetch live from Open Beauty Facts & cache it!
-    if q and len(q.strip()) >= 3 and len(rows) < 3:
-        await fetch_and_cache_obf(db, q.strip(), page_size=10)
+    # Only call live OBF if there's an actual product/brand text query (not just a budget filter like "200 tl altı")
+    if q_clean and len(q_clean) >= 3 and len(rows) < 3:
+        await fetch_and_cache_obf(db, q_clean, page_size=10)
         rows = (
             query.order_by(CatalogProductModel.rating.desc(), CatalogProductModel.review_count.desc())
             .limit(limit)

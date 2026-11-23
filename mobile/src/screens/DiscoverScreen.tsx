@@ -107,6 +107,7 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
     setChatInput(prompt);
     setChatLoading(true);
     setChatError('');
+    setChatResult(null);
     try {
       const res = await apiClient.chatRecommend(prompt, lang, chatHistory);
       setChatResult(res);

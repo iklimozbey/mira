@@ -225,6 +225,7 @@ def _deterministic_top3(
     # ==========================================================
     # STAGE 1: STRICT HARD FILTERING (never violate explicit user constraints)
     # ==========================================================
+    effective_budget = prompt_budget if prompt_budget is not None else profile_budget
     candidates = []
     for item in source_catalog:
         name = item["product_name"]
@@ -236,8 +237,8 @@ def _deterministic_top3(
         # Exclude exact owned products
         if name.lower() in owned_lower:
             continue
-        # Hard Budget Filter (explicitly typed in prompt, e.g. "300 tl alti")
-        if prompt_budget is not None and price > prompt_budget:
+        # Hard Budget Filter (from prompt OR user's saved profile budget — never exceed!)
+        if effective_budget is not None and effective_budget > 0 and price > effective_budget:
             continue
         # Hard Category Filter (explicitly typed in prompt, e.g. "ruj")
         if explicit_cats and cat not in explicit_cats:
@@ -253,10 +254,10 @@ def _deterministic_top3(
 
     if not candidates:
         if lang == "tr":
-            budget_note = f" ({prompt_budget} TL altı)" if prompt_budget else ""
-            reply = f"Katalogda belirttiğiniz tüm kriterlere{budget_note} tam uyan ürün bulunamadı. Bütçeyi biraz artırmayı veya farklı bir bitiş denemeyi deneyebilirsiniz."
+            budget_note = f" ({effective_budget} TL altı)" if effective_budget else ""
+            reply = f"Katalogda belirttiğiniz tüm kriterlere{budget_note} tam uyan ürün bulunamadı. Bütçeyi artırmayı veya farklı bir bitiş denemeyi seçebilirsiniz."
         else:
-            budget_note = f" (under {prompt_budget} TL)" if prompt_budget else ""
+            budget_note = f" (under {effective_budget} TL)" if effective_budget else ""
             reply = f"No products in our catalog match all of your strict criteria{budget_note}. Try raising the budget or broadening the finish."
         return {"reply": reply, "products": []}
 
