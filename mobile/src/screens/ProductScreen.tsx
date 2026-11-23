@@ -62,11 +62,15 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
     }
   };
 
-  const openStore = () => {
-    const productName = report?.product_name || meta?.product_name || query;
-    const url = meta?.merchant_url || `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(productName)}`;
-    Linking.openURL(url);
-  };
+  const productName = report?.product_name || meta?.product_name || query;
+  const encoded = encodeURIComponent(productName);
+  const storeLinks = meta?.merchant_url
+    ? [{ label: meta.merchant_name || t('buyNow'), url: meta.merchant_url }]
+    : [
+        { label: 'Trendyol', url: `https://www.trendyol.com/sr?q=${encoded}` },
+        { label: 'Sephora', url: `https://www.sephora.com.tr/search?q=${encoded}` },
+        { label: 'Watsons', url: `https://www.watsons.com.tr/search?text=${encoded}` },
+      ];
 
   const verdict = report?.reality_check_verdict || '';
   const verdictColor = verdict === 'BUY' ? c.success : verdict === 'SKIP' ? c.danger : c.warn;
@@ -99,11 +103,6 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
               ) : null}
             </View>
           </View>
-          <Button
-            title={meta.merchant_name ? `${t('viewInStore')} (${meta.merchant_name})` : t('viewInStore')}
-            variant="ghost"
-            onPress={openStore}
-          />
         </Card>
       )}
 
@@ -164,18 +163,20 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
               <BulletList items={report.clinical_warnings!} color={c.danger} />
             </Card>
           )}
-          {(report.sources?.length ?? 0) > 0 && (
-            <Card>
-              <Label>{t('sources')}</Label>
-              {report.sources!.map((s, i) => (
-                <TouchableOpacity key={i} onPress={() => Linking.openURL(s.url)}>
-                  <Text numberOfLines={1} style={{ color: c.accent, fontSize: 13 }}>{s.title || s.url}</Text>
-                </TouchableOpacity>
-              ))}
-            </Card>
-          )}
 
-          <Button title={added ? t('addedToShelf') : t('addToShelf')} onPress={addToShelf} disabled={added} />
+          <Card>
+            <Label>{t('whereToBuy')}</Label>
+            {storeLinks.map((store, i) => (
+              <Button
+                key={store.label}
+                title={i === 0 && meta?.price ? `${t('buyNow')} · ${store.label} (${meta.price} TL)` : `${t('buyNow')} · ${store.label}`}
+                variant={i === 0 ? 'primary' : 'ghost'}
+                onPress={() => Linking.openURL(store.url)}
+              />
+            ))}
+          </Card>
+
+          <Button title={added ? t('addedToShelf') : t('addToShelf')} variant="ghost" onPress={addToShelf} disabled={added} />
         </>
       )}
     </Screen>
