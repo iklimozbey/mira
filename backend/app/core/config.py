@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     SEARCH_API_KEY: str = ""
+    OLLAMA_URL: str = "http://127.0.0.1:11434"
+    OLLAMA_MODEL: str = ""  # Optional local Ollama model (e.g. "qwen2.5:3b")
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]

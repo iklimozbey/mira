@@ -1,102 +1,42 @@
-"""Smart Hybrid Top-3 Recommender (Gemini 2.0 Flash / GPT-4o-mini + Rich Semantic Fallback).
+"""Smart Offline-First Hybrid Top-3 Recommender.
 
-Understands:
-- Finish contrasts (matte vs glossy/vinyl/dewy, full-coverage vs lightweight)
-- Shelf similarity ("elimdeki ürünlere benzer", "similar to my shelf", "muadil")
-- Free-text shelf product inference (e.g. "T-Zone Oil Eraser" -> oil_control, pore_minimizing, matte)
-- Budget constraints from prompt or profile
-- Decision/recommendation reasoning tailored to user's skin profile & shelf
+Works 100% offline with zero latency and zero hallucination via:
+1. Intent & negation parser (matte vs glossy, "mat olmasin", cheap/budget vs best/luxury)
+2. Shelf-similarity & routine-gap inference (infers function from free-text shelf items like "T-Zone Oil Eraser")
+3. Character 3-gram cosine similarity for typo-tolerant matching ("oil erasser", "fondoten", "runleri")
+4. Optional LLM enhancement: Gemini 2.0 Flash / GPT-4o-mini / local Ollama when configured in .env
 """
 import json
+import math
 import re
+from collections import Counter
 from typing import Any, Dict, List, Optional, Set
 import httpx
 
 from app.core.config import settings
 from app.services.catalog_service import POPULAR_BRAND_CATALOG
 
-# Structured attribute profiles for each catalog item so finish/benefit contrasts work accurately.
 PRODUCT_ATTRIBUTES: Dict[str, Dict[str, Any]] = {
-    "Flormar Kiss Me More Lip Tattoo": {
-        "finish": "matte",
-        "benefits": {"long_wear", "transfer_proof", "matte"},
-    },
-    "Flormar Water Lip Stain": {
-        "finish": "natural",
-        "benefits": {"lightweight", "natural", "tint", "long_wear"},
-    },
-    "Maybelline SuperStay Vinyl Ink": {
-        "finish": "glossy",
-        "benefits": {"glossy", "shiny", "long_wear", "transfer_proof"},
-    },
-    "Maybelline Lifter Gloss": {
-        "finish": "glossy",
-        "benefits": {"glossy", "shiny", "hydrating", "plumping", "dry_skin"},
-    },
-    "Maybelline SuperStay Matte Ink": {
-        "finish": "matte",
-        "benefits": {"matte", "long_wear", "transfer_proof"},
-    },
-    "Kiko 3D Hydra Lipgloss": {
-        "finish": "glossy",
-        "benefits": {"glossy", "shiny", "hydrating", "plumping"},
-    },
-    "Golden Rose Velvet Matte Lipstick": {
-        "finish": "matte",
-        "benefits": {"matte", "velvet", "pigmented"},
-    },
-    "Flormar Precious Curl Mascara": {
-        "finish": "natural",
-        "benefits": {"curling", "lifting"},
-    },
-    "Flormar Hero Volume & Curl Mascara": {
-        "finish": "natural",
-        "benefits": {"volumizing", "curling"},
-    },
-    "Maybelline Sky High Mascara": {
-        "finish": "natural",
-        "benefits": {"lengthening", "lightweight"},
-    },
-    "Maybelline Lash Sensational Fan": {
-        "finish": "natural",
-        "benefits": {"volumizing", "separating"},
-    },
-    "L'Oreal Telescopic Mascara": {
-        "finish": "natural",
-        "benefits": {"lengthening", "separating"},
-    },
-    "Flormar Perfect Coverage Foundation": {
-        "finish": "matte",
-        "benefits": {"high_coverage", "long_wear", "blemish_cover"},
-    },
-    "Maybelline Fit Me Matte + Poreless": {
-        "finish": "matte",
-        "benefits": {"matte", "oil_control", "pore_minimizing", "oily_skin", "sebum"},
-    },
-    "L'Oreal Infallible 24H Fresh Wear": {
-        "finish": "satin",
-        "benefits": {"long_wear", "lightweight", "natural", "combination_skin"},
-    },
-    "La Roche-Posay Anthelios UVMune 400": {
-        "finish": "natural",
-        "benefits": {"spf", "lightweight", "oil_control", "sensitive_skin", "oily_skin"},
-    },
-    "La Roche-Posay Cicaplast Baume B5+": {
-        "finish": "dewy",
-        "benefits": {"barrier_repair", "soothing", "redness", "sensitive_skin", "dry_skin", "hydrating"},
-    },
-    "CeraVe Moisturizing Cream": {
-        "finish": "natural",
-        "benefits": {"hydrating", "barrier_repair", "dry_skin", "sensitive_skin"},
-    },
-    "The Ordinary Niacinamide 10% + Zinc 1%": {
-        "finish": "matte",
-        "benefits": {"oil_control", "sebum", "pore_minimizing", "acne_care", "oily_skin", "matte"},
-    },
-    "The Ordinary Hyaluronic Acid 2% + B5": {
-        "finish": "dewy",
-        "benefits": {"hydrating", "plumping", "dry_skin", "barrier_repair"},
-    },
+    "Flormar Kiss Me More Lip Tattoo": {"finish": "matte", "benefits": {"long_wear", "transfer_proof", "matte"}},
+    "Flormar Water Lip Stain": {"finish": "natural", "benefits": {"lightweight", "natural", "tint", "long_wear"}},
+    "Maybelline SuperStay Vinyl Ink": {"finish": "glossy", "benefits": {"glossy", "shiny", "long_wear", "transfer_proof"}},
+    "Maybelline Lifter Gloss": {"finish": "glossy", "benefits": {"glossy", "shiny", "hydrating", "plumping", "dry_skin"}},
+    "Maybelline SuperStay Matte Ink": {"finish": "matte", "benefits": {"matte", "long_wear", "transfer_proof"}},
+    "Kiko 3D Hydra Lipgloss": {"finish": "glossy", "benefits": {"glossy", "shiny", "hydrating", "plumping"}},
+    "Golden Rose Velvet Matte Lipstick": {"finish": "matte", "benefits": {"matte", "velvet", "pigmented"}},
+    "Flormar Precious Curl Mascara": {"finish": "natural", "benefits": {"curling", "lifting"}},
+    "Flormar Hero Volume & Curl Mascara": {"finish": "natural", "benefits": {"volumizing", "curling"}},
+    "Maybelline Sky High Mascara": {"finish": "natural", "benefits": {"lengthening", "lightweight"}},
+    "Maybelline Lash Sensational Fan": {"finish": "natural", "benefits": {"volumizing", "separating"}},
+    "L'Oreal Telescopic Mascara": {"finish": "natural", "benefits": {"lengthening", "separating"}},
+    "Flormar Perfect Coverage Foundation": {"finish": "matte", "benefits": {"high_coverage", "long_wear", "blemish_cover"}},
+    "Maybelline Fit Me Matte + Poreless": {"finish": "matte", "benefits": {"matte", "oil_control", "pore_minimizing", "oily_skin", "sebum"}},
+    "L'Oreal Infallible 24H Fresh Wear": {"finish": "satin", "benefits": {"long_wear", "lightweight", "natural", "combination_skin"}},
+    "La Roche-Posay Anthelios UVMune 400": {"finish": "natural", "benefits": {"spf", "lightweight", "oil_control", "sensitive_skin", "oily_skin"}},
+    "La Roche-Posay Cicaplast Baume B5+": {"finish": "dewy", "benefits": {"barrier_repair", "soothing", "redness", "sensitive_skin", "dry_skin", "hydrating"}},
+    "CeraVe Moisturizing Cream": {"finish": "natural", "benefits": {"hydrating", "barrier_repair", "dry_skin", "sensitive_skin"}},
+    "The Ordinary Niacinamide 10% + Zinc 1%": {"finish": "matte", "benefits": {"oil_control", "sebum", "pore_minimizing", "acne_care", "oily_skin", "matte"}},
+    "The Ordinary Hyaluronic Acid 2% + B5": {"finish": "dewy", "benefits": {"hydrating", "plumping", "dry_skin", "barrier_repair"}},
 }
 
 _CATEGORY_KEYWORDS = {
@@ -111,7 +51,7 @@ _CATEGORY_KEYWORDS = {
 _ATTRIBUTE_KEYWORDS = {
     "glossy": ["parlak", "gloss", "glossy", "shiny", "ışıltı", "isilti", "cam", "vinyl", "parlatıcı", "parlatici", "ıslak", "islak", "nemli"],
     "matte": ["mat", "matte", "kadife", "velvet", "parlamayan", "pudra"],
-    "oil_control": ["yağ", "yag", "oil", "sebum", "t-zone", "t zone", "t bölgesi", "parlama", "eraser", "yağlı", "yagli", "oily"],
+    "oil_control": ["yağ", "yag", "oil", "sebum", "t-zone", "t zone", "t bölgesi", "parlama", "eraser", "erasser", "yağlı", "yagli", "oily"],
     "pore_minimizing": ["gözenek", "gozenek", "pore", "poreless", "siyah nokta", "t-zone"],
     "acne_care": ["akne", "acne", "sivilce", "blemish", "salicylic", "niacinamide", "zinc"],
     "hydrating": ["nem", "nemlendirici", "kuru", "dry", "hydrat", "hyaluronic", "plump", "dolgun"],
@@ -130,6 +70,30 @@ _SHELF_SIMILARITY_TRIGGERS = [
     "muadil", "similar to my", "like my shelf", "my shelf", "what i own", "products i have",
 ]
 
+_ROUTINE_GAP_TRIGGERS = [
+    "ne eksik", "eksik olan", "rutinimde", "rutinime", "what am i missing", "missing from", "routine gap", "ne almalıyım", "ne almaliyim",
+]
+
+_CHEAP_TRIGGERS = ["ucuz", "uygun fiyat", "ekonomik", "bütçe dostu", "cheap", "affordable", "budget-friendly"]
+_NEGATIONS = {
+    "matte": ["mat olmasın", "mat olmasin", "mat istemiyorum", "mat değil", "not matte", "no matte"],
+    "glossy": ["parlak olmasın", "parlak olmasin", "parlak istemiyorum", "not glossy", "no gloss"],
+}
+
+
+def _ngrams(text: str, n: int = 3) -> Counter:
+    cleaned = re.sub(r"[^a-zçğıöşü0-9]+", " ", text.lower()).strip()
+    return Counter(cleaned[i : i + n] for i in range(max(0, len(cleaned) - n + 1)))
+
+
+def _cosine_sim(a: str, b: str) -> float:
+    ca, cb = _ngrams(a), _ngrams(b)
+    if not ca or not cb:
+        return 0.0
+    dot = sum(ca[k] * cb[k] for k in ca.keys() & cb.keys())
+    denom = math.sqrt(sum(v * v for v in ca.values())) * math.sqrt(sum(v * v for v in cb.values()))
+    return dot / denom if denom else 0.0
+
 
 def _extract_budget(prompt: str) -> Optional[int]:
     m = re.search(r"(\d{2,5})\s*(?:tl|try|lira|₺|\$|altı|alti|under|max|bütçe|butce)?", prompt.lower())
@@ -146,20 +110,24 @@ def _extract_attributes(text: str) -> Set[str]:
     for attr, kws in _ATTRIBUTE_KEYWORDS.items():
         if any(kw in lower for kw in kws):
             found.add(attr)
+    # Apply explicit negations (e.g. "mat olmasın" removes matte & prefers glossy/natural)
+    for attr, neg_phrases in _NEGATIONS.items():
+        if any(p in lower for p in neg_phrases):
+            found.discard(attr)
     return found
+
+
+def _extract_negated(text: str) -> Set[str]:
+    lower = text.lower()
+    return {attr for attr, phrases in _NEGATIONS.items() if any(p in lower for p in phrases)}
 
 
 def _extract_categories(text: str) -> Set[str]:
     lower = text.lower()
-    found: Set[str] = set()
-    for cat, kws in _CATEGORY_KEYWORDS.items():
-        if any(kw in lower for kw in kws):
-            found.add(cat)
-    return found
+    return {cat for cat, kws in _CATEGORY_KEYWORDS.items() if any(kw in lower for kw in kws)}
 
 
 def _infer_shelf_profile(inventory: List[Any]) -> Dict[str, Any]:
-    """Infer benefits, categories, and names from whatever the user has on their shelf."""
     names: List[str] = []
     attrs: Set[str] = set()
     cats: Set[str] = set()
@@ -175,7 +143,6 @@ def _infer_shelf_profile(inventory: List[Any]) -> Dict[str, Any]:
         if cat and cat != "other":
             cats.add(cat)
         cats |= _extract_categories(combined)
-        # If it's a known catalog product, include its structured attributes too
         if name in PRODUCT_ATTRIBUTES:
             attrs |= PRODUCT_ATTRIBUTES[name]["benefits"]
     return {"names": names, "attrs": attrs, "cats": cats}
@@ -192,14 +159,23 @@ def _deterministic_top3(
     owned_lower = {n.lower() for n in shelf_info["names"]}
 
     asks_shelf_similar = any(trig in prompt_lower for trig in _SHELF_SIMILARITY_TRIGGERS)
+    asks_routine_gap = any(trig in prompt_lower for trig in _ROUTINE_GAP_TRIGGERS)
+    wants_cheap = any(trig in prompt_lower for trig in _CHEAP_TRIGGERS)
+
     wanted_cats = _extract_categories(prompt_lower)
     wanted_attrs = _extract_attributes(prompt_lower)
+    negated_attrs = _extract_negated(prompt_lower)
 
-    # If user explicitly asked for products similar to their shelf, pull attributes & categories from shelf!
     if asks_shelf_similar:
         wanted_attrs |= shelf_info["attrs"]
         if not wanted_cats:
             wanted_cats |= shelf_info["cats"]
+
+    if asks_routine_gap:
+        # Boost core skincare categories not yet on the user's shelf
+        missing_core = {"sunscreen", "moisturizer", "serum"} - shelf_info["cats"]
+        if missing_core:
+            wanted_cats |= missing_core
 
     prompt_budget = _extract_budget(prompt_lower) if prompt_lower else None
     budget_max = prompt_budget or profile_dict.get("budget_max")
@@ -215,7 +191,7 @@ def _deterministic_top3(
         item_finish = meta["finish"]
         item_benefits: Set[str] = set(meta["benefits"])
 
-        score = int(item.get("rating", 4.5) * 12)  # Base ~54-58
+        score = int(item.get("rating", 4.5) * 12)
         reasons_en: List[str] = []
         reasons_tr: List[str] = []
 
@@ -223,10 +199,13 @@ def _deterministic_top3(
         if wanted_cats:
             if cat in wanted_cats:
                 score += 24
+                if asks_routine_gap:
+                    reasons_en.append("Fills a missing step in your routine")
+                    reasons_tr.append("Rutininizdeki eksik adımı tamamlar")
             else:
                 score -= 22
 
-        # 2. Finish contrast (crucial: glossy vs matte!)
+        # 2. Finish contrast + explicit negations
         if "glossy" in wanted_attrs and "matte" not in wanted_attrs:
             if item_finish == "glossy" or "glossy" in item_benefits:
                 score += 30
@@ -241,6 +220,11 @@ def _deterministic_top3(
                 reasons_tr.append("İstediğiniz gibi mat bitişli")
             elif item_finish == "glossy":
                 score -= 28
+
+        if "matte" in negated_attrs and item_finish == "matte":
+            score -= 35
+        if "glossy" in negated_attrs and item_finish == "glossy":
+            score -= 35
 
         # 3. Benefit & shelf-similarity overlap
         overlap = wanted_attrs & item_benefits
@@ -260,7 +244,14 @@ def _deterministic_top3(
                 reasons_en.append("Matches your lash effect preference")
                 reasons_tr.append("İstediğiniz kirpik etkisine uygun")
 
-        # 4. Skin profile fit
+        # 4. Typo-tolerant cosine similarity against product text
+        if prompt_lower:
+            doc = f"{name} {item['brand']} {item.get('badge', '')} {item.get('key_pro', '')}"
+            sim = _cosine_sim(prompt_lower, doc)
+            if sim > 0.12:
+                score += int(sim * 25)
+
+        # 5. Skin profile fit
         if skin_type == "oily" and ("oil_control" in item_benefits or "oily_skin" in item_benefits):
             score += 8
         elif skin_type == "dry" and ("hydrating" in item_benefits or "dry_skin" in item_benefits):
@@ -274,7 +265,13 @@ def _deterministic_top3(
             elif c in ("rosacea", "redness", "eczema") and ("barrier_repair" in item_benefits or "soothing" in item_benefits):
                 score += 6
 
-        # 5. Budget fit
+        # 6. Budget & price preference
+        if wants_cheap:
+            score += max(0, (600 - price) // 35)
+            if price <= 350 and not reasons_en:
+                reasons_en.append("Budget-friendly price")
+                reasons_tr.append("Uygun fiyatlı seçenek")
+
         if budget_max and budget_max > 0:
             if price <= budget_max:
                 score += 8
@@ -284,7 +281,7 @@ def _deterministic_top3(
             else:
                 score -= 24
 
-        # 6. Do not suggest exact product already owned
+        # 7. Exclude exact owned product
         if name.lower() in owned_lower:
             score -= 40
 
@@ -304,21 +301,27 @@ def _deterministic_top3(
         for s, item, r_tr, r_en in top3
     ]
 
-    # Craft decisive, context-aware reply
     best = products[0]["product_name"] if products else ""
     if asks_shelf_similar:
         if shelf_info["names"]:
             ref_list = ", ".join(shelf_info["names"][:2])
-            if lang == "tr":
-                reply = f"Dolabınızdaki {ref_list} ürünüyle benzer etki ve kategorideki en uyumlu 3 alternatifi seçtim. İlk önerim: {best}."
-            else:
-                reply = f"Based on {ref_list} on your shelf, here are the 3 closest alternatives. Top pick: {best}."
+            reply = (
+                f"Dolabınızdaki {ref_list} ürünüyle benzer etki ve kategorideki en uyumlu 3 alternatifi seçtim. İlk önerim: {best}."
+                if lang == "tr"
+                else f"Based on {ref_list} on your shelf, here are the 3 closest alternatives. Top pick: {best}."
+            )
         else:
             reply = (
                 "Dolabınızda henüz ürün yok, cilt profilinize göre en uyumlu 3 ürünü listeledim:"
                 if lang == "tr"
                 else "Your shelf is empty right now, so here are the 3 best matches for your skin profile:"
             )
+    elif asks_routine_gap:
+        reply = (
+            f"Dolabınızdaki eksik rutin adımlarına göre öncelikle {best} ile başlamanızı öneririm:"
+            if lang == "tr"
+            else f"Based on what is missing from your shelf, I recommend starting with {best}:"
+        )
     elif prompt_lower:
         if "glossy" in wanted_attrs and "matte" not in wanted_attrs:
             reply = (
@@ -357,7 +360,8 @@ async def _try_llm_top3(
 ) -> Optional[Dict[str, Any]]:
     gemini_key = (settings.GEMINI_API_KEY or "").strip()
     openai_key = (settings.OPENAI_API_KEY or "").strip()
-    if not gemini_key and not openai_key:
+    ollama_model = (settings.OLLAMA_MODEL or "").strip()
+    if not gemini_key and not openai_key and not ollama_model:
         return None
 
     compact_catalog = [
@@ -375,12 +379,12 @@ async def _try_llm_top3(
     sys_prompt = (
         f"You are MIRA, a smart, decisive beauty advisor. Language: {'Turkish' if lang == 'tr' else 'English'}. "
         f"User skin profile: {json.dumps(profile_dict)}. "
-        f"User's current shelf (products they own/tested): {json.dumps(shelf_items)}. "
+        f"User's current shelf: {json.dumps(shelf_items)}. "
         f"Recent conversation: {json.dumps(history[-4:])}. "
         f"User message: {prompt!r}. "
-        f"Catalog (pick ONLY from these exact product_name values): {json.dumps(compact_catalog)}. "
-        "Rules: Respect finish requests strictly (glossy != matte). If the user asks for products similar to their shelf, infer the function/ingredients of their shelf products (even if not in catalog, e.g. T-Zone Oil Eraser = oil & pore control) and pick the 3 closest catalog alternatives. Make a clear #1 decision in your reply. "
-        'Return strict JSON: {"reply": "1-2 decisive sentences", "picks": [{"product_name": "exact name", "fit_score": 94, "match_reason": "short specific reason"}]}. No emoji.'
+        f"Catalog (pick ONLY exact product_name values): {json.dumps(compact_catalog)}. "
+        "Respect finish strictly (glossy != matte) and infer shelf product functions if asked for similar items. "
+        'Return strict JSON: {"reply": "1-2 decisive sentences", "picks": [{"product_name": "exact name", "fit_score": 94, "match_reason": "short reason"}]}. No emoji.'
     )
 
     try:
@@ -399,6 +403,19 @@ async def _try_llm_top3(
                 )
                 if r.status_code == 200:
                     raw_text = r.json()["choices"][0]["message"]["content"]
+            elif ollama_model:
+                r = await client.post(
+                    f"{settings.OLLAMA_URL.rstrip('/')}/api/chat",
+                    json={
+                        "model": ollama_model,
+                        "stream": False,
+                        "format": "json",
+                        "options": {"temperature": 0.2},
+                        "messages": [{"role": "user", "content": sys_prompt}],
+                    },
+                )
+                if r.status_code == 200:
+                    raw_text = r.json().get("message", {}).get("content", "")
 
         if not raw_text:
             return None
