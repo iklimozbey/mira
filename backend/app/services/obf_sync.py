@@ -142,8 +142,17 @@ def model_to_dict(row: CatalogProductModel) -> Dict[str, Any]:
 
 
 def seed_curated_products(db: Session) -> int:
-    """Seed initial curated products only when catalog_products is completely empty."""
+    """Seed initial curated products when empty, and keep curated image URLs free of stock/duplicate fallbacks."""
+    curated_images = {item["product_name"].lower(): item.get("image_url") for item in POPULAR_BRAND_CATALOG}
     if db.query(CatalogProductModel).count() > 0:
+        updated = False
+        for row in db.query(CatalogProductModel).filter(CatalogProductModel.source == "curated").all():
+            key = (row.product_name or "").lower()
+            if key in curated_images and row.image_url != curated_images[key]:
+                row.image_url = curated_images[key]
+                updated = True
+        if updated:
+            db.commit()
         return 0
     existing = set()
     added = 0
