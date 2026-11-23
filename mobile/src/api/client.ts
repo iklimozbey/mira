@@ -3,10 +3,10 @@ import Constants from 'expo-constants';
 import { UserProfile, ResearchReport, InventoryItem, QuotaInfo, CatalogProduct, RecommendResponse } from '../types';
 import { storage } from '../storage';
 
-declare const process: { env?: Record<string, string | undefined> };
+declare const process: { env: Record<string, string | undefined> };
 
 const getOrigin = (): string => {
-  const envUrl = process?.env?.EXPO_PUBLIC_API_URL?.trim();
+  const envUrl = (process.env.EXPO_PUBLIC_API_URL || '').trim();
   if (envUrl) {
     return envUrl.replace(/\/+$/, '');
   }
