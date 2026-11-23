@@ -33,6 +33,8 @@ class UserProfile(Base):
     skin_concerns = Column(JSON, default=list)  # e.g., ["rosacea", "acne", "fungal_acne", "eczema", "redness"]
     allergies_sensitivities = Column(JSON, default=list)  # e.g., ["fragrance", "alcohol", "essential_oils"]
     budget_level = Column(String(50), default="medium")  # low, medium, luxury
+    budget_max = Column(Integer, nullable=True)  # numeric max budget per product (e.g., 1000)
+    onboarding_completed = Column(Boolean, default=False)
     
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

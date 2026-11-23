@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, profile, research, inventory
+from app.api.v1.endpoints import auth, profile, research, inventory, catalog
 
 api_router = APIRouter()
 
@@ -19,3 +19,4 @@ api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(profile.router, prefix="/profile", tags=["User Profile"])
 api_router.include_router(research.router, prefix="/research", tags=["AI Research"])
 api_router.include_router(inventory.router, prefix="/inventory", tags=["Personal Inventory / Shelf"])
+api_router.include_router(catalog.router, prefix="/catalog", tags=["Product Catalog"])

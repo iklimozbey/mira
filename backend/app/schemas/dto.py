@@ -38,6 +38,8 @@ class UserProfileBase(BaseModel):
     skin_concerns: List[str] = []  # rosacea, acne, fungal_acne, redness, eczema, pores
     allergies_sensitivities: List[str] = []  # fragrance, alcohol, essential_oils, silicone
     budget_level: Optional[str] = "medium"  # low, medium, luxury
+    budget_max: Optional[int] = None
+    onboarding_completed: Optional[bool] = None
 
 
 class UserProfileCreate(UserProfileBase):
@@ -83,6 +85,7 @@ class InventoryItemResponse(InventoryItemBase):
 # --- Research & AI Agent Schemas ---
 class ResearchRequest(BaseModel):
     query_or_url: str = Field(..., min_length=3, description="Product name or e-commerce/TikTok URL")
+    lang: str = Field("en", description="Response language: 'en' or 'tr'")
 
 
 class SourceItem(BaseModel):

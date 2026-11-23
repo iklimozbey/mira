@@ -13,6 +13,22 @@ import app.models.entities  # Ensure all SQLAlchemy models are registered
 # 1. Automatically create database tables on startup
 Base.metadata.create_all(bind=engine)
 
+# Ensure new columns exist on existing SQLite DBs without requiring manual migration
+def ensure_profile_columns():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        for stmt in (
+            "ALTER TABLE user_profiles ADD COLUMN budget_max INTEGER",
+            "ALTER TABLE user_profiles ADD COLUMN onboarding_completed BOOLEAN DEFAULT 0",
+        ):
+            try:
+                conn.execute(text(stmt))
+                conn.commit()
+            except Exception:
+                pass
+
+ensure_profile_columns()
+
 # 2. Permanent Demo User Auto-Seeder (Guarantees demo@mira.app always exists)
 def ensure_permanent_demo_user():
     db: Session = SessionLocal()

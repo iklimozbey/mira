@@ -9,6 +9,7 @@ from app.schemas.dto import ResearchRequest, ResearchReportResponse
 from app.services.search_service import search_service
 from app.services.ai_agent import ai_agent_service
 from app.services.catalog_service import detect_general_category_query
+from app.services.report_i18n import localize_report
 
 router = APIRouter()
 
@@ -134,7 +135,7 @@ async def analyze_product(
         db.commit()
         db.refresh(report_record)
 
-        return {
+        return localize_report({
             "mode": "report",
             "id": report_record.id,
             "query_id": query_record.id,
@@ -151,7 +152,7 @@ async def analyze_product(
             "sponsored_flags": report_record.sponsored_flags,
             "decision_engine": analysis_result.get("decision_engine"),
             "created_at": report_record.created_at
-        }
+        }, request.lang)
 
     except Exception as e:
         query_record.status = "failed"
