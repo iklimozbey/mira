@@ -45,6 +45,15 @@ async def list_catalog(
 ):
     """Public product catalog backed by SQLite + live Open Beauty Facts search cache."""
     query = db.query(CatalogProductModel)
+    # In default Discover browsing (no search text), only show clean studio-verified products
+    # (never amateur hand-held OBF photos). Explicit search queries still search the full catalog.
+    if not (q and q.strip()):
+        query = query.filter(
+            or_(
+                CatalogProductModel.source == "curated",
+                CatalogProductModel.source.like("feed:%"),
+            )
+        )
     if category and category != "all":
         query = query.filter(CatalogProductModel.category == category)
     if q and q.strip():
