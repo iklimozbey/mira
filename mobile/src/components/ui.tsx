@@ -163,7 +163,7 @@ export function Chips({
   return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{items}</View>;
 }
 
-/** Product photo with a neutral fallback when the image can not be loaded. */
+/** Product photo framed cleanly so real packshots (bottles, lipsticks) are never cropped. */
 export function ProductImage({ uri, style }: { uri?: string; style?: StyleProp<ViewStyle> }) {
   const { c } = useApp();
   const [failed, setFailed] = React.useState(false);
@@ -171,12 +171,14 @@ export function ProductImage({ uri, style }: { uri?: string; style?: StyleProp<V
     return <View style={[{ backgroundColor: c.surface2 }, style]} />;
   }
   return (
-    <Image
-      source={{ uri }}
-      onError={() => setFailed(true)}
-      resizeMode="cover"
-      style={style as any}
-    />
+    <View style={[{ backgroundColor: '#F5F2F3', overflow: 'hidden', padding: 4 }, style]}>
+      <Image
+        source={{ uri }}
+        onError={() => setFailed(true)}
+        resizeMode="contain"
+        style={{ width: '100%', height: '100%' }}
+      />
+    </View>
   );
 }
 
