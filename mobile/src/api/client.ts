@@ -3,7 +3,13 @@ import Constants from 'expo-constants';
 import { UserProfile, ResearchReport, InventoryItem, QuotaInfo, CatalogProduct, RecommendResponse } from '../types';
 import { storage } from '../storage';
 
+declare const process: { env?: Record<string, string | undefined> };
+
 const getOrigin = (): string => {
+  const envUrl = process?.env?.EXPO_PUBLIC_API_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, '');
+  }
   if (Platform.OS === 'web') {
     const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
     return `http://${host}:8000`;
