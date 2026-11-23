@@ -1,0 +1,861 @@
+[
+  {
+    "brand": "mac",
+    "category": "lip",
+    "product_name": "MAC Retro Matte Lipstick Ruby Woo",
+    "price": 950,
+    "rating": 4.9,
+    "review_count": 28400,
+    "finish": "matte",
+    "shade_hex": "#B81D33",
+    "shade_name": "Ruby Woo",
+    "benefits": [
+      "matte",
+      "long_wear",
+      "pigmented"
+    ]
+  },
+  {
+    "brand": "dior",
+    "category": "lip",
+    "product_name": "Dior Addict Lip Glow Oil",
+    "price": 1750,
+    "rating": 4.9,
+    "review_count": 19500,
+    "finish": "glossy",
+    "shade_hex": "#E695A8",
+    "shade_name": "001 Pink",
+    "benefits": [
+      "glossy",
+      "hydrating",
+      "plumping",
+      "dry_skin"
+    ]
+  },
+  {
+    "brand": "rare beauty",
+    "category": "lip",
+    "product_name": "Rare Beauty Soft Pinch Tinted Lip Oil",
+    "price": 1150,
+    "rating": 4.8,
+    "review_count": 14200,
+    "finish": "glossy",
+    "shade_hex": "#C86472",
+    "shade_name": "Happy",
+    "benefits": [
+      "glossy",
+      "hydrating",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "fenty beauty",
+    "category": "lip",
+    "product_name": "Fenty Beauty Gloss Bomb Universal Lip Luminizer",
+    "price": 1190,
+    "rating": 4.9,
+    "review_count": 22100,
+    "finish": "glossy",
+    "shade_hex": "#C97C73",
+    "shade_name": "Fenty Glow",
+    "benefits": [
+      "glossy",
+      "shiny",
+      "hydrating",
+      "plumping"
+    ]
+  },
+  {
+    "brand": "charlotte tilbury",
+    "category": "lip",
+    "product_name": "Charlotte Tilbury Matte Revolution Pillow Talk",
+    "price": 1650,
+    "rating": 4.9,
+    "review_count": 24800,
+    "finish": "satin",
+    "shade_hex": "#BD7A7E",
+    "shade_name": "Pillow Talk",
+    "benefits": [
+      "satin",
+      "creamy",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "kiko",
+    "category": "lip",
+    "product_name": "Kiko 3D Hydra Lipgloss",
+    "price": 590,
+    "rating": 4.8,
+    "review_count": 11500,
+    "finish": "glossy",
+    "shade_hex": "#C26774",
+    "shade_name": "17 Pearly Mauve",
+    "benefits": [
+      "glossy",
+      "shiny",
+      "hydrating",
+      "plumping"
+    ]
+  },
+  {
+    "brand": "maybelline",
+    "category": "lip",
+    "product_name": "Maybelline SuperStay Vinyl Ink",
+    "price": 449,
+    "rating": 4.8,
+    "review_count": 14800,
+    "finish": "glossy",
+    "shade_hex": "#A95B67",
+    "shade_name": "35 Cheeky",
+    "benefits": [
+      "glossy",
+      "shiny",
+      "long_wear",
+      "transfer_proof"
+    ]
+  },
+  {
+    "brand": "maybelline",
+    "category": "lip",
+    "product_name": "Maybelline SuperStay Matte Ink",
+    "price": 429,
+    "rating": 4.8,
+    "review_count": 18200,
+    "finish": "matte",
+    "shade_hex": "#B86E7C",
+    "shade_name": "15 Lover",
+    "benefits": [
+      "matte",
+      "long_wear",
+      "transfer_proof"
+    ]
+  },
+  {
+    "brand": "maybelline",
+    "category": "lip",
+    "product_name": "Maybelline Color Sensational Satin Lipstick",
+    "price": 279,
+    "rating": 4.7,
+    "review_count": 9800,
+    "finish": "satin",
+    "shade_hex": "#C46373",
+    "shade_name": "373 Mauve For Me",
+    "benefits": [
+      "satin",
+      "creamy",
+      "hydrating",
+      "dry_skin"
+    ]
+  },
+  {
+    "brand": "flormar",
+    "category": "lip",
+    "product_name": "Flormar Kiss Me More Lip Tattoo",
+    "price": 289,
+    "rating": 4.7,
+    "review_count": 9200,
+    "finish": "matte",
+    "shade_hex": "#D17D87",
+    "shade_name": "05 Blush",
+    "benefits": [
+      "matte",
+      "long_wear",
+      "transfer_proof"
+    ]
+  },
+  {
+    "brand": "flormar",
+    "category": "lip",
+    "product_name": "Flormar Deluxe Cashmere Stylo Satin",
+    "price": 245,
+    "rating": 4.6,
+    "review_count": 5300,
+    "finish": "satin",
+    "shade_hex": "#A94E5F",
+    "shade_name": "DC24 Cashmere Rose",
+    "benefits": [
+      "satin",
+      "creamy",
+      "pigmented"
+    ]
+  },
+  {
+    "brand": "golden rose",
+    "category": "lip",
+    "product_name": "Golden Rose Velvet Matte Lipstick",
+    "price": 229,
+    "rating": 4.6,
+    "review_count": 8900,
+    "finish": "matte",
+    "shade_hex": "#A44A59",
+    "shade_name": "16 Rose Wood",
+    "benefits": [
+      "matte",
+      "velvet",
+      "pigmented"
+    ]
+  },
+  {
+    "brand": "pastel",
+    "category": "lip",
+    "product_name": "Pastel Classic Satin Lipstick",
+    "price": 195,
+    "rating": 4.6,
+    "review_count": 6400,
+    "finish": "satin",
+    "shade_hex": "#B55B6A",
+    "shade_name": "42 Dusty Rose",
+    "benefits": [
+      "satin",
+      "creamy",
+      "hydrating",
+      "dry_skin"
+    ]
+  },
+  {
+    "brand": "nyx",
+    "category": "lip",
+    "product_name": "NYX Butter Gloss Crème Brûlée",
+    "price": 285,
+    "rating": 4.7,
+    "review_count": 16200,
+    "finish": "glossy",
+    "shade_hex": "#D99C90",
+    "shade_name": "Crème Brûlée",
+    "benefits": [
+      "glossy",
+      "hydrating",
+      "creamy"
+    ]
+  },
+  {
+    "brand": "estee lauder",
+    "category": "foundation",
+    "product_name": "Estée Lauder Double Wear Stay-in-Place Foundation",
+    "price": 2350,
+    "rating": 4.9,
+    "review_count": 31000,
+    "finish": "matte",
+    "shade_hex": "#DFB895",
+    "benefits": [
+      "matte",
+      "long_wear",
+      "oil_control",
+      "high_coverage",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "nars",
+    "category": "foundation",
+    "product_name": "NARS Light Reflecting Foundation",
+    "price": 2190,
+    "rating": 4.8,
+    "review_count": 14900,
+    "finish": "satin",
+    "shade_hex": "#E3BE9D",
+    "benefits": [
+      "satin",
+      "hydrating",
+      "lightweight",
+      "natural"
+    ]
+  },
+  {
+    "brand": "dior",
+    "category": "foundation",
+    "product_name": "Dior Forever Skin Glow Foundation",
+    "price": 2490,
+    "rating": 4.9,
+    "review_count": 17600,
+    "finish": "dewy",
+    "shade_hex": "#E0B998",
+    "benefits": [
+      "dewy",
+      "hydrating",
+      "dry_skin",
+      "long_wear"
+    ]
+  },
+  {
+    "brand": "mac",
+    "category": "foundation",
+    "product_name": "MAC Studio Fix Fluid SPF 15 Foundation",
+    "price": 1690,
+    "rating": 4.8,
+    "review_count": 21400,
+    "finish": "matte",
+    "shade_hex": "#DCBA99",
+    "benefits": [
+      "matte",
+      "oil_control",
+      "high_coverage",
+      "long_wear"
+    ]
+  },
+  {
+    "brand": "l'oreal",
+    "category": "foundation",
+    "product_name": "L'Oreal Infallible 24H Fresh Wear",
+    "price": 589,
+    "rating": 4.8,
+    "review_count": 19100,
+    "finish": "satin",
+    "shade_hex": "#E2BF9F",
+    "benefits": [
+      "satin",
+      "long_wear",
+      "lightweight",
+      "natural",
+      "combination_skin"
+    ]
+  },
+  {
+    "brand": "maybelline",
+    "category": "foundation",
+    "product_name": "Maybelline Fit Me Matte + Poreless",
+    "price": 419,
+    "rating": 4.7,
+    "review_count": 25400,
+    "finish": "matte",
+    "shade_hex": "#DFB997",
+    "benefits": [
+      "matte",
+      "oil_control",
+      "pore_minimizing",
+      "oily_skin",
+      "sebum"
+    ]
+  },
+  {
+    "brand": "nyx",
+    "category": "foundation",
+    "product_name": "NYX Bare With Me Concealer Serum",
+    "price": 465,
+    "rating": 4.8,
+    "review_count": 12800,
+    "finish": "natural",
+    "shade_hex": "#E6C5A7",
+    "benefits": [
+      "hydrating",
+      "lightweight",
+      "dry_skin",
+      "sensitive_skin"
+    ]
+  },
+  {
+    "brand": "note",
+    "category": "foundation",
+    "product_name": "Note Luminous Moisturizing Satin Foundation",
+    "price": 295,
+    "rating": 4.6,
+    "review_count": 4700,
+    "finish": "satin",
+    "shade_hex": "#E1BC9A",
+    "benefits": [
+      "satin",
+      "hydrating",
+      "dry_skin",
+      "natural"
+    ]
+  },
+  {
+    "brand": "flormar",
+    "category": "foundation",
+    "product_name": "Flormar Perfect Coverage Foundation",
+    "price": 349,
+    "rating": 4.5,
+    "review_count": 6700,
+    "finish": "matte",
+    "shade_hex": "#DCB592",
+    "benefits": [
+      "matte",
+      "high_coverage",
+      "long_wear"
+    ]
+  },
+  {
+    "brand": "pastel",
+    "category": "foundation",
+    "product_name": "Pastel Profashion Hi-Corrector BB Cream",
+    "price": 249,
+    "rating": 4.5,
+    "review_count": 5100,
+    "finish": "natural",
+    "shade_hex": "#E4C1A2",
+    "benefits": [
+      "lightweight",
+      "natural",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "ysl",
+    "category": "mascara",
+    "product_name": "YSL Lash Clash Extreme Volume Mascara",
+    "price": 1590,
+    "rating": 4.9,
+    "review_count": 11200,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "long_wear"
+    ]
+  },
+  {
+    "brand": "benefit",
+    "category": "mascara",
+    "product_name": "Benefit BADgal BANG! Volumizing Mascara",
+    "price": 1290,
+    "rating": 4.8,
+    "review_count": 18600,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "lengthening",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "rare beauty",
+    "category": "mascara",
+    "product_name": "Rare Beauty Perfect Strokes Universal Mascara",
+    "price": 1090,
+    "rating": 4.8,
+    "review_count": 9800,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "curling",
+      "lifting"
+    ]
+  },
+  {
+    "brand": "maybelline",
+    "category": "mascara",
+    "product_name": "Maybelline Sky High Mascara",
+    "price": 469,
+    "rating": 4.8,
+    "review_count": 29500,
+    "finish": "natural",
+    "benefits": [
+      "lengthening",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "l'oreal",
+    "category": "mascara",
+    "product_name": "L'Oreal Telescopic Mascara",
+    "price": 529,
+    "rating": 4.8,
+    "review_count": 23400,
+    "finish": "natural",
+    "benefits": [
+      "lengthening",
+      "separating"
+    ]
+  },
+  {
+    "brand": "l'oreal",
+    "category": "mascara",
+    "product_name": "L'Oreal Panorama Volume Millions Lashes",
+    "price": 549,
+    "rating": 4.7,
+    "review_count": 10400,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "separating"
+    ]
+  },
+  {
+    "brand": "flormar",
+    "category": "mascara",
+    "product_name": "Flormar Hero Volume & Curl Mascara",
+    "price": 265,
+    "rating": 4.6,
+    "review_count": 6200,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "curling"
+    ]
+  },
+  {
+    "brand": "golden rose",
+    "category": "mascara",
+    "product_name": "Golden Rose Wonder Lash Mascara",
+    "price": 189,
+    "rating": 4.5,
+    "review_count": 7800,
+    "finish": "natural",
+    "benefits": [
+      "volumizing",
+      "lengthening"
+    ]
+  },
+  {
+    "brand": "la roche-posay",
+    "category": "sunscreen",
+    "product_name": "La Roche-Posay Anthelios UVMune 400",
+    "price": 780,
+    "rating": 4.9,
+    "review_count": 22300,
+    "finish": "natural",
+    "benefits": [
+      "spf",
+      "lightweight",
+      "oil_control",
+      "sensitive_skin",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "bioderma",
+    "category": "sunscreen",
+    "product_name": "Bioderma Photoderm Aquafluide SPF 50+",
+    "price": 720,
+    "rating": 4.8,
+    "review_count": 14100,
+    "finish": "matte",
+    "benefits": [
+      "spf",
+      "matte",
+      "oil_control",
+      "oily_skin",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "avene",
+    "category": "sunscreen",
+    "product_name": "Avène Very High Protection Fluid SPF 50+",
+    "price": 690,
+    "rating": 4.8,
+    "review_count": 9600,
+    "finish": "natural",
+    "benefits": [
+      "spf",
+      "sensitive_skin",
+      "barrier_repair",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "vichy",
+    "category": "sunscreen",
+    "product_name": "Vichy Capital Soleil UV-Age Daily SPF 50+",
+    "price": 840,
+    "rating": 4.8,
+    "review_count": 11500,
+    "finish": "natural",
+    "benefits": [
+      "spf",
+      "lightweight",
+      "anti_aging",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "the purest solutions",
+    "category": "sunscreen",
+    "product_name": "The Purest Solutions Invisible UV Fluid SPF 50+",
+    "price": 379,
+    "rating": 4.7,
+    "review_count": 15200,
+    "finish": "natural",
+    "benefits": [
+      "spf",
+      "lightweight",
+      "oil_control",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "maruderm",
+    "category": "sunscreen",
+    "product_name": "Maruderm Lekeli Ciltler İçin Güneş Kremi SPF 50+",
+    "price": 299,
+    "rating": 4.6,
+    "review_count": 8900,
+    "finish": "natural",
+    "benefits": [
+      "spf",
+      "brightening",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "garnier",
+    "category": "sunscreen",
+    "product_name": "Garnier Ambre Solaire Super UV Hyaluronic Fluid SPF 50+",
+    "price": 425,
+    "rating": 4.7,
+    "review_count": 13400,
+    "finish": "dewy",
+    "benefits": [
+      "spf",
+      "hydrating",
+      "dry_skin",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "clinique",
+    "category": "moisturizer",
+    "product_name": "Clinique Moisture Surge 100H Auto-Replenishing Hydrator",
+    "price": 1390,
+    "rating": 4.9,
+    "review_count": 21700,
+    "finish": "dewy",
+    "benefits": [
+      "hydrating",
+      "lightweight",
+      "sensitive_skin",
+      "dry_skin"
+    ]
+  },
+  {
+    "brand": "la roche-posay",
+    "category": "moisturizer",
+    "product_name": "La Roche-Posay Cicaplast Baume B5+",
+    "price": 540,
+    "rating": 4.9,
+    "review_count": 26500,
+    "finish": "dewy",
+    "benefits": [
+      "barrier_repair",
+      "soothing",
+      "redness",
+      "sensitive_skin",
+      "dry_skin",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "cerave",
+    "category": "moisturizer",
+    "product_name": "CeraVe Moisturizing Cream",
+    "price": 495,
+    "rating": 4.8,
+    "review_count": 29800,
+    "finish": "natural",
+    "benefits": [
+      "hydrating",
+      "barrier_repair",
+      "dry_skin",
+      "sensitive_skin"
+    ]
+  },
+  {
+    "brand": "bioderma",
+    "category": "moisturizer",
+    "product_name": "Bioderma Sensibio Defensive Active Soothing Cream",
+    "price": 620,
+    "rating": 4.8,
+    "review_count": 11300,
+    "finish": "satin",
+    "benefits": [
+      "barrier_repair",
+      "soothing",
+      "redness",
+      "sensitive_skin"
+    ]
+  },
+  {
+    "brand": "bioderma",
+    "category": "moisturizer",
+    "product_name": "Bioderma Sébium Sensitive Soothing Cream",
+    "price": 595,
+    "rating": 4.7,
+    "review_count": 9400,
+    "finish": "matte",
+    "benefits": [
+      "oil_control",
+      "acne_care",
+      "soothing",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "avene",
+    "category": "moisturizer",
+    "product_name": "Avène Cicalfate+ Restorative Protective Cream",
+    "price": 510,
+    "rating": 4.8,
+    "review_count": 12200,
+    "finish": "dewy",
+    "benefits": [
+      "barrier_repair",
+      "soothing",
+      "sensitive_skin"
+    ]
+  },
+  {
+    "brand": "the purest solutions",
+    "category": "moisturizer",
+    "product_name": "The Purest Solutions 24H Daily Moisturizing Cream",
+    "price": 329,
+    "rating": 4.6,
+    "review_count": 10800,
+    "finish": "natural",
+    "benefits": [
+      "hydrating",
+      "barrier_repair",
+      "lightweight"
+    ]
+  },
+  {
+    "brand": "maruderm",
+    "category": "moisturizer",
+    "product_name": "Maruderm Centella Yatıştırıcı Bariyer Kremi",
+    "price": 269,
+    "rating": 4.6,
+    "review_count": 7600,
+    "finish": "natural",
+    "benefits": [
+      "barrier_repair",
+      "soothing",
+      "redness",
+      "sensitive_skin"
+    ]
+  },
+  {
+    "brand": "the ordinary",
+    "category": "serum",
+    "product_name": "The Ordinary Niacinamide 10% + Zinc 1%",
+    "price": 385,
+    "rating": 4.8,
+    "review_count": 34200,
+    "finish": "matte",
+    "benefits": [
+      "oil_control",
+      "sebum",
+      "pore_minimizing",
+      "acne_care",
+      "oily_skin",
+      "matte"
+    ]
+  },
+  {
+    "brand": "the ordinary",
+    "category": "serum",
+    "product_name": "The Ordinary Hyaluronic Acid 2% + B5",
+    "price": 410,
+    "rating": 4.8,
+    "review_count": 26100,
+    "finish": "dewy",
+    "benefits": [
+      "hydrating",
+      "plumping",
+      "dry_skin",
+      "barrier_repair"
+    ]
+  },
+  {
+    "brand": "the purest solutions",
+    "category": "serum",
+    "product_name": "The Purest Solutions Niacinamide 5% + Zinc Serum",
+    "price": 299,
+    "rating": 4.7,
+    "review_count": 18400,
+    "finish": "matte",
+    "benefits": [
+      "oil_control",
+      "sebum",
+      "pore_minimizing",
+      "acne_care",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "the purest solutions",
+    "category": "serum",
+    "product_name": "The Purest Solutions AHA 10% + BHA 2% Peeling Serum",
+    "price": 319,
+    "rating": 4.7,
+    "review_count": 21500,
+    "finish": "natural",
+    "benefits": [
+      "pore_minimizing",
+      "acne_care",
+      "brightening"
+    ]
+  },
+  {
+    "brand": "la roche-posay",
+    "category": "serum",
+    "product_name": "La Roche-Posay Effaclar Ultra Concentrated Serum",
+    "price": 1190,
+    "rating": 4.8,
+    "review_count": 13900,
+    "finish": "matte",
+    "benefits": [
+      "acne_care",
+      "pore_minimizing",
+      "oil_control",
+      "oily_skin"
+    ]
+  },
+  {
+    "brand": "la roche-posay",
+    "category": "serum",
+    "product_name": "La Roche-Posay Hyalu B5 Serum",
+    "price": 1350,
+    "rating": 4.9,
+    "review_count": 17200,
+    "finish": "dewy",
+    "benefits": [
+      "hydrating",
+      "plumping",
+      "barrier_repair",
+      "dry_skin"
+    ]
+  },
+  {
+    "brand": "vichy",
+    "category": "serum",
+    "product_name": "Vichy Minéral 89 Hyaluronic Acid Booster",
+    "price": 1050,
+    "rating": 4.9,
+    "review_count": 19300,
+    "finish": "dewy",
+    "benefits": [
+      "hydrating",
+      "barrier_repair",
+      "sensitive_skin",
+      "plumping"
+    ]
+  },
+  {
+    "brand": "garnier",
+    "category": "serum",
+    "product_name": "Garnier Vitamin C Brightening Serum",
+    "price": 289,
+    "rating": 4.6,
+    "review_count": 14800,
+    "finish": "natural",
+    "benefits": [
+      "brightening",
+      "lightweight",
+      "hydrating"
+    ]
+  },
+  {
+    "brand": "maruderm",
+    "category": "serum",
+    "product_name": "Maruderm Azelaik Asit %10 Leke & Kızarıklık Serumu",
+    "price": 249,
+    "rating": 4.6,
+    "review_count": 9200,
+    "finish": "natural",
+    "benefits": [
+      "redness",
+      "acne_care",
+      "brightening",
+      "sensitive_skin"
+    ]
+  }
+]
