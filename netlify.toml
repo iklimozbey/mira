@@ -1,0 +1,12 @@
+[build]
+  base = "mobile"
+  command = "npm install && npx expo export --platform web"
+  publish = "dist"
+
+[build.environment]
+  EXPO_PUBLIC_API_URL = "https://mira-af20.onrender.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

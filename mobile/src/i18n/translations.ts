@@ -13,6 +13,7 @@ const en = {
   password: 'Password',
   noAccount: "Don't have an account? Create one",
   haveAccount: 'Already have an account? Sign in',
+  fillDemo: 'Fill demo account',
   signOut: 'Sign out',
 
   // onboarding
@@ -149,6 +150,7 @@ const tr: Dict = {
   password: 'Şifre',
   noAccount: 'Hesabın yok mu? Oluştur',
   haveAccount: 'Zaten hesabın var mı? Giriş yap',
+  fillDemo: 'Demo bilgileri doldur',
   signOut: 'Çıkış yap',
 
   onboardingTitle: 'Cildini tanıyalım',
