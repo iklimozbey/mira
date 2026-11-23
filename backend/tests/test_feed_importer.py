@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.database import Base
 from app.models.entities import CatalogProductModel
-from app.services.feed_importer import parse_google_merchant_xml, upsert_feed_items
+from app.services.feed_importer import parse_csv_feed, parse_google_merchant_xml, upsert_feed_items
 
 
 SAMPLE_MERCHANT_XML = """<?xml version="1.0" encoding="UTF-8"?>
@@ -58,6 +58,35 @@ class FeedImporterTests(unittest.TestCase):
         self.assertEqual(self.db.query(CatalogProductModel).count(), 1)
         self.db.refresh(row)
         self.assertEqual(row.price, 850)
+
+    def test_parse_admitad_yml_and_csv(self):
+        yml = """<?xml version="1.0" encoding="UTF-8"?>
+        <yml_catalog><shop>
+          <categories><category id="10">Cilt Bakımı / Serum</category></categories>
+          <offers>
+            <offer id="1" available="true">
+              <name>The Purest Solutions T-Zone Oil Control Serum</name>
+              <vendor>The Purest Solutions</vendor>
+              <price>329.90</price>
+              <picture>https://cdn.dsmcdn.com/sample-purest.jpg</picture>
+              <url>https://ty.gl/affiliate-sample</url>
+              <categoryId>10</categoryId>
+            </offer>
+          </offers>
+        </shop></yml_catalog>"""
+        items = parse_google_merchant_xml(yml, merchant_name="Trendyol")
+        self.assertEqual(len(items), 1)
+        res = upsert_feed_items(self.db, items, default_merchant="Trendyol")
+        self.assertEqual(res["created"], 1)
+        row = self.db.query(CatalogProductModel).filter_by(merchant_name="Trendyol").first()
+        self.assertEqual(row.price, 330)
+        self.assertEqual(row.category, "serum")
+        self.assertEqual(row.merchant_url, "https://ty.gl/affiliate-sample")
+
+        csv_data = "name;brand;price;picture;url;category\nPastel Profashion Matte Lipstick;Pastel;249,00;https://cdn.dsmcdn.com/pastel.jpg;https://ty.gl/pastel;Ruj"
+        csv_items = parse_csv_feed(csv_data, merchant_name="Trendyol")
+        self.assertEqual(len(csv_items), 1)
+        self.assertEqual(csv_items[0]["product_name"], "Pastel Profashion Matte Lipstick")
 
 
 if __name__ == "__main__":

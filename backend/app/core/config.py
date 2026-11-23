@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     OLLAMA_URL: str = "http://127.0.0.1:11434"
     OLLAMA_MODEL: str = ""  # Optional local Ollama model (e.g. "qwen2.5:3b")
 
+    # Affiliate Product Feed (Trendyol / GelirOrtaklari / Admitad XML, YML, CSV, or JSON)
+    AFFILIATE_FEED_URL: str = ""
+    AFFILIATE_MERCHANT_NAME: str = "Trendyol"
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 

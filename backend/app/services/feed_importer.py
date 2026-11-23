@@ -1,8 +1,14 @@
-"""Standard Google Merchant XML & JSON Affiliate Feed Importer.
+"""Affiliate Product Feed Importer (Google Merchant XML, Admitad/GelirOrtaklari YML XML, CSV, JSON).
 
-Compatible with Trendyol, Watsons, Gratis, Sephora, Hepsiburada, and any
-Google Merchant Center RSS/XML or JSON product feed.
+Supports:
+- Google Merchant Center RSS/Atom XML (<item> / <entry>)
+- Admitad / GelirOrtaklari YML XML (<yml_catalog><shop><offers><offer>)
+- CSV feeds (comma or semicolon separated)
+- JSON arrays / {products: [...]}
 """
+import csv
+import io
+import json
 import re
 import xml.etree.ElementTree as ET
 from datetime import datetime
@@ -20,7 +26,6 @@ def parse_price_int(raw: Any, fallback_brand: str, fallback_category: str) -> in
     if isinstance(raw, (int, float)) and raw > 0:
         return int(round(raw))
     if isinstance(raw, str):
-        # Handles "429.90 TRY", "429,90 TL", "₺ 429"
         cleaned = raw.replace(",", ".")
         m = re.search(r"(\d+(?:\.\d+)?)", cleaned)
         if m:
@@ -30,8 +35,8 @@ def parse_price_int(raw: Any, fallback_brand: str, fallback_category: str) -> in
     return estimate_price(fallback_brand, fallback_category)
 
 
-def parse_google_merchant_xml(xml_text: str, merchant_name: str = "partner") -> List[Dict[str, Any]]:
-    """Parse a Google Merchant RSS/Atom XML feed into normalized product dicts."""
+def parse_google_merchant_xml(xml_text: str, merchant_name: str = "Trendyol") -> List[Dict[str, Any]]:
+    """Parse Google Merchant (<item>/<entry>) OR Admitad/GelirOrtaklari YML (<offer>) XML."""
     root = ET.fromstring(xml_text.strip())
     items: List[Dict[str, Any]] = []
 
@@ -42,14 +47,47 @@ def parse_google_merchant_xml(xml_text: str, merchant_name: str = "partner") -> 
                 return el.text.strip()
         return ""
 
+    # 1. Admitad / GelirOrtaklari YML <offer> format
+    offers = root.findall(".//offer")
+    if offers:
+        cat_map = {
+            c.attrib.get("id", ""): (c.text or "").strip()
+            for c in root.findall(".//categories/category")
+        }
+        for node in offers:
+            title = _get(node, "name", "model", "title")
+            if not title:
+                continue
+            brand = _get(node, "vendor", "brand") or title.split()[0]
+            raw_price = _get(node, "price", "oldprice")
+            image = _get(node, "picture", "image", "image_link")
+            link = _get(node, "url", "link")
+            barcode = _get(node, "barcode", "vendorCode", "gtin") or None
+            cat_id = _get(node, "categoryId")
+            ptype = cat_map.get(cat_id, _get(node, "typePrefix", "category"))
+            in_stock = node.attrib.get("available", "true").lower() != "false"
+            items.append({
+                "product_name": title,
+                "brand": brand.lower().strip(),
+                "raw_price": raw_price,
+                "image_url": image or None,
+                "merchant_url": link or None,
+                "merchant_name": merchant_name,
+                "barcode": barcode,
+                "raw_category": ptype,
+                "in_stock": in_stock,
+            })
+        return items
+
+    # 2. Google Merchant RSS/Atom <item> / <entry> format
     for node in root.findall(".//item") + root.findall(".//{http://www.w3.org/2005/Atom}entry"):
         title = _get(node, "title", f"{_G_NS}title", "{http://www.w3.org/2005/Atom}title")
         if not title:
             continue
         brand = _get(node, f"{_G_NS}brand", "brand") or title.split()[0]
         raw_price = _get(node, f"{_G_NS}sale_price", f"{_G_NS}price", "price")
-        image = _get(node, f"{_G_NS}image_link", "image_link", "image")
-        link = _get(node, "link", f"{_G_NS}link")
+        image = _get(node, f"{_G_NS}image_link", "image_link", "image", "picture")
+        link = _get(node, "link", f"{_G_NS}link", "url")
         gtin = _get(node, f"{_G_NS}gtin", "gtin", "barcode") or None
         ptype = _get(node, f"{_G_NS}product_type", "product_type", "category")
         avail = _get(node, f"{_G_NS}availability", "availability").lower()
@@ -69,7 +107,32 @@ def parse_google_merchant_xml(xml_text: str, merchant_name: str = "partner") -> 
     return items
 
 
-def upsert_feed_items(db: Session, items: List[Dict[str, Any]], default_merchant: str = "partner") -> Dict[str, int]:
+def parse_csv_feed(csv_text: str, merchant_name: str = "Trendyol") -> List[Dict[str, Any]]:
+    """Parse semicolon or comma separated affiliate CSV feeds."""
+    sample = csv_text[:2048]
+    delimiter = ";" if sample.count(";") > sample.count(",") else ","
+    reader = csv.DictReader(io.StringIO(csv_text.strip()), delimiter=delimiter)
+    items: List[Dict[str, Any]] = []
+    for row in reader:
+        norm = {k.strip().lower(): (v or "").strip() for k, v in row.items() if k}
+        title = norm.get("name") or norm.get("title") or norm.get("product_name") or ""
+        if not title:
+            continue
+        items.append({
+            "product_name": title,
+            "brand": (norm.get("brand") or norm.get("vendor") or title.split()[0]).lower(),
+            "raw_price": norm.get("sale_price") or norm.get("price") or "",
+            "image_url": norm.get("picture") or norm.get("image_link") or norm.get("image_url") or norm.get("image") or None,
+            "merchant_url": norm.get("url") or norm.get("link") or norm.get("merchant_url") or None,
+            "merchant_name": merchant_name,
+            "barcode": norm.get("barcode") or norm.get("gtin") or None,
+            "raw_category": norm.get("category") or norm.get("product_type") or "",
+            "in_stock": "out" not in (norm.get("availability") or "in stock").lower(),
+        })
+    return items
+
+
+def upsert_feed_items(db: Session, items: List[Dict[str, Any]], default_merchant: str = "Trendyol") -> Dict[str, int]:
     """Upsert normalized feed items into catalog_products (updates price/stock/image if already present)."""
     created = 0
     updated = 0
@@ -138,18 +201,19 @@ def upsert_feed_items(db: Session, items: List[Dict[str, Any]], default_merchant
     return {"created": created, "updated": updated, "total_processed": created + updated}
 
 
-async def import_feed_from_url(db: Session, feed_url: str, merchant_name: str = "partner") -> Dict[str, int]:
-    async with httpx.AsyncClient(timeout=20.0, headers={"User-Agent": "MIRA-FeedImporter/1.0"}) as client:
+async def import_feed_from_url(db: Session, feed_url: str, merchant_name: str = "Trendyol") -> Dict[str, int]:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True, headers={"User-Agent": "MIRA-FeedImporter/1.0"}) as client:
         resp = await client.get(feed_url)
         resp.raise_for_status()
         content_type = resp.headers.get("content-type", "").lower()
         body = resp.text.strip()
 
     if "json" in content_type or body.startswith("[") or body.startswith("{"):
-        import json
         parsed = json.loads(body)
         items = parsed if isinstance(parsed, list) else parsed.get("products") or parsed.get("items") or []
-    else:
+    elif body.startswith("<"):
         items = parse_google_merchant_xml(body, merchant_name=merchant_name)
+    else:
+        items = parse_csv_feed(body, merchant_name=merchant_name)
 
     return upsert_feed_items(db, items, default_merchant=merchant_name)
