@@ -203,7 +203,7 @@ def _deterministic_top3(
                     reasons_en.append("Fills a missing step in your routine")
                     reasons_tr.append("Rutininizdeki eksik adımı tamamlar")
             else:
-                score -= 22
+                score -= 45
 
         # 2. Finish contrast + explicit negations
         if "glossy" in wanted_attrs and "matte" not in wanted_attrs:
