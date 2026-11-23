@@ -97,7 +97,7 @@ function ChatPickCard({ product, large, onPress }: { product: CatalogProduct; la
   );
 }
 
-export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) {
+export function DiscoverScreen({ onOpen, onOpenProfile }: { onOpen: (query: string) => void; onOpenProfile: () => void }) {
   const { c, t, lang, errorText } = useApp();
   const { height } = useWindowDimensions();
   const [category, setCategory] = useState('all');
@@ -193,6 +193,10 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
               <ChatPickCard key={p.product_name} product={p} onPress={() => onOpen(p.product_name)} />
             ))}
           </View>
+        )}
+
+        {chatResult && picks.length === 0 && !chatLoading && (
+          <Button title={t('increaseBudget')} onPress={onOpenProfile} variant="ghost" />
         )}
 
         <View style={{ flex: 1 }} />

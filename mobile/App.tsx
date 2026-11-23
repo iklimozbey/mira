@@ -56,7 +56,7 @@ function Root() {
   } else if (query) {
     content = <ProductScreen query={query} onQuery={setQuery} onBack={() => setQuery(null)} />;
   } else if (tab === 'discover') {
-    content = <DiscoverScreen onOpen={setQuery} />;
+    content = <DiscoverScreen onOpen={setQuery} onOpenProfile={() => setTab('profile')} />;
   } else if (tab === 'shelf') {
     content = <ShelfScreen />;
   } else {

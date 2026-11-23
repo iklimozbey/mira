@@ -35,6 +35,7 @@ const en = {
   quickPrompt2: 'Lightweight sunscreen for oily skin',
   quickPrompt3: 'Serum for pores and acne',
   dailyTop3: "Today's Top 3 Picks",
+  increaseBudget: 'Increase budget',
   match: 'match',
   catalogTitle: 'Explore catalog',
 
@@ -170,6 +171,7 @@ const tr: Dict = {
   quickPrompt2: 'Yağlı cilt için hafif güneş kremi',
   quickPrompt3: 'Gözenek ve akne için serum',
   dailyTop3: 'Günün En İyi 3 Önerisi',
+  increaseBudget: 'Bütçeyi artır',
   match: 'uyum',
   catalogTitle: 'Kataloğu keşfet',
 
