@@ -142,8 +142,10 @@ def model_to_dict(row: CatalogProductModel) -> Dict[str, Any]:
 
 
 def seed_curated_products(db: Session) -> int:
-    """Ensure curated high-quality products exist in SQLite catalog_products."""
-    existing = {r[0].lower() for r in db.query(CatalogProductModel.product_name).all()}
+    """Seed initial curated products only when catalog_products is completely empty."""
+    if db.query(CatalogProductModel).count() > 0:
+        return 0
+    existing = set()
     added = 0
     for item in POPULAR_BRAND_CATALOG:
         name = item["product_name"]
