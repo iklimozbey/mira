@@ -86,17 +86,20 @@ export function DiscoverScreen({ onOpen }: { onOpen: (query: string) => void }) 
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError('');
-    apiClient
-      .getCatalog(category === 'all' ? undefined : category)
-      .then((items) => active && setProducts(items))
-      .catch((e) => active && setError(errorText(e)))
-      .finally(() => active && setLoading(false));
+    const timer = setTimeout(() => {
+      setLoading(true);
+      setError('');
+      apiClient
+        .getCatalog(category === 'all' ? undefined : category, query.trim() || undefined)
+        .then((items) => active && setProducts(items))
+        .catch((e) => active && setError(errorText(e)))
+        .finally(() => active && setLoading(false));
+    }, query.trim() ? 350 : 0);
     return () => {
       active = false;
+      clearTimeout(timer);
     };
-  }, [category]);
+  }, [category, query]);
 
   const sendChat = async (textOverride?: string) => {
     const prompt = (textOverride ?? chatInput).trim();

@@ -191,7 +191,9 @@ def _deterministic_top3(
     profile_dict: Dict[str, Any],
     inventory: List[Any],
     lang: str,
+    catalog_items: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
+    source_catalog = catalog_items if catalog_items is not None else POPULAR_BRAND_CATALOG
     prompt_lower = (prompt or "").lower().strip()
     shelf_info = _infer_shelf_profile(inventory)
     owned_lower = {n.lower() for n in shelf_info["names"]}
@@ -224,12 +226,12 @@ def _deterministic_top3(
     # STAGE 1: STRICT HARD FILTERING (never violate explicit user constraints)
     # ==========================================================
     candidates = []
-    for item in POPULAR_BRAND_CATALOG:
+    for item in source_catalog:
         name = item["product_name"]
         cat = item["category"]
         price = int(item.get("price", 400))
-        meta = PRODUCT_ATTRIBUTES.get(name, {"finish": "natural", "benefits": set()})
-        item_finish = meta["finish"]
+        meta = PRODUCT_ATTRIBUTES.get(name)
+        item_finish = item.get("finish") or (meta["finish"] if meta else "natural")
 
         # Exclude exact owned products
         if name.lower() in owned_lower:
@@ -266,9 +268,9 @@ def _deterministic_top3(
         name = item["product_name"]
         cat = item["category"]
         price = int(item.get("price", 400))
-        meta = PRODUCT_ATTRIBUTES.get(name, {"finish": "natural", "benefits": set()})
-        item_finish = meta["finish"]
-        item_benefits: Set[str] = set(meta["benefits"])
+        meta = PRODUCT_ATTRIBUTES.get(name)
+        item_finish = item.get("finish") or (meta["finish"] if meta else "natural")
+        item_benefits: Set[str] = set(item.get("benefits") or (meta["benefits"] if meta else set()))
 
         score = int(item.get("rating", 4.5) * 14)  # ~63-68
         reasons_en: List[str] = []
@@ -477,6 +479,7 @@ async def recommend_top3(
     inventory: List[Any],
     lang: str = "en",
     history: Optional[List[Dict[str, str]]] = None,
+    catalog_items: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     profile_dict = {
         "skin_type": getattr(profile, "skin_type", None) if profile else None,
@@ -500,4 +503,4 @@ async def recommend_top3(
         if llm_res:
             return llm_res
 
-    return _deterministic_top3(prompt, profile_dict, inventory, lang)
+    return _deterministic_top3(prompt, profile_dict, inventory, lang, catalog_items=catalog_items)

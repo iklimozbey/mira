@@ -88,8 +88,12 @@ class MiraApiClient {
     await this.login(email, password);
   }
 
-  getCatalog(category?: string) {
-    return this.request<CatalogProduct[]>(`/catalog/${category ? `?category=${category}` : ''}`, {}, false);
+  getCatalog(category?: string, q?: string) {
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (q && q.trim()) params.set('q', q.trim());
+    const qs = params.toString();
+    return this.request<CatalogProduct[]>(`/catalog/${qs ? `?${qs}` : ''}`, {}, false);
   }
 
   getDailyTop3(lang: string) {

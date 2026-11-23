@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Integer, JSON
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Integer, Float, JSON
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -101,3 +101,24 @@ class ResearchReport(Base):
 
     # Relationship
     query = relationship("ResearchQuery", back_populates="report")
+
+
+class CatalogProductModel(Base):
+    __tablename__ = "catalog_products"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    barcode = Column(String(64), unique=True, index=True, nullable=True)
+    product_name = Column(String(255), index=True, nullable=False)
+    brand = Column(String(120), index=True, nullable=False)
+    category = Column(String(50), index=True, nullable=False, default="other")
+    price = Column(Integer, nullable=False, default=399)
+    rating = Column(Float, nullable=False, default=4.5)
+    review_count = Column(Integer, nullable=False, default=500)
+    image_url = Column(String(1024), nullable=True)
+    shade_hex = Column(String(20), nullable=True)
+    shade_name = Column(String(120), nullable=True)
+    finish = Column(String(30), nullable=False, default="natural")
+    benefits = Column(JSON, default=list)
+    ingredients_text = Column(Text, nullable=True)
+    source = Column(String(30), nullable=False, default="curated")
+    created_at = Column(DateTime, default=datetime.utcnow)

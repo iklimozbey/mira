@@ -29,6 +29,17 @@ def ensure_profile_columns():
 
 ensure_profile_columns()
 
+# Seed curated products into catalog_products table on startup
+def ensure_catalog_seeded():
+    from app.services.obf_sync import seed_curated_products
+    db: Session = SessionLocal()
+    try:
+        seed_curated_products(db)
+    finally:
+        db.close()
+
+ensure_catalog_seeded()
+
 # 2. Permanent Demo User Auto-Seeder (Guarantees demo@mira.app always exists)
 def ensure_permanent_demo_user():
     db: Session = SessionLocal()
