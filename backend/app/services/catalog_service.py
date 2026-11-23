@@ -266,6 +266,84 @@ POPULAR_BRAND_CATALOG: List[Dict[str, Any]] = [
         "shade_name": "16 Rose Wood • Sıcak Gül",
         "key_pro": "Tek sürüşte yüksek pigment ve yumuşak kadifemsi his",
         "key_con": "Kalıcılığı likit mat rujlar kadar yüksek değildir"
+    },
+    {
+        "brand": "pastel",
+        "category": "lip",
+        "product_name": "Pastel Classic Satin Lipstick",
+        "price": 219,
+        "rating": 4.6,
+        "review_count": 6400,
+        "image_url": "/static/images/products/mac_ruby_woo.jpg",
+        "badge": "Saten Kremsi Bitiş",
+        "shade_hex": "#B55B6A",
+        "shade_name": "42 Dusty Rose • Saten Gül",
+        "key_pro": "Dudakları kurutmayan yumuşak saten ve kremsi doku",
+        "key_con": "Yemek sonrası tazeleme ister"
+    },
+    {
+        "brand": "maybelline",
+        "category": "lip",
+        "product_name": "Maybelline Color Sensational Satin Lipstick",
+        "price": 279,
+        "rating": 4.7,
+        "review_count": 9800,
+        "image_url": "/static/images/products/maybelline_matte_ink.jpg",
+        "badge": "Shea Yağlı Saten Bitiş",
+        "shade_hex": "#C46373",
+        "shade_name": "373 Mauve For Me • Saten Pembe",
+        "key_pro": "Shea yağı ile dudakları nemlendiren ipeksi saten bitiş",
+        "key_con": "Tam mat rujlar kadar transfer-proof değildir"
+    },
+    {
+        "brand": "flormar",
+        "category": "lip",
+        "product_name": "Flormar Deluxe Cashmere Stylo Satin",
+        "price": 245,
+        "rating": 4.6,
+        "review_count": 5300,
+        "image_url": "/static/images/products/flormar_kiss_me_more.jpg",
+        "badge": "Kaşmir Saten Bitiş",
+        "shade_hex": "#A94E5F",
+        "shade_name": "DC24 Cashmere Rose • Saten",
+        "key_pro": "Tek sürüşte canlı renk ve saten yumuşaklık",
+        "key_con": "İnce uçlu olduğu için dikkatli uygulanmalıdır"
+    },
+    {
+        "brand": "note",
+        "category": "foundation",
+        "product_name": "Note Luminous Moisturizing Satin Foundation",
+        "price": 295,
+        "rating": 4.5,
+        "review_count": 4700,
+        "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
+        "badge": "Saten & Nemlendirici",
+        "key_pro": "Ciltte doğal saten bitiş ve gün boyu nem konforu",
+        "key_con": "Çok yağlı ciltlerde pudra ile sabitlenmelidir"
+    },
+    {
+        "brand": "the purest",
+        "category": "serum",
+        "product_name": "The Purest Solutions Niacinamide 5% Serum",
+        "price": 299,
+        "rating": 4.6,
+        "review_count": 7200,
+        "image_url": "/static/images/products/the_ordinary_serum.jpg",
+        "badge": "Gözenek & Sebum Dengesi",
+        "key_pro": "T bölgesinde yağlanmayı dengeler, gözenek görünümünü azaltır",
+        "key_con": "Düzenli 4 hafta kullanım gerektirir"
+    },
+    {
+        "brand": "garnier",
+        "category": "serum",
+        "product_name": "Garnier Vitamin C Brightening Serum",
+        "price": 289,
+        "rating": 4.6,
+        "review_count": 11200,
+        "image_url": "/static/images/products/the_ordinary_serum.jpg",
+        "badge": "Aydınlatıcı C Vitamini",
+        "key_pro": "Leke görünümünü azaltır ve cilde canlılık verir",
+        "key_con": "Gündüz mutlaka SPF ile birlikte kullanılmalıdır"
     }
 ]
 

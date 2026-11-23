@@ -1,10 +1,16 @@
-"""Smart Offline-First Hybrid Top-3 Recommender.
+"""Smart Offline-First Hybrid Top-3 Recommender with Strict Hard Constraints.
 
-Works 100% offline with zero latency and zero hallucination via:
-1. Intent & negation parser (matte vs glossy, "mat olmasin", cheap/budget vs best/luxury)
-2. Shelf-similarity & routine-gap inference (infers function from free-text shelf items like "T-Zone Oil Eraser")
-3. Character 3-gram cosine similarity for typo-tolerant matching ("oil erasser", "fondoten", "runleri")
-4. Optional LLM enhancement: Gemini 2.0 Flash / GPT-4o-mini / local Ollama when configured in .env
+Pipeline:
+1. Hard Constraints FIRST (never violated):
+   - Explicit prompt budget ("300 tl alti", "under 300") -> strictly price <= budget
+   - Explicit category ("ruj", "fondoten", "serum") -> strictly matching category
+   - Explicit finish ("saten", "mat", "parlak", "nemli") -> strictly matching finish
+   - Explicit negations ("mat olmasin", "parlak istemiyorum") -> strictly excluded
+   - Owned exact duplicates -> excluded
+2. Soft Ranking SECOND (among candidates that passed all hard constraints):
+   - Skin profile & concerns fit, shelf-similarity benefits, character 3-gram cosine similarity,
+     profile budget preference, rating & review volume.
+3. Honest output: returns up to 3 strictly valid matches (never pads with violating products).
 """
 import json
 import math
@@ -24,19 +30,25 @@ PRODUCT_ATTRIBUTES: Dict[str, Dict[str, Any]] = {
     "Maybelline SuperStay Matte Ink": {"finish": "matte", "benefits": {"matte", "long_wear", "transfer_proof"}},
     "Kiko 3D Hydra Lipgloss": {"finish": "glossy", "benefits": {"glossy", "shiny", "hydrating", "plumping"}},
     "Golden Rose Velvet Matte Lipstick": {"finish": "matte", "benefits": {"matte", "velvet", "pigmented"}},
+    "Pastel Classic Satin Lipstick": {"finish": "satin", "benefits": {"satin", "creamy", "hydrating", "dry_skin"}},
+    "Maybelline Color Sensational Satin Lipstick": {"finish": "satin", "benefits": {"satin", "creamy", "hydrating", "dry_skin"}},
+    "Flormar Deluxe Cashmere Stylo Satin": {"finish": "satin", "benefits": {"satin", "creamy", "pigmented"}},
     "Flormar Precious Curl Mascara": {"finish": "natural", "benefits": {"curling", "lifting"}},
     "Flormar Hero Volume & Curl Mascara": {"finish": "natural", "benefits": {"volumizing", "curling"}},
     "Maybelline Sky High Mascara": {"finish": "natural", "benefits": {"lengthening", "lightweight"}},
     "Maybelline Lash Sensational Fan": {"finish": "natural", "benefits": {"volumizing", "separating"}},
     "L'Oreal Telescopic Mascara": {"finish": "natural", "benefits": {"lengthening", "separating"}},
-    "Flormar Perfect Coverage Foundation": {"finish": "matte", "benefits": {"high_coverage", "long_wear", "blemish_cover"}},
+    "Flormar Perfect Coverage Foundation": {"finish": "matte", "benefits": {"high_coverage", "long_wear", "blemish_cover", "matte"}},
     "Maybelline Fit Me Matte + Poreless": {"finish": "matte", "benefits": {"matte", "oil_control", "pore_minimizing", "oily_skin", "sebum"}},
-    "L'Oreal Infallible 24H Fresh Wear": {"finish": "satin", "benefits": {"long_wear", "lightweight", "natural", "combination_skin"}},
+    "L'Oreal Infallible 24H Fresh Wear": {"finish": "satin", "benefits": {"satin", "long_wear", "lightweight", "natural", "combination_skin"}},
+    "Note Luminous Moisturizing Satin Foundation": {"finish": "satin", "benefits": {"satin", "hydrating", "dry_skin", "natural"}},
     "La Roche-Posay Anthelios UVMune 400": {"finish": "natural", "benefits": {"spf", "lightweight", "oil_control", "sensitive_skin", "oily_skin"}},
     "La Roche-Posay Cicaplast Baume B5+": {"finish": "dewy", "benefits": {"barrier_repair", "soothing", "redness", "sensitive_skin", "dry_skin", "hydrating"}},
     "CeraVe Moisturizing Cream": {"finish": "natural", "benefits": {"hydrating", "barrier_repair", "dry_skin", "sensitive_skin"}},
     "The Ordinary Niacinamide 10% + Zinc 1%": {"finish": "matte", "benefits": {"oil_control", "sebum", "pore_minimizing", "acne_care", "oily_skin", "matte"}},
     "The Ordinary Hyaluronic Acid 2% + B5": {"finish": "dewy", "benefits": {"hydrating", "plumping", "dry_skin", "barrier_repair"}},
+    "The Purest Solutions Niacinamide 5% Serum": {"finish": "matte", "benefits": {"oil_control", "sebum", "pore_minimizing", "acne_care", "oily_skin"}},
+    "Garnier Vitamin C Brightening Serum": {"finish": "natural", "benefits": {"brightening", "lightweight", "natural", "hydrating"}},
 }
 
 _CATEGORY_KEYWORDS = {
@@ -45,12 +57,18 @@ _CATEGORY_KEYWORDS = {
     "mascara": ["maskara", "mascara", "rimel", "kirpik", "lash"],
     "sunscreen": ["güneş", "gunes", "sunscreen", "spf", "uv", "güneş kremi"],
     "moisturizer": ["nemlendirici", "krem", "moisturizer", "cream", "bariyer", "barrier", "balm"],
-    "serum": ["serum", "niacinamide", "hyaluronic", "leke", "asit", "tonik", "toner", "oil eraser", "eraser"],
+    "serum": ["serum", "niacinamide", "hyaluronic", "leke", "asit", "tonik", "toner", "oil eraser", "eraser", "c vitamini", "vitamin c"],
+}
+
+_FINISH_KEYWORDS = {
+    "satin": ["saten", "satin", "kremsi", "creamy", "ipeksi", "yarı mat", "yari mat", "semi-matte"],
+    "glossy": ["parlak", "gloss", "glossy", "shiny", "ışıltı", "isilti", "cam", "vinyl", "parlatıcı", "parlatici", "ıslak", "islak"],
+    "matte": ["mat", "matte", "kadife", "velvet", "parlamayan", "pudra"],
+    "dewy": ["dewy", "glow", "nemli bitiş", "nemli bitis"],
 }
 
 _ATTRIBUTE_KEYWORDS = {
-    "glossy": ["parlak", "gloss", "glossy", "shiny", "ışıltı", "isilti", "cam", "vinyl", "parlatıcı", "parlatici", "ıslak", "islak", "nemli"],
-    "matte": ["mat", "matte", "kadife", "velvet", "parlamayan", "pudra"],
+    **_FINISH_KEYWORDS,
     "oil_control": ["yağ", "yag", "oil", "sebum", "t-zone", "t zone", "t bölgesi", "parlama", "eraser", "erasser", "yağlı", "yagli", "oily"],
     "pore_minimizing": ["gözenek", "gozenek", "pore", "poreless", "siyah nokta", "t-zone"],
     "acne_care": ["akne", "acne", "sivilce", "blemish", "salicylic", "niacinamide", "zinc"],
@@ -62,6 +80,7 @@ _ATTRIBUTE_KEYWORDS = {
     "lengthening": ["uzat", "length", "telescopic", "sky high"],
     "high_coverage": ["tam kapatıcı", "yüksek kapatıcı", "high coverage", "full coverage", "leke kapat"],
     "lightweight": ["hafif", "lightweight", "doğal", "dogal", "ince", "fresh"],
+    "brightening": ["leke", "aydınlat", "aydinlat", "c vitamini", "vitamin c", "bright"],
 }
 
 _SHELF_SIMILARITY_TRIGGERS = [
@@ -78,6 +97,7 @@ _CHEAP_TRIGGERS = ["ucuz", "uygun fiyat", "ekonomik", "bütçe dostu", "cheap", 
 _NEGATIONS = {
     "matte": ["mat olmasın", "mat olmasin", "mat istemiyorum", "mat değil", "not matte", "no matte"],
     "glossy": ["parlak olmasın", "parlak olmasin", "parlak istemiyorum", "not glossy", "no gloss"],
+    "satin": ["saten olmasın", "saten olmasin", "not satin"],
 }
 
 
@@ -104,17 +124,10 @@ def _extract_budget(prompt: str) -> Optional[int]:
     return None
 
 
-def _extract_attributes(text: str) -> Set[str]:
-    lower = text.lower()
-    found: Set[str] = set()
-    for attr, kws in _ATTRIBUTE_KEYWORDS.items():
-        if any(kw in lower for kw in kws):
-            found.add(attr)
-    # Apply explicit negations (e.g. "mat olmasın" removes matte & prefers glossy/natural)
-    for attr, neg_phrases in _NEGATIONS.items():
-        if any(p in lower for p in neg_phrases):
-            found.discard(attr)
-    return found
+def _word_match(kw: str, text: str) -> bool:
+    if " " in kw:
+        return kw in text
+    return bool(re.search(rf"(?<![a-zçğıöşü]){re.escape(kw)}", text))
 
 
 def _extract_negated(text: str) -> Set[str]:
@@ -122,9 +135,34 @@ def _extract_negated(text: str) -> Set[str]:
     return {attr for attr, phrases in _NEGATIONS.items() if any(p in lower for p in phrases)}
 
 
+def _extract_finishes(text: str, negated: Set[str]) -> Set[str]:
+    lower = text.lower()
+    # Strip negated phrases before detecting wanted finishes so "mat olmasın" doesn't trigger matte
+    cleaned = lower
+    for phrases in _NEGATIONS.values():
+        for p in phrases:
+            cleaned = cleaned.replace(p, " ")
+    found = {fin for fin, kws in _FINISH_KEYWORDS.items() if any(_word_match(kw, cleaned) for kw in kws)}
+    # If user says "yarı mat" (satin), don't also trigger "matte"
+    if "satin" in found and ("yarı mat" in cleaned or "yari mat" in cleaned or "semi-matte" in cleaned):
+        found.discard("matte")
+    return found - negated
+
+
+def _extract_attributes(text: str) -> Set[str]:
+    lower = text.lower()
+    negated = _extract_negated(lower)
+    cleaned = lower
+    for phrases in _NEGATIONS.values():
+        for p in phrases:
+            cleaned = cleaned.replace(p, " ")
+    found = {attr for attr, kws in _ATTRIBUTE_KEYWORDS.items() if any(_word_match(kw, cleaned) for kw in kws)}
+    return found - negated
+
+
 def _extract_categories(text: str) -> Set[str]:
     lower = text.lower()
-    return {cat for cat, kws in _CATEGORY_KEYWORDS.items() if any(kw in lower for kw in kws)}
+    return {cat for cat, kws in _CATEGORY_KEYWORDS.items() if any(_word_match(kw, lower) for kw in kws)}
 
 
 def _infer_shelf_profile(inventory: List[Any]) -> Dict[str, Any]:
@@ -162,28 +200,69 @@ def _deterministic_top3(
     asks_routine_gap = any(trig in prompt_lower for trig in _ROUTINE_GAP_TRIGGERS)
     wants_cheap = any(trig in prompt_lower for trig in _CHEAP_TRIGGERS)
 
-    wanted_cats = _extract_categories(prompt_lower)
-    wanted_attrs = _extract_attributes(prompt_lower)
-    negated_attrs = _extract_negated(prompt_lower)
+    negated_finishes = _extract_negated(prompt_lower)
+    explicit_cats = _extract_categories(prompt_lower)
+    explicit_finishes = _extract_finishes(prompt_lower, negated_finishes)
+    prompt_budget = _extract_budget(prompt_lower) if prompt_lower else None
+    profile_budget = profile_dict.get("budget_max")
 
+    wanted_attrs = _extract_attributes(prompt_lower)
     if asks_shelf_similar:
         wanted_attrs |= shelf_info["attrs"]
-        if not wanted_cats:
-            wanted_cats |= shelf_info["cats"]
 
+    soft_cats = set(explicit_cats)
+    if asks_shelf_similar and not explicit_cats:
+        soft_cats |= shelf_info["cats"]
     if asks_routine_gap:
-        # Boost core skincare categories not yet on the user's shelf
         missing_core = {"sunscreen", "moisturizer", "serum"} - shelf_info["cats"]
-        if missing_core:
-            wanted_cats |= missing_core
+        soft_cats |= missing_core
 
-    prompt_budget = _extract_budget(prompt_lower) if prompt_lower else None
-    budget_max = prompt_budget or profile_dict.get("budget_max")
     skin_type = (profile_dict.get("skin_type") or "").lower()
     concerns = [c.lower() for c in (profile_dict.get("skin_concerns") or [])]
 
-    scored = []
+    # ==========================================================
+    # STAGE 1: STRICT HARD FILTERING (never violate explicit user constraints)
+    # ==========================================================
+    candidates = []
     for item in POPULAR_BRAND_CATALOG:
+        name = item["product_name"]
+        cat = item["category"]
+        price = int(item.get("price", 400))
+        meta = PRODUCT_ATTRIBUTES.get(name, {"finish": "natural", "benefits": set()})
+        item_finish = meta["finish"]
+
+        # Exclude exact owned products
+        if name.lower() in owned_lower:
+            continue
+        # Hard Budget Filter (explicitly typed in prompt, e.g. "300 tl alti")
+        if prompt_budget is not None and price > prompt_budget:
+            continue
+        # Hard Category Filter (explicitly typed in prompt, e.g. "ruj")
+        if explicit_cats and cat not in explicit_cats:
+            continue
+        # Hard Finish Filter (explicitly typed in prompt, e.g. "saten", "parlak", "mat")
+        if explicit_finishes and item_finish not in explicit_finishes:
+            continue
+        # Hard Negation Filter (e.g. "mat olmasin")
+        if item_finish in negated_finishes:
+            continue
+
+        candidates.append(item)
+
+    if not candidates:
+        if lang == "tr":
+            budget_note = f" ({prompt_budget} TL altı)" if prompt_budget else ""
+            reply = f"Katalogda belirttiğiniz tüm kriterlere{budget_note} tam uyan ürün bulunamadı. Bütçeyi biraz artırmayı veya farklı bir bitiş denemeyi deneyebilirsiniz."
+        else:
+            budget_note = f" (under {prompt_budget} TL)" if prompt_budget else ""
+            reply = f"No products in our catalog match all of your strict criteria{budget_note}. Try raising the budget or broadening the finish."
+        return {"reply": reply, "products": []}
+
+    # ==========================================================
+    # STAGE 2: SOFT RANKING AMONG VALID CANDIDATES
+    # ==========================================================
+    scored = []
+    for item in candidates:
         name = item["product_name"]
         cat = item["category"]
         price = int(item.get("price", 400))
@@ -191,67 +270,43 @@ def _deterministic_top3(
         item_finish = meta["finish"]
         item_benefits: Set[str] = set(meta["benefits"])
 
-        score = int(item.get("rating", 4.5) * 12)
+        score = int(item.get("rating", 4.5) * 14)  # ~63-68
         reasons_en: List[str] = []
         reasons_tr: List[str] = []
 
-        # 1. Category alignment
-        if wanted_cats:
-            if cat in wanted_cats:
-                score += 24
-                if asks_routine_gap:
-                    reasons_en.append("Fills a missing step in your routine")
-                    reasons_tr.append("Rutininizdeki eksik adımı tamamlar")
-            else:
-                score -= 45
+        if explicit_finishes and item_finish in explicit_finishes:
+            score += 22
+            fin_tr = {"satin": "saten", "glossy": "parlak", "matte": "mat", "dewy": "nemli"}.get(item_finish, item_finish)
+            reasons_en.append(f"{item_finish.capitalize()} finish as requested")
+            reasons_tr.append(f"İstediğiniz gibi {fin_tr} bitişli")
 
-        # 2. Finish contrast + explicit negations
-        if "glossy" in wanted_attrs and "matte" not in wanted_attrs:
-            if item_finish == "glossy" or "glossy" in item_benefits:
-                score += 30
-                reasons_en.append("Glossy, luminous finish as requested")
-                reasons_tr.append("İstediğiniz gibi parlak bitişli")
-            elif item_finish == "matte":
-                score -= 28
-        elif "matte" in wanted_attrs and "glossy" not in wanted_attrs:
-            if item_finish == "matte" or "matte" in item_benefits:
-                score += 30
-                reasons_en.append("Matte finish as requested")
-                reasons_tr.append("İstediğiniz gibi mat bitişli")
-            elif item_finish == "glossy":
-                score -= 28
+        if soft_cats and cat in soft_cats:
+            score += 14
+            if asks_routine_gap:
+                reasons_en.append("Fills a missing step in your routine")
+                reasons_tr.append("Rutininizdeki eksik adımı tamamlar")
 
-        if "matte" in negated_attrs and item_finish == "matte":
-            score -= 35
-        if "glossy" in negated_attrs and item_finish == "glossy":
-            score -= 35
-
-        # 3. Benefit & shelf-similarity overlap
         overlap = wanted_attrs & item_benefits
         if overlap:
-            score += min(32, len(overlap) * 14)
+            score += min(24, len(overlap) * 10)
             if asks_shelf_similar and shelf_info["names"]:
                 ref = shelf_info["names"][0]
                 reasons_en.append(f"Similar effect to your {ref}")
                 reasons_tr.append(f"Dolabınızdaki {ref} ile benzer etkili")
-            elif "oil_control" in overlap or "pore_minimizing" in overlap:
-                reasons_en.append("Controls oil and minimizes pores")
-                reasons_tr.append("Yağ ve gözenek kontrolü sağlar")
-            elif "hydrating" in overlap or "barrier_repair" in overlap:
-                reasons_en.append("Hydrates and supports skin barrier")
-                reasons_tr.append("Nemlendirir ve cilt bariyerini destekler")
-            elif "curling" in overlap or "volumizing" in overlap or "lengthening" in overlap:
-                reasons_en.append("Matches your lash effect preference")
-                reasons_tr.append("İstediğiniz kirpik etkisine uygun")
+            elif not reasons_en:
+                if "oil_control" in overlap or "pore_minimizing" in overlap:
+                    reasons_en.append("Controls oil and minimizes pores")
+                    reasons_tr.append("Yağ ve gözenek kontrolü sağlar")
+                elif "hydrating" in overlap or "barrier_repair" in overlap:
+                    reasons_en.append("Hydrates and supports skin barrier")
+                    reasons_tr.append("Nemlendirir ve cilt bariyerini destekler")
 
-        # 4. Typo-tolerant cosine similarity against product text
         if prompt_lower:
             doc = f"{name} {item['brand']} {item.get('badge', '')} {item.get('key_pro', '')}"
             sim = _cosine_sim(prompt_lower, doc)
             if sim > 0.12:
-                score += int(sim * 25)
+                score += int(sim * 20)
 
-        # 5. Skin profile fit
         if skin_type == "oily" and ("oil_control" in item_benefits or "oily_skin" in item_benefits):
             score += 8
         elif skin_type == "dry" and ("hydrating" in item_benefits or "dry_skin" in item_benefits):
@@ -265,27 +320,20 @@ def _deterministic_top3(
             elif c in ("rosacea", "redness", "eczema") and ("barrier_repair" in item_benefits or "soothing" in item_benefits):
                 score += 6
 
-        # 6. Budget & price preference
         if wants_cheap:
-            score += max(0, (600 - price) // 35)
-            if price <= 350 and not reasons_en:
-                reasons_en.append("Budget-friendly price")
-                reasons_tr.append("Uygun fiyatlı seçenek")
+            score += max(0, (600 - price) // 30)
 
-        if budget_max and budget_max > 0:
-            if price <= budget_max:
+        active_budget = prompt_budget or profile_budget
+        if active_budget and active_budget > 0:
+            if price <= active_budget:
                 score += 8
                 if not reasons_en:
-                    reasons_en.append(f"Fits your {budget_max} TL budget")
-                    reasons_tr.append(f"{budget_max} TL bütçenize uygun")
+                    reasons_en.append(f"Within your {active_budget} TL budget")
+                    reasons_tr.append(f"{active_budget} TL bütçenize uygun")
             else:
-                score -= 24
+                score -= 18
 
-        # 7. Exclude exact owned product
-        if name.lower() in owned_lower:
-            score -= 40
-
-        clamped = max(55, min(98, score))
+        clamped = max(60, min(98, score))
         scored.append((
             clamped,
             item,
@@ -294,53 +342,36 @@ def _deterministic_top3(
         ))
 
     scored.sort(key=lambda x: (x[0], x[1]["rating"], x[1]["review_count"]), reverse=True)
-    top3 = scored[:3]
+    top_items = scored[:3]
 
     products = [
         {**item, "fit_score": s, "match_reason": r_tr if lang == "tr" else r_en}
-        for s, item, r_tr, r_en in top3
+        for s, item, r_tr, r_en in top_items
     ]
 
-    best = products[0]["product_name"] if products else ""
-    if asks_shelf_similar:
-        if shelf_info["names"]:
-            ref_list = ", ".join(shelf_info["names"][:2])
-            reply = (
-                f"Dolabınızdaki {ref_list} ürünüyle benzer etki ve kategorideki en uyumlu 3 alternatifi seçtim. İlk önerim: {best}."
-                if lang == "tr"
-                else f"Based on {ref_list} on your shelf, here are the 3 closest alternatives. Top pick: {best}."
-            )
-        else:
-            reply = (
-                "Dolabınızda henüz ürün yok, cilt profilinize göre en uyumlu 3 ürünü listeledim:"
-                if lang == "tr"
-                else "Your shelf is empty right now, so here are the 3 best matches for your skin profile:"
-            )
+    best = products[0]["product_name"]
+    count = len(products)
+    if asks_shelf_similar and shelf_info["names"]:
+        ref_list = ", ".join(shelf_info["names"][:2])
+        reply = (
+            f"Dolabınızdaki {ref_list} ile benzer etkili en uyumlu {count} ürünü seçtim. İlk önerim: {best}."
+            if lang == "tr"
+            else f"Based on {ref_list} on your shelf, here are the {count} closest matches. Top pick: {best}."
+        )
     elif asks_routine_gap:
         reply = (
-            f"Dolabınızdaki eksik rutin adımlarına göre öncelikle {best} ile başlamanızı öneririm:"
+            f"Dolabınızdaki eksik adımlara göre ilk önerim {best}:"
             if lang == "tr"
-            else f"Based on what is missing from your shelf, I recommend starting with {best}:"
+            else f"Based on what is missing from your shelf, start with {best}:"
         )
     elif prompt_lower:
-        if "glossy" in wanted_attrs and "matte" not in wanted_attrs:
-            reply = (
-                f"Parlak ve ışıltılı bitiş isteğinize göre en uyumlu 3 ürünü ayırdım. Öncelikli önerim: {best}."
-                if lang == "tr"
-                else f"Filtered for a glossy, luminous finish. My top pick for you is {best}."
-            )
-        elif "matte" in wanted_attrs and "glossy" not in wanted_attrs:
-            reply = (
-                f"Mat bitiş tercihinize göre en kalıcı 3 ürünü seçtim. Öncelikli önerim: {best}."
-                if lang == "tr"
-                else f"Filtered for a matte finish. My top pick for you is {best}."
-            )
-        else:
-            reply = (
-                f"İsteğinize, cilt profilinize ve bütçenize göre en mantıklı 3 seçenek — ilk tercihim {best}:"
-                if lang == "tr"
-                else f"Top 3 matches for your request, skin profile, and budget — my #1 pick is {best}:"
-            )
+        budget_tag_tr = f" ({prompt_budget} TL altı)" if prompt_budget else ""
+        budget_tag_en = f" (under {prompt_budget} TL)" if prompt_budget else ""
+        reply = (
+            f"Kriterlerinize{budget_tag_tr} tam uyan {count} ürün buldum. İlk tercihim: {best}."
+            if lang == "tr"
+            else f"Found {count} exact matches{budget_tag_en}. My #1 pick: {best}."
+        )
     else:
         reply = (
             "Bugün cilt profiliniz ve bütçeniz için öne çıkan 3 öneri:"
@@ -383,7 +414,7 @@ async def _try_llm_top3(
         f"Recent conversation: {json.dumps(history[-4:])}. "
         f"User message: {prompt!r}. "
         f"Catalog (pick ONLY exact product_name values): {json.dumps(compact_catalog)}. "
-        "Respect finish strictly (glossy != matte) and infer shelf product functions if asked for similar items. "
+        "STRICT RULES: Never exceed explicit price budget. Never violate explicit finish (satin != matte != glossy). "
         'Return strict JSON: {"reply": "1-2 decisive sentences", "picks": [{"product_name": "exact name", "fit_score": 94, "match_reason": "short reason"}]}. No emoji.'
     )
 
@@ -433,8 +464,8 @@ async def _try_llm_top3(
                     "fit_score": int(pick.get("fit_score", 88)),
                     "match_reason": str(pick.get("match_reason", "")),
                 })
-        if len(products) == 3:
-            return {"reply": str(parsed.get("reply", "")), "products": products}
+        if products:
+            return {"reply": str(parsed.get("reply", "")), "products": products[:3]}
     except Exception:
         return None
     return None
