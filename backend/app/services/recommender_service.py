@@ -391,39 +391,47 @@ async def _try_llm_top3(
     shelf_items: List[Dict[str, Any]],
     history: List[Dict[str, str]],
     lang: str,
+    valid_products: List[Dict[str, Any]],
 ) -> Optional[Dict[str, Any]]:
     gemini_key = (settings.GEMINI_API_KEY or "").strip()
     openai_key = (settings.OPENAI_API_KEY or "").strip()
     ollama_model = (settings.OLLAMA_MODEL or "").strip()
-    if not gemini_key and not openai_key and not ollama_model:
+    if (not gemini_key and not openai_key and not ollama_model) or not valid_products:
         return None
 
-    compact_catalog = [
+    compact_picks = [
         {
             "product_name": p["product_name"],
             "brand": p["brand"],
-            "category": p["category"],
             "price": p.get("price", 400),
-            "rating": p["rating"],
-            "finish": PRODUCT_ATTRIBUTES.get(p["product_name"], {}).get("finish", "natural"),
-            "benefits": sorted(PRODUCT_ATTRIBUTES.get(p["product_name"], {}).get("benefits", set())),
+            "finish": p.get("finish") or PRODUCT_ATTRIBUTES.get(p["product_name"], {}).get("finish", "natural"),
+            "fit_score": p.get("fit_score", 88),
         }
-        for p in POPULAR_BRAND_CATALOG
+        for p in valid_products[:3]
     ]
-    sys_prompt = (
-        f"You are MIRA, a smart, decisive beauty advisor. Language: {'Turkish' if lang == 'tr' else 'English'}. "
-        f"User skin profile: {json.dumps(profile_dict)}. "
-        f"User's current shelf: {json.dumps(shelf_items)}. "
-        f"Recent conversation: {json.dumps(history[-4:])}. "
-        f"User message: {prompt!r}. "
-        f"Catalog (pick ONLY exact product_name values): {json.dumps(compact_catalog)}. "
-        "STRICT RULES: Never exceed explicit price budget. Never violate explicit finish (satin != matte != glossy). "
-        'Return strict JSON: {"reply": "1-2 decisive sentences", "picks": [{"product_name": "exact name", "fit_score": 94, "match_reason": "short reason"}]}. No emoji.'
-    )
+    if lang == "tr":
+        sys_prompt = (
+            "Sen MIRA, kısa ve net konuşan bir güzellik danışmanısın. Yalnızca Türkçe yanıt ver, emoji kullanma. "
+            f"Kullanıcı cilt profili: {json.dumps(profile_dict, ensure_ascii=False)}. "
+            f"Kullanıcı isteği: {prompt!r}. "
+            f"Uygun bulunan ürünler (sadece bu adları ve fiyatları kullan): {json.dumps(compact_picks, ensure_ascii=False)}. "
+            'Sadece geçerli JSON döndür: {"reply": "En iyi ürünü öneren 1-2 kısa Türkçe cümle", '
+            '"reasons": {"ürün adı": "tek kısa Türkçe neden"}}.'
+        )
+    else:
+        sys_prompt = (
+            "You are MIRA, a concise beauty advisor. Reply strictly in English. No emojis. "
+            f"User skin profile: {json.dumps(profile_dict, ensure_ascii=False)}. "
+            f"User request: {prompt!r}. "
+            f"Pre-filtered valid products (ONLY reference these exact names and prices): {json.dumps(compact_picks, ensure_ascii=False)}. "
+            'Return strict JSON: {"reply": "1-2 short, natural English sentences recommending the top pick", '
+            '"reasons": {"exact product_name": "one short personalized reason"}}.'
+        )
 
+    timeout = 20.0 if ollama_model and not gemini_key and not openai_key else 12.0
     try:
         raw_text = ""
-        async with httpx.AsyncClient(timeout=12.0) as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             if gemini_key:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
                 r = await client.post(url, json={"contents": [{"parts": [{"text": sys_prompt}]}]})
@@ -444,7 +452,7 @@ async def _try_llm_top3(
                         "model": ollama_model,
                         "stream": False,
                         "format": "json",
-                        "options": {"temperature": 0.2},
+                        "options": {"temperature": 0.2, "num_predict": 180},
                         "messages": [{"role": "user", "content": sys_prompt}],
                     },
                 )
@@ -456,22 +464,19 @@ async def _try_llm_top3(
 
         cleaned = re.sub(r"^```(?:json)?|```$", "", raw_text.strip(), flags=re.MULTILINE).strip()
         parsed = json.loads(cleaned)
-        picks = parsed.get("picks") or []
-        by_name = {p["product_name"]: p for p in POPULAR_BRAND_CATALOG}
-        products = []
-        for pick in picks:
-            item = by_name.get(pick.get("product_name"))
-            if item:
-                products.append({
-                    **item,
-                    "fit_score": int(pick.get("fit_score", 88)),
-                    "match_reason": str(pick.get("match_reason", "")),
-                })
-        if products:
-            return {"reply": str(parsed.get("reply", "")), "products": products[:3]}
+        reply = re.sub(r"[^\w\s.,!?%₺TL:;()'\"-çğıöşüÇĞİÖŞÜ]", "", str(parsed.get("reply", ""))).strip()
+        if len(reply) < 8:
+            return None
+
+        reasons_raw = parsed.get("reasons") if isinstance(parsed.get("reasons"), dict) else {}
+        enriched = []
+        for p in valid_products[:3]:
+            r_text = str(reasons_raw.get(p["product_name"], "")).strip()
+            r_clean = re.sub(r"[^\w\s.,!?%₺TL:;()'\"-çğıöşüÇĞİÖŞÜ]", "", r_text).strip()
+            enriched.append({**p, "match_reason": r_clean if len(r_clean) >= 6 else p.get("match_reason", "")})
+        return {"reply": reply, "products": enriched}
     except Exception:
         return None
-    return None
 
 
 async def recommend_top3(
@@ -499,9 +504,18 @@ async def recommend_top3(
         for i in inventory
     ]
 
-    if prompt and prompt.strip():
-        llm_res = await _try_llm_top3(prompt.strip(), profile_dict, shelf_items, history or [], lang)
+    base = _deterministic_top3(prompt, profile_dict, inventory, lang, catalog_items=catalog_items)
+
+    if prompt and prompt.strip() and base.get("products"):
+        llm_res = await _try_llm_top3(
+            prompt.strip(),
+            profile_dict,
+            shelf_items,
+            history or [],
+            lang,
+            valid_products=base["products"],
+        )
         if llm_res:
             return llm_res
 
-    return _deterministic_top3(prompt, profile_dict, inventory, lang, catalog_items=catalog_items)
+    return base
