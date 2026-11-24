@@ -114,7 +114,7 @@ class CatalogProductModel(Base):
     price = Column(Integer, nullable=False, default=399)
     rating = Column(Float, nullable=False, default=4.5)
     review_count = Column(Integer, nullable=False, default=500)
-    image_url = Column(String(1024), nullable=True)
+    image_url = Column(Text, nullable=True)
     shade_hex = Column(String(20), nullable=True)
     shade_name = Column(String(120), nullable=True)
     finish = Column(String(30), nullable=False, default="natural")

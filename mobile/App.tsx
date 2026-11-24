@@ -8,6 +8,7 @@ import { DiscoverScreen } from './src/screens/DiscoverScreen';
 import { ProductScreen } from './src/screens/ProductScreen';
 import { ShelfScreen } from './src/screens/ShelfScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { AddProductScreen } from './src/screens/AddProductScreen';
 import type { TKey } from './src/i18n/translations';
 
 type Tab = 'discover' | 'shelf' | 'profile';
@@ -21,6 +22,7 @@ function Root() {
   const { c, t, mode, signedIn } = useApp();
   const [tab, setTab] = useState<Tab>('discover');
   const [query, setQuery] = useState<string | null>(null);
+  const [addingProduct, setAddingProduct] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -53,14 +55,24 @@ function Root() {
     );
   } else if (needsOnboarding) {
     content = <OnboardingScreen onDone={() => setNeedsOnboarding(false)} />;
+  } else if (addingProduct) {
+    content = (
+      <AddProductScreen
+        onBack={() => setAddingProduct(false)}
+        onAdded={() => {
+          setAddingProduct(false);
+          setTab('discover');
+        }}
+      />
+    );
   } else if (query) {
     content = <ProductScreen query={query} onQuery={setQuery} onBack={() => setQuery(null)} />;
   } else if (tab === 'discover') {
-    content = <DiscoverScreen onOpen={setQuery} onOpenProfile={() => setTab('profile')} />;
+    content = <DiscoverScreen onOpen={setQuery} onOpenProfile={() => setTab('profile')} onAddProduct={() => setAddingProduct(true)} />;
   } else if (tab === 'shelf') {
     content = <ShelfScreen />;
   } else {
-    content = <ProfileScreen />;
+    content = <ProfileScreen onAddProduct={() => setAddingProduct(true)} />;
   }
 
   return (
@@ -71,12 +83,13 @@ function Root() {
         {signedIn && needsOnboarding === false && (
           <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: c.border, backgroundColor: c.surface }}>
             {TABS.map((item) => {
-              const active = !query && tab === item.key;
+              const active = !query && !addingProduct && tab === item.key;
               return (
                 <TouchableOpacity
                   key={item.key}
                   onPress={() => {
                     setQuery(null);
+                    setAddingProduct(false);
                     setTab(item.key);
                   }}
                   style={{ flex: 1, alignItems: 'center', paddingVertical: 14, borderTopWidth: 2, borderTopColor: active ? c.accent : 'transparent', marginTop: -1 }}

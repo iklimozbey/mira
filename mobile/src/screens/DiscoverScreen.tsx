@@ -97,7 +97,15 @@ function ChatPickCard({ product, large, onPress }: { product: CatalogProduct; la
   );
 }
 
-export function DiscoverScreen({ onOpen, onOpenProfile }: { onOpen: (query: string) => void; onOpenProfile: () => void }) {
+export function DiscoverScreen({
+  onOpen,
+  onOpenProfile,
+  onAddProduct,
+}: {
+  onOpen: (query: string) => void;
+  onOpenProfile: () => void;
+  onAddProduct: () => void;
+}) {
   const { c, t, lang, errorText } = useApp();
   const { height } = useWindowDimensions();
   const [category, setCategory] = useState('all');
@@ -245,7 +253,12 @@ export function DiscoverScreen({ onOpen, onOpenProfile }: { onOpen: (query: stri
         </Card>
       )}
 
-      <Title>{t('catalogTitle')}</Title>
+      <View style={styles.between}>
+        <Title>{t('catalogTitle')}</Title>
+        <TouchableOpacity onPress={onAddProduct}>
+          <Text style={{ color: c.accent, fontSize: 13, fontWeight: '700' }}>+ {t('addCatalogProduct')}</Text>
+        </TouchableOpacity>
+      </View>
 
       <Field
         label=""

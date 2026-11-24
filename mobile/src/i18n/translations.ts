@@ -135,6 +135,24 @@ const en = {
   errNetwork: 'Cannot reach the server.',
   errLogin: 'Incorrect email or password.',
   errRequired: 'Please fill in all fields.',
+
+  // add product to catalog
+  addCatalogProduct: 'Add product',
+  addProductSubtitle: 'Add a product with its photo, price, and store link to the catalog.',
+  finishLabel: 'Finish',
+  matte: 'Matte',
+  satin: 'Satin',
+  glossy: 'Glossy',
+  dewy: 'Dewy',
+  natural: 'Natural',
+  priceTl: 'Price (TL)',
+  photoUrl: 'Photo URL (optional)',
+  choosePhoto: 'Choose photo from device',
+  storeName: 'Store name (optional)',
+  storeUrl: 'Store link (optional)',
+  productAdded: 'Product added to catalog.',
+  addAnother: 'Add another product',
+  errPrice: 'Please enter a valid price.',
 };
 
 export type Dict = typeof en;
@@ -265,6 +283,23 @@ const tr: Dict = {
   errNetwork: 'Sunucuya ulaşılamıyor.',
   errLogin: 'E-posta veya şifre hatalı.',
   errRequired: 'Lütfen tüm alanları doldur.',
+
+  addCatalogProduct: 'Ürün ekle',
+  addProductSubtitle: 'Gerçek fotoğrafı, fiyatı ve mağaza linkiyle kataloğa yeni ürün ekle.',
+  finishLabel: 'Bitiş',
+  matte: 'Mat',
+  satin: 'Saten',
+  glossy: 'Parlak',
+  dewy: 'Işıltılı',
+  natural: 'Doğal',
+  priceTl: 'Fiyat (TL)',
+  photoUrl: 'Fotoğraf linki (isteğe bağlı)',
+  choosePhoto: 'Cihazdan fotoğraf seç',
+  storeName: 'Mağaza adı (isteğe bağlı)',
+  storeUrl: 'Mağaza linki (isteğe bağlı)',
+  productAdded: 'Ürün kataloğa eklendi.',
+  addAnother: 'Başka ürün ekle',
+  errPrice: 'Lütfen geçerli bir fiyat gir.',
 };
 
 export const translations: Record<Language, Dict> = { en, tr };

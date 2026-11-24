@@ -150,6 +150,22 @@ class MiraApiClient {
   deleteInventoryItem(id: string) {
     return this.request<void>(`/inventory/${id}`, { method: 'DELETE' });
   }
+
+  addCatalogProduct(item: {
+    product_name: string;
+    brand: string;
+    category: string;
+    price: number;
+    image_url?: string;
+    finish?: string;
+    merchant_name?: string;
+    merchant_url?: string;
+  }) {
+    return this.request<CatalogProduct>('/catalog/products', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    });
+  }
 }
 
 export const apiClient = new MiraApiClient();

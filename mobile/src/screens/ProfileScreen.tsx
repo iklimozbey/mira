@@ -9,7 +9,7 @@ import type { TKey } from '../i18n/translations';
 const opts = (keys: string[], t: (k: TKey) => string) => keys.map((k) => ({ value: k, label: t(k as TKey) }));
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
-export function ProfileScreen() {
+export function ProfileScreen({ onAddProduct }: { onAddProduct?: () => void }) {
   const { c, t, lang, setLang, mode, setMode, errorText, signOut } = useApp();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [budgetText, setBudgetText] = useState('');
@@ -108,6 +108,7 @@ export function ProfileScreen() {
         )}
       </Card>
 
+      {onAddProduct && <Button title={t('addCatalogProduct')} variant="ghost" onPress={onAddProduct} />}
       <Button title={t('signOut')} variant="ghost" onPress={signOut} />
     </Screen>
   );

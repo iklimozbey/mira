@@ -9,7 +9,7 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.entities import CatalogProductModel, InventoryItem, User, UserProfile
 from app.services.feed_importer import import_feed_from_url, parse_google_merchant_xml, upsert_feed_items
-from app.services.obf_sync import fetch_and_cache_obf, model_to_dict, seed_curated_products
+from app.services.obf_sync import fetch_and_cache_obf, infer_benefits, infer_finish, model_to_dict, seed_curated_products
 from app.services.recommender_service import recommend_top3
 
 router = APIRouter()
@@ -26,6 +26,17 @@ class FeedImportRequest(BaseModel):
     feed_url: Optional[str] = None
     xml_content: Optional[str] = None
     items: Optional[List[Dict[str, Any]]] = None
+
+
+class CreateCatalogProductRequest(BaseModel):
+    product_name: str = Field(..., min_length=2, max_length=255)
+    brand: str = Field(..., min_length=1, max_length=120)
+    category: str = Field("other", max_length=50)
+    price: int = Field(..., ge=1, le=100000)
+    image_url: Optional[str] = None
+    finish: Optional[str] = None
+    merchant_name: Optional[str] = Field(None, max_length=100)
+    merchant_url: Optional[str] = Field(None, max_length=1024)
 
 
 def _load_catalog(db: Session) -> list:
@@ -51,6 +62,7 @@ async def list_catalog(
         query = query.filter(
             or_(
                 CatalogProductModel.source == "curated",
+                CatalogProductModel.source == "manual",
                 CatalogProductModel.source.like("feed:%"),
             )
         )
@@ -169,3 +181,82 @@ async def import_merchant_feed(
     if req.items is not None:
         return upsert_feed_items(db, req.items, default_merchant=req.merchant_name)
     raise HTTPException(status_code=400, detail="Provide feed_url, xml_content, or items.")
+
+
+_ALLOWED_CATEGORIES = {"lip", "foundation", "mascara", "sunscreen", "moisturizer", "serum", "other"}
+_ALLOWED_FINISHES = {"matte", "satin", "glossy", "dewy", "natural"}
+
+
+@router.post("/products")
+def add_catalog_product(
+    req: CreateCatalogProductRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Add a new product (or update an existing one by name) with its real photo and store link."""
+    name = req.product_name.strip()
+    brand = req.brand.strip().lower()
+    category = req.category.strip().lower()
+    if category not in _ALLOWED_CATEGORIES:
+        category = "other"
+
+    finish = (req.finish or "").strip().lower()
+    if finish not in _ALLOWED_FINISHES:
+        finish = infer_finish(name)
+
+    image_url = (req.image_url or "").strip() or None
+    if image_url and not (
+        image_url.startswith("https://")
+        or image_url.startswith("http://")
+        or image_url.startswith("/static/")
+        or image_url.startswith("data:image/")
+    ):
+        raise HTTPException(status_code=400, detail="Image must be a valid URL or uploaded photo.")
+    if image_url and len(image_url) > 500_000:
+        raise HTTPException(status_code=400, detail="Uploaded image is too large.")
+
+    merchant_url = (req.merchant_url or "").strip() or None
+    if merchant_url and not (merchant_url.startswith("https://") or merchant_url.startswith("http://")):
+        raise HTTPException(status_code=400, detail="Store link must start with http:// or https://.")
+
+    merchant_name = (req.merchant_name or "").strip() or None
+    benefits = infer_benefits(f"{name} {brand} {category}", finish)
+
+    existing = db.query(CatalogProductModel).filter(CatalogProductModel.product_name.ilike(name)).first()
+    if existing:
+        existing.brand = brand
+        existing.category = category
+        existing.price = req.price
+        existing.finish = finish
+        existing.benefits = benefits
+        if image_url is not None:
+            existing.image_url = image_url
+        if merchant_name is not None:
+            existing.merchant_name = merchant_name
+        if merchant_url is not None:
+            existing.merchant_url = merchant_url
+        existing.source = "manual"
+        existing.in_stock = True
+        db.commit()
+        db.refresh(existing)
+        return model_to_dict(existing)
+
+    row = CatalogProductModel(
+        product_name=name,
+        brand=brand,
+        category=category,
+        price=req.price,
+        rating=4.7,
+        review_count=100,
+        image_url=image_url,
+        finish=finish,
+        benefits=benefits,
+        source="manual",
+        merchant_name=merchant_name,
+        merchant_url=merchant_url,
+        in_stock=True,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return model_to_dict(row)
