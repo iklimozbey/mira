@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { apiClient, imageUrl } from '../api/client';
 import { CatalogProduct, RecommendResponse } from '../types';
 import { Body, Button, Card, Chips, ErrorText, Field, Label, ProductImage, Screen, Title, styles } from '../components/ui';
+import { LanguageSwitch } from './AuthScreen';
 import type { TKey } from '../i18n/translations';
 
 const CATEGORIES = ['lip', 'foundation', 'mascara', 'sunscreen', 'moisturizer', 'serum'];
@@ -101,12 +102,14 @@ export function DiscoverScreen({
   onOpen,
   onOpenProfile,
   onAddProduct,
+  onSignIn,
 }: {
   onOpen: (query: string) => void;
   onOpenProfile: () => void;
   onAddProduct: () => void;
+  onSignIn?: () => void;
 }) {
-  const { c, t, lang, errorText } = useApp();
+  const { c, t, lang, signedIn, errorText } = useApp();
   const { height } = useWindowDimensions();
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
@@ -177,6 +180,28 @@ export function DiscoverScreen({
 
   return (
     <Screen>
+      {!signedIn && (
+        <View style={styles.between}>
+          <Text style={{ color: c.text, fontSize: 20, fontWeight: '800', letterSpacing: 5 }}>MIRA</Text>
+          <View style={styles.row}>
+            <LanguageSwitch />
+            {onSignIn && (
+              <TouchableOpacity
+                onPress={onSignIn}
+                style={{
+                  backgroundColor: c.accent,
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                }}
+              >
+                <Text style={{ color: c.onAccent, fontSize: 13, fontWeight: '700' }}>{t('signIn')}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* CHATBOT HERO: fills most of the first screen */}
       <Card style={{ minHeight: Math.max(460, height * 0.68), padding: 18, gap: 16 }}>
         <Label>{t('chatTitle')}</Label>
@@ -255,9 +280,11 @@ export function DiscoverScreen({
 
       <View style={styles.between}>
         <Title>{t('catalogTitle')}</Title>
-        <TouchableOpacity onPress={onAddProduct}>
-          <Text style={{ color: c.accent, fontSize: 13, fontWeight: '700' }}>+ {t('addCatalogProduct')}</Text>
-        </TouchableOpacity>
+        {signedIn && (
+          <TouchableOpacity onPress={onAddProduct}>
+            <Text style={{ color: c.accent, fontSize: 13, fontWeight: '700' }}>+ {t('addCatalogProduct')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Field

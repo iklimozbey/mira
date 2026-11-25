@@ -20,8 +20,18 @@ function BulletList({ items, color }: { items: string[]; color: string }) {
   );
 }
 
-export function ProductScreen({ query, onBack, onQuery }: { query: string; onBack: () => void; onQuery: (q: string) => void }) {
-  const { c, t, lang, errorText } = useApp();
+export function ProductScreen({
+  query,
+  onBack,
+  onQuery,
+  onSignIn,
+}: {
+  query: string;
+  onBack: () => void;
+  onQuery: (q: string) => void;
+  onSignIn?: () => void;
+}) {
+  const { c, t, lang, signedIn, errorText } = useApp();
   const [report, setReport] = useState<ResearchReport | null>(null);
   const [meta, setMeta] = useState<CatalogProduct | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +46,17 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
     setMeta(null);
     setAdded(false);
 
+    if (!signedIn) {
+      apiClient
+        .lookupProduct(query)
+        .then((m) => active && setMeta(m))
+        .catch(() => {})
+        .finally(() => active && setLoading(false));
+      return () => {
+        active = false;
+      };
+    }
+
     apiClient.lookupProduct(query).then((m) => active && setMeta(m)).catch(() => {});
     apiClient
       .analyze(query, lang)
@@ -46,7 +67,7 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
     return () => {
       active = false;
     };
-  }, [query, lang]);
+  }, [query, lang, signedIn]);
 
   const addToShelf = async () => {
     try {
@@ -178,6 +199,32 @@ export function ProductScreen({ query, onBack, onQuery }: { query: string; onBac
           </Card>
 
           <Button title={added ? t('addedToShelf') : t('addToShelf')} variant="ghost" onPress={addToShelf} disabled={added} />
+        </>
+      )}
+
+      {!signedIn && !loading && (
+        <>
+          {!meta && <Title>{productName}</Title>}
+
+          <Card>
+            <Label>{t('whereToBuy')}</Label>
+            {storeLinks.map((store, i) => (
+              <Button
+                key={store.label}
+                title={i === 0 && meta?.price ? `${t('buyNow')} · ${store.label} (${meta.price} TL)` : `${t('buyNow')} · ${store.label}`}
+                variant={i === 0 ? 'primary' : 'ghost'}
+                onPress={() => Linking.openURL(store.url)}
+              />
+            ))}
+          </Card>
+
+          {onSignIn && (
+            <Card>
+              <Label>{t('fitScore')}</Label>
+              <Body muted>{t('guestReportHint')}</Body>
+              <Button title={t('signIn')} onPress={onSignIn} variant="ghost" />
+            </Card>
+          )}
         </>
       )}
     </Screen>

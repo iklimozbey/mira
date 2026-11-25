@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -9,6 +10,7 @@ from app.models.entities import User
 from app.schemas.dto import TokenPayload
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
 
 
 def get_current_user(
@@ -34,3 +36,21 @@ def get_current_user(
     if user is None or not user.is_active:
         raise credentials_exception
     return user
+
+
+def get_optional_user(
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+) -> Optional[User]:
+    """Return authenticated user if a valid Bearer token is provided, else None (guest mode)."""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+    except JWTError:
+        return None
+    user = db.query(User).filter(User.id == user_id).first()
+    return user if (user and user.is_active) else None

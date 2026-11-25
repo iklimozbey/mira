@@ -153,6 +153,7 @@ const en = {
   productAdded: 'Product added to catalog.',
   addAnother: 'Add another product',
   errPrice: 'Please enter a valid price.',
+  guestReportHint: 'Sign in to see your personal skin compatibility score and shelf check for this product.',
 };
 
 export type Dict = typeof en;
@@ -300,6 +301,7 @@ const tr: Dict = {
   productAdded: 'Ürün kataloğa eklendi.',
   addAnother: 'Başka ürün ekle',
   errPrice: 'Lütfen geçerli bir fiyat gir.',
+  guestReportHint: 'Bu ürünün cilt tipine kişisel uyum puanını ve dolap analizini görmek için giriş yap.',
 };
 
 export const translations: Record<Language, Dict> = { en, tr };

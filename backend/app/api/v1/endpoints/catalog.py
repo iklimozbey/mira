@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user
 from app.core.database import get_db
 from app.models.entities import CatalogProductModel, InventoryItem, User, UserProfile
 from app.services.feed_importer import import_feed_from_url, parse_google_merchant_xml, upsert_feed_items
@@ -108,12 +108,12 @@ async def list_catalog(
 @router.get("/daily-top3")
 async def get_daily_top3(
     lang: str = "en",
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """Return today's top 3 personalized product picks based on skin profile, budget, and shelf."""
-    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
-    inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
+    """Return today's top 3 product picks (personalized when signed in, curated top picks for guests)."""
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first() if current_user else None
+    inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all() if current_user else []
     catalog_items = _load_catalog(db)
     return await recommend_top3(prompt=None, profile=profile, inventory=inventory, lang=lang, catalog_items=catalog_items)
 
@@ -121,12 +121,12 @@ async def get_daily_top3(
 @router.post("/chat")
 async def chat_recommend(
     req: ChatPromptRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
     """Home chatbot endpoint: searches SQLite catalog (+ live Open Beauty Facts fallback) and returns top 3."""
-    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
-    inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all()
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first() if current_user else None
+    inventory = db.query(InventoryItem).filter(InventoryItem.user_id == current_user.id).all() if current_user else []
     catalog_items = _load_catalog(db)
     result = await recommend_top3(
         prompt=req.prompt,

@@ -23,6 +23,7 @@ function Root() {
   const [tab, setTab] = useState<Tab>('discover');
   const [query, setQuery] = useState<string | null>(null);
   const [addingProduct, setAddingProduct] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ function Root() {
       setNeedsOnboarding(null);
       return;
     }
+    setShowAuth(false);
     let active = true;
     apiClient
       .getProfile()
@@ -44,18 +46,27 @@ function Root() {
     };
   }, [signedIn]);
 
+  const requireAuth = () => setShowAuth(true);
+
   let content: React.ReactNode;
-  if (!signedIn) {
-    content = <AuthScreen />;
-  } else if (needsOnboarding === null) {
+  if (!signedIn && (showAuth || tab === 'shelf' || tab === 'profile')) {
+    content = (
+      <AuthScreen
+        onBack={() => {
+          setShowAuth(false);
+          setTab('discover');
+        }}
+      />
+    );
+  } else if (signedIn && needsOnboarding === null) {
     content = (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator color={c.accent} />
       </View>
     );
-  } else if (needsOnboarding) {
+  } else if (signedIn && needsOnboarding) {
     content = <OnboardingScreen onDone={() => setNeedsOnboarding(false)} />;
-  } else if (addingProduct) {
+  } else if (signedIn && addingProduct) {
     content = (
       <AddProductScreen
         onBack={() => setAddingProduct(false)}
@@ -66,21 +77,30 @@ function Root() {
       />
     );
   } else if (query) {
-    content = <ProductScreen query={query} onQuery={setQuery} onBack={() => setQuery(null)} />;
+    content = <ProductScreen query={query} onQuery={setQuery} onBack={() => setQuery(null)} onSignIn={requireAuth} />;
   } else if (tab === 'discover') {
-    content = <DiscoverScreen onOpen={setQuery} onOpenProfile={() => setTab('profile')} onAddProduct={() => setAddingProduct(true)} />;
+    content = (
+      <DiscoverScreen
+        onOpen={setQuery}
+        onOpenProfile={() => setTab('profile')}
+        onAddProduct={() => (signedIn ? setAddingProduct(true) : requireAuth())}
+        onSignIn={requireAuth}
+      />
+    );
   } else if (tab === 'shelf') {
     content = <ShelfScreen />;
   } else {
     content = <ProfileScreen onAddProduct={() => setAddingProduct(true)} />;
   }
 
+  const showTabs = (!signedIn && !showAuth) || (signedIn && needsOnboarding === false);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
       <View style={{ flex: 1, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
         <View style={{ flex: 1 }}>{content}</View>
-        {signedIn && needsOnboarding === false && (
+        {showTabs && (
           <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: c.border, backgroundColor: c.surface }}>
             {TABS.map((item) => {
               const active = !query && !addingProduct && tab === item.key;
@@ -90,6 +110,7 @@ function Root() {
                   onPress={() => {
                     setQuery(null);
                     setAddingProduct(false);
+                    setShowAuth(false);
                     setTab(item.key);
                   }}
                   style={{ flex: 1, alignItems: 'center', paddingVertical: 14, borderTopWidth: 2, borderTopColor: active ? c.accent : 'transparent', marginTop: -1 }}

@@ -21,7 +21,7 @@ export function LanguageSwitch() {
   );
 }
 
-export function AuthScreen() {
+export function AuthScreen({ onBack }: { onBack?: () => void }) {
   const { c, t, errorText, onSignedIn } = useApp();
   const savedEmail = storage.get('last_email');
   const initialEmail = savedEmail || DEMO_EMAIL;
@@ -77,7 +77,12 @@ export function AuthScreen() {
 
   return (
     <Screen>
-      <View style={{ alignItems: 'flex-end' }}>
+      <View style={onBack ? styles.between : { alignItems: 'flex-end' }}>
+        {onBack ? (
+          <TouchableOpacity onPress={onBack}>
+            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 14 }}>← {t('back')}</Text>
+          </TouchableOpacity>
+        ) : null}
         <LanguageSwitch />
       </View>
       <View style={{ alignItems: 'center', paddingVertical: 32 }}>
